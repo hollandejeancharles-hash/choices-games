@@ -139,7 +139,7 @@ export function ProfileView({
               {t.nuance} <strong>{secondary.archetype.name[locale]}</strong>
             </p>
           </div>
-          <img src="./dilemma-mark.png" alt="" />
+          <img src="./dilemme-logo.png" alt="" />
         </div>
         <p className="profile-description">
           {primary.archetype.description[locale]}

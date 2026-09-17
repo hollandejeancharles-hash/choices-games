@@ -120,7 +120,7 @@ Un lien `localhost`/`127.0.0.1` fonctionne seulement sur l'appareil qui sert le 
 
 ## Identité visuelle
 
-Logo généré avec l'outil de génération d'images intégré : un D en deux chemins opposés, vermillon et ivoire. Le nom est composé dans l'interface pour rester net et basculer FR/EN. L'asset original est conservé dans `public/dilemma-mark.png`, et le prompt dans `docs/logo-prompt.txt`.
+Logo fourni par le propriétaire du projet, intégré sans modification dans `public/dilemme-logo.png`. Typographie Inter variable, hébergée localement via Fontsource (licence OFL). La direction visuelle reprend les titres massifs et les aplats colorés de [Coolors](https://coolors.co/?home). Les 55 teintes fournies (Vibrant Coral, Emerald, Fresh Sky, Sunflower Gold, Tangerine Dream) sont conservées dans `src/styles/palette.css`. Le thème clair est proposé par défaut ; le thème sombre et les préférences existantes sont conservés. La carte PNG utilise la même palette, la même police et le logo fourni. L’ancienne proposition de logo et son prompt restent archivés dans le dépôt.
 
 ## Validation
 

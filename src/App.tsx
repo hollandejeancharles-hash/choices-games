@@ -27,7 +27,7 @@ export default function App() {
   );
   const [locale, setLocale] = useState(() => shared?.locale ?? initialLocale());
   const [dark, setDark] = useState(
-    () => readPreference("dilemma.theme") !== "light",
+    () => readPreference("dilemma.theme") === "dark",
   );
   const [screen, setScreen] = useState<Screen>(shared ? "result" : "home");
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
@@ -127,7 +127,7 @@ export default function App() {
           }}
           aria-label={`${t.brand} · ${t.home}`}
         >
-          <img src="./dilemma-mark.png" alt="" />
+          <img src="./dilemme-logo.png" alt="" />
           <span>
             {t.brand}
             <span className="brand-period">.</span>
@@ -202,13 +202,24 @@ export default function App() {
               </div>
             </div>
             <div className="hero-art">
-              <div className="orbital orbit-one" />
-              <div className="orbital orbit-two" />
+              <div className="palette-fan" aria-hidden="true">
+                <span className="fan-card fan-coral" />
+                <span className="fan-card fan-emerald" />
+                <span className="fan-card fan-sky" />
+                <span className="fan-card fan-gold" />
+                <span className="fan-card fan-tangerine" />
+              </div>
               <div className="example-card">
                 <span className="eyebrow">{t.exampleTag}</span>
-                <img src="./dilemma-mark.png" alt="" />
+                <img src="./dilemme-logo.png" alt="" />
                 <p>{t.example}</p>
-                <div className="example-rule" />
+                <div className="example-rule" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </div>
                 <span>{t.exampleFoot}</span>
               </div>
               <span className="art-caption">
@@ -300,7 +311,7 @@ export default function App() {
         )}
         {screen === "handoff" && session && (
           <section className="handoff page-in">
-            <img src="./dilemma-mark.png" alt="" />
+            <img src="./dilemme-logo.png" alt="" />
             <span className="eyebrow">
               {session.mode === "group" ? t.pass : t.ready}
             </span>
@@ -339,7 +350,7 @@ export default function App() {
         {screen === "analysis" && (
           <section className="analysis" role="status">
             <div className="analysis-symbol">
-              <img src="./dilemma-mark.png" alt="" />
+              <img src="./dilemme-logo.png" alt="" />
             </div>
             <h1>{t.analysis}</h1>
             <p>{t.analysisCopy}</p>

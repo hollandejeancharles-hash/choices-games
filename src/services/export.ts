@@ -8,34 +8,48 @@ export async function downloadPortrait(
 ): Promise<void> {
   const t = copy[locale],
     ranking = rankArchetypes(profile.vector, archetypes);
+  await document.fonts.load('800 76px "Inter Variable"');
+  await document.fonts.load('400 25px "Inter Variable"');
   const canvas = document.createElement("canvas");
   canvas.width = 1200;
   canvas.height = 1400;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas unavailable");
-  ctx.fillStyle = "#131411";
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, 1200, 1400);
+  const palette = ["#e82f17", "#3bc47b", "#2d9ed2", "#f79f08", "#f0400f"];
+  palette.forEach((color, i) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(i * 240, 0, 240, 16);
+    ctx.fillRect(i * 240, 1360, 240, 40);
+  });
   const logo = new Image();
-  logo.src = new URL("./dilemma-mark.png", document.baseURI).href;
+  logo.src = new URL("./dilemme-logo.png", document.baseURI).href;
   await logo.decode();
-  ctx.drawImage(logo, 990, 45, 140, 140);
-  ctx.fillStyle = "#f2eedf";
-  ctx.font = "bold 42px sans-serif";
+  ctx.drawImage(
+    logo,
+    990,
+    45,
+    140,
+    (140 * logo.naturalHeight) / logo.naturalWidth,
+  );
+  ctx.fillStyle = "#141820";
+  ctx.font = '800 42px "Inter Variable", sans-serif';
   ctx.fillText(`${t.brand}.`, 75, 120);
-  ctx.fillStyle = "#ff623e";
-  ctx.font = "18px sans-serif";
+  ctx.fillStyle = "#ba2612";
+  ctx.font = '18px "Inter Variable", sans-serif';
   ctx.fillText(t.tagline, 75, 168);
   const name = ranking[0]!.archetype.name[locale];
-  ctx.fillStyle = "#f2eedf";
-  ctx.font = "76px Georgia";
+  ctx.fillStyle = "#141820";
+  ctx.font = '800 76px "Inter Variable", sans-serif';
   let fontSize = 76;
   while (ctx.measureText(name).width > 1050) {
     fontSize -= 2;
-    ctx.font = `${fontSize}px Georgia`;
+    ctx.font = `800 ${fontSize}px "Inter Variable", sans-serif`;
   }
   ctx.fillText(name, 75, 290);
-  ctx.font = "25px sans-serif";
-  ctx.fillStyle = "#b6baa8";
+  ctx.font = '25px "Inter Variable", sans-serif';
+  ctx.fillStyle = "#59616d";
   ctx.fillText(`${t.nuance} ${ranking[1]!.archetype.name[locale]}`, 75, 345);
   const cx = 600,
     cy = 720,
@@ -55,7 +69,7 @@ export async function downloadPortrait(
   }
   for (const ratio of [0.25, 0.5, 0.75, 1]) {
     polygon(AXES.map(() => ratio));
-    ctx.strokeStyle = ratio === 0.5 ? "#919780" : "#3a3c31";
+    ctx.strokeStyle = ratio === 0.5 ? "#247ea8" : "#abd8ed";
     ctx.lineWidth = 1.5;
     ctx.setLineDash(ratio === 0.5 ? [6, 6] : []);
     ctx.stroke();
@@ -67,29 +81,29 @@ export async function downloadPortrait(
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(x, y);
-    ctx.strokeStyle = "#3a3c31";
+    ctx.strokeStyle = "#abd8ed";
     ctx.stroke();
-    ctx.font = "22px sans-serif";
-    ctx.fillStyle = "#f2eedf";
+    ctx.font = '22px "Inter Variable", sans-serif';
+    ctx.fillStyle = "#141820";
     ctx.textAlign = "center";
     ctx.fillText(axisCopy[axis].positive[locale], lx, ly);
   });
   polygon(AXES.map((axis) => (profile.vector[axis] + 100) / 200));
-  ctx.fillStyle = "#ff623e30";
+  ctx.fillStyle = "#2d9ed230";
   ctx.fill();
-  ctx.strokeStyle = "#ff623e";
+  ctx.strokeStyle = "#1b5f7e";
   ctx.lineWidth = 4;
   ctx.stroke();
   ctx.textAlign = "left";
-  ctx.fillStyle = "#ff623e";
-  ctx.font = "32px sans-serif";
+  ctx.fillStyle = "#ba2612";
+  ctx.font = '32px "Inter Variable", sans-serif';
   ctx.fillText(
     `${ranking[0]!.fictionalRarity.toLocaleString(locale)} % ${t.rarity}`,
     75,
     1135,
   );
-  ctx.fillStyle = "#b6baa8";
-  ctx.font = "18px sans-serif";
+  ctx.fillStyle = "#59616d";
+  ctx.font = '18px "Inter Variable", sans-serif';
   const lines =
     locale === "fr"
       ? [

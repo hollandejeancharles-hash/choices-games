@@ -1,28 +1,29 @@
 @import "tailwindcss";
+@import "./styles/palette.css";
 :root {
-  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
   color: var(--ink);
   background: var(--bg);
-  --bg: #131411;
-  --panel: #1d1e19;
-  --ink: #f2eedf;
-  --muted: #a9ab9c;
-  --line: #3a3c31;
-  --accent: #ff623e;
-  --on-accent: #211710;
-  --soft: #27291f;
-  color-scheme: dark;
-}
-:root[data-theme="light"] {
-  --bg: #f5f1e7;
-  --panel: #fffdf7;
-  --ink: #20251b;
-  --muted: #636959;
-  --line: #c9ccbf;
-  --accent: #b43216;
-  --on-accent: #fff9ed;
-  --soft: #e9e8dc;
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --ink: #141820;
+  --muted: #59616d;
+  --line: #e2e5eb;
+  --accent: var(--color-vibrant-coral-600);
+  --on-accent: #ffffff;
+  --soft: var(--color-fresh-sky-50);
   color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #141820;
+  --panel: #1d2430;
+  --ink: #f8fafc;
+  --muted: #b4bece;
+  --line: #394353;
+  --accent: var(--color-vibrant-coral-300);
+  --on-accent: var(--color-vibrant-coral-950);
+  --soft: #252f3d;
+  color-scheme: dark;
 }
 * {
   box-sizing: border-box;
@@ -187,7 +188,7 @@ footer > span:last-child {
   margin: 30px 0 24px;
 }
 h1 em {
-  font-family: Georgia, serif;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
   font-weight: 400;
   color: var(--accent);
 }
@@ -288,7 +289,7 @@ h1 em {
 }
 .example-card p {
   white-space: pre-line;
-  font-family: Georgia, serif;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
   font-size: 25px;
   line-height: 1.28;
   margin: 8px 0 18px;
@@ -526,7 +527,7 @@ progress::-moz-progress-bar {
   color: var(--accent);
 }
 .question-heading h1 {
-  font-family: Georgia, serif;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
   font-size: clamp(24px, 2.6vw, 35px);
   line-height: 1.4;
   font-weight: 400;
@@ -865,7 +866,7 @@ progress::-moz-progress-bar {
   margin-top: 20px;
 }
 .profile-title h1 {
-  font-family: Georgia, serif;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
   font-size: clamp(40px, 5.8vw, 72px);
   line-height: 1.1;
   font-weight: 400;
@@ -1001,7 +1002,7 @@ progress::-moz-progress-bar {
 }
 .traits article > span {
   color: var(--accent);
-  font-family: Georgia, serif;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
   font-size: 18px;
 }
 .traits h3 {
@@ -1101,7 +1102,7 @@ progress::-moz-progress-bar {
   color: var(--accent);
 }
 .group-results > h1 {
-  font-family: Georgia, serif;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
   font-size: clamp(38px, 5vw, 58px);
   line-height: 1.15;
   max-width: 650px;
@@ -1136,7 +1137,7 @@ progress::-moz-progress-bar {
   margin: 20px 0 35px;
 }
 .division-panel h2 {
-  font-family: Georgia, serif;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
   font-size: 25px;
   line-height: 1.5;
   margin-top: 20px;
@@ -1187,7 +1188,7 @@ progress::-moz-progress-bar {
   overflow-wrap: anywhere;
 }
 .player-profile strong {
-  font-family: Georgia, serif;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
   font-size: 23px;
   font-weight: 400;
 }
