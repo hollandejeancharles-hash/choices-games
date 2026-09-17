@@ -4,6 +4,7 @@ import { copy } from './i18n';
 import { questions } from './data/questions';
 import { createSession, initialLocale, isComplete, loadSession, readPreference, recordAnswer, savePreference, saveSession, type Session } from './services/session';
 import { scoreAnswers } from './core/engine';
+import { GroupResults } from './components/GroupResults';
 import { ProfileView } from './components/Profile';
 import { QuestionScreen } from './components/QuestionScreen';
 type Screen = 'home' | 'setup' | 'handoff' | 'question' | 'analysis' | 'result';
@@ -11,6 +12,7 @@ export default function App() {
   const [locale, setLocale] = useState(initialLocale);
   const [dark, setDark] = useState(() => readPreference('dilemma.theme') !== 'light');
   const [screen, setScreen] = useState<Screen>('home');
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(loadSession);
   const [storageError, setStorageError] = useState(false);
   const [mode, setMode] = useState<'solo' | 'group'>('solo');
@@ -23,6 +25,7 @@ export default function App() {
   useEffect(() => { if (screen !== 'analysis') return; const timer = setTimeout(() => setScreen('result'), 1500); return () => clearTimeout(timer); }, [screen]);
   useEffect(() => { if (screen !== 'question') document.getElementById('main')?.focus(); window.scrollTo({ top: 0 }); }, [screen]);
   function start() {
+    setSelectedPlayer(null);
     const seed = crypto.getRandomValues(new Uint32Array(1))[0]!;
     setSession(createSession(Array.from({ length: mode === 'solo' ? 1 : count }, (_, i) => names[i]?.trim() || `${t.player} ${i + 1}`), length, seed));
     setScreen('handoff');
@@ -41,7 +44,7 @@ export default function App() {
       {screen === 'handoff' && session && <section className="handoff page-in"><img src="./dilemma-mark.png" alt=""/><span className="eyebrow">{session.mode === 'group' ? t.pass : t.ready}</span><h1>{session.mode === 'group' ? session.players[session.currentPlayer]?.name : t.brand + '.'}</h1><p>{session.mode === 'group' ? t.private : t.readyCopy}</p><button className="primary" onClick={() => setScreen('question')}>{t.reveal}<span>→</span></button><button className="text-button" onClick={() => setScreen('home')}>{t.quit}</button></section>}
       {screen === 'question' && session && current && <QuestionScreen key={`${current.id}-${session.currentPlayer}`} question={current} locale={locale} index={session.questionIds.length} length={session.length} reversed={(session.seed + session.questionIds.length) % 2 === 0} name={session.mode === 'group' ? session.players[session.currentPlayer]!.name : ''} onAnswer={answer} onPause={() => setScreen('home')}/>}
       {screen === 'analysis' && <section className="analysis" role="status"><div className="analysis-symbol"><img src="./dilemma-mark.png" alt=""/></div><h1>{t.analysis}</h1><p>{t.analysisCopy}</p><div className="loading-line"/></section>}
-      {screen === 'result' && session && <ProfileView portrait={{ profile: scoreAnswers(questions, session.players[0]!.answers), name: session.mode === 'solo' ? '' : session.players[0]!.name, length: session.length }} locale={locale}><button className="primary" onClick={() => setScreen('setup')}>{t.replay}<span>↻</span></button></ProfileView>}
+      {screen === 'result' && session && (session.mode === 'group' && !selectedPlayer ? <GroupResults session={session} locale={locale} onPlayer={id => { setSelectedPlayer(id); window.scrollTo({top:0}); }} onReplay={() => setScreen('setup')}/> : <>{session.mode === 'group' && <button className="text-button group-back" onClick={() => setSelectedPlayer(null)}>← {t.groupBack}</button>}<ProfileView portrait={{ profile: scoreAnswers(questions, (session.players.find(p => p.id === selectedPlayer) ?? session.players[0]!).answers), name: session.mode === 'solo' ? '' : (session.players.find(p => p.id === selectedPlayer) ?? session.players[0]!).name, length: session.length }} locale={locale}><button className="primary" onClick={() => setScreen('setup')}>{t.replay}<span>↻</span></button></ProfileView></>)}
     </main><footer><span>{t.brand}. <span className="muted">FR / EN</span></span><span>{t.tagline}</span></footer>
   </div>;
 }
