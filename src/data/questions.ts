@@ -1,3 +1,5 @@
+import { packQuestions } from "./packs";
+import { balancedVariant } from "../core/balanced";
 import type { Axis, Localized, Question, Theme, Weights } from "../core/types";
 const l = (fr: string, en: string): Localized => ({ fr, en });
 function q(
@@ -1102,3 +1104,6 @@ export const questions: Question[] = [
     ),
   ),
 ];
+
+// Keep original IDs for saved games; new games use single-axis calibrated versions.
+questions.push(...questions.map(balancedVariant), ...packQuestions);

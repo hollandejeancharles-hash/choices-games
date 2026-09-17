@@ -1,3 +1,5 @@
+import { balancedDeck } from "../core/balanced";
+import { PACKS, type PackId } from "../data/packs";
 import type {
   Answer,
   Game,
@@ -35,6 +37,8 @@ export function initialLocale(): Locale {
 }
 export interface Session extends Game {
   seed: number;
+  pack?: PackId;
+  deck?: string[];
 }
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -76,6 +80,21 @@ export function parseSession(raw: string | null): Session | null {
       data.currentPlayer >= data.players.length
     )
       return null;
+    if (
+      data.pack !== undefined &&
+      (!PACKS.includes(data.pack as PackId) ||
+        !Array.isArray(data.deck) ||
+        data.deck.length !== data.length ||
+        new Set(data.deck).size !== data.length ||
+        data.deck.some(
+          (id) =>
+            typeof id !== "string" ||
+            !questions.some((q) => q.id === id && q.pack === data.pack),
+        ) ||
+        data.questionIds.some((id, i) => id !== (data.deck as string[])[i]))
+    )
+      return null;
+    if (data.pack === undefined && data.deck !== undefined) return null;
     const players: Player[] = [];
     for (const p of data.players) {
       if (
@@ -124,6 +143,9 @@ export function parseSession(raw: string | null): Session | null {
       mode: data.mode as Game["mode"],
       length: data.length as GameLength,
       seed: data.seed,
+      ...(data.pack
+        ? { pack: data.pack as PackId, deck: data.deck as string[] }
+        : {}),
       questionIds: data.questionIds as string[],
       players,
       currentPlayer: data.currentPlayer,
@@ -152,6 +174,7 @@ export function createSession(
   names: string[],
   length: GameLength,
   seed: number,
+  pack: PackId = "general",
 ): Session {
   if (names.length < 1 || names.length > 6 || ![10, 15, 25].includes(length))
     throw new Error("Invalid game settings");
@@ -160,18 +183,20 @@ export function createSession(
     name: name.trim().slice(0, 40),
     answers: [],
   }));
-  const first = selectQuestion(
-    shuffledBank(seed),
-    players.map((p) => p.answers),
+  if (!PACKS.includes(pack)) throw new Error("Invalid pack");
+  const deck = balancedDeck(
+    shuffledBank(seed).filter((q) => q.pack === pack),
+    length,
   );
-  if (!first) throw new Error("Question bank is empty");
   return {
     version: 1,
     mode: names.length === 1 ? "solo" : "group",
     length,
     players,
     seed,
-    questionIds: [first.id],
+    pack,
+    deck,
+    questionIds: [deck[0]!],
     currentPlayer: 0,
   };
 }
@@ -201,8 +226,13 @@ export function recordAnswer(
     return { ...session, players, currentPlayer: session.currentPlayer + 1 };
   const updated = { ...session, players, currentPlayer: 0 };
   if (isComplete(updated)) return updated;
+  if (session.deck) {
+    const nextId = session.deck[session.questionIds.length];
+    if (!nextId) throw new Error("Question deck exhausted");
+    return { ...updated, questionIds: [...session.questionIds, nextId] };
+  }
   const next = selectQuestion(
-    shuffledBank(session.seed),
+    shuffledBank(session.seed).filter((q) => !q.pack),
     players.map((p) => p.answers),
     session.questionIds,
   );

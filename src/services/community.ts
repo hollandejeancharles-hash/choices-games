@@ -1,3 +1,4 @@
+import { balancedVariant } from "../core/balanced";
 import type { Axis, Locale, Question } from "../core/types";
 import { AXES } from "../core/types";
 import { questions } from "../data/questions";
@@ -92,7 +93,7 @@ export async function loadCommunityQuestions() {
           isCommunityQuestion(q) &&
           !questions.some((existing) => existing.id === q.id)
         )
-          questions.push(q);
+          questions.push(q, balancedVariant(q));
   };
   try {
     merge(JSON.parse(localStorage.getItem(CACHE) || "[]"));

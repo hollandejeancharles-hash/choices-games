@@ -45,7 +45,8 @@ export function scoreAnswers(
     if (!q || seen.has(q.id) || (answer.option !== 0 && answer.option !== 1))
       throw new Error("Unknown, duplicate or invalid answer");
     seen.add(q.id);
-    const multiplier = timingMultiplier(answer.durationMs);
+    const timedMultiplier = timingMultiplier(answer.durationMs);
+    const multiplier = q.stableScoring ? 1 : timedMultiplier;
     const weights = q.options[answer.option].weights;
     for (const axis of AXES) {
       const weight = weights[axis] ?? 0;
@@ -54,7 +55,7 @@ export function scoreAnswers(
         Math.max(
           Math.abs(q.options[0].weights[axis] ?? 0),
           Math.abs(q.options[1].weights[axis] ?? 0),
-        ) * 1.25;
+        ) * (q.stableScoring ? 1 : 1.25);
       if (!weight) continue;
       totals[axis] += weight * multiplier;
       mass[axis] += Math.abs(weight * multiplier);

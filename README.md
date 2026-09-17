@@ -4,7 +4,7 @@
 
 **Deux choix. Aucune réponse facile.** Un jeu bilingue de dilemmes moraux, en solo ou à 2–6 sur le même appareil. Ancien nom : Choices ; le dépôt GitHub conserve son nom `choices-games`.
 
-60 situations fictives opposent des valeurs et des conséquences coûteuses : justice contre protection, loyauté contre autonomie, présent contre avenir. Certaines évoquent la mort ou l'injustice, sans descriptions graphiques. Le scénario du centre commercial est inclus. Les issues imposées sont des conventions de jeu, pas des conseils pour une situation réelle.
+150 situations fictives (60 générales et 30 pour chacun des packs Amitié, Couple et Famille) opposent des valeurs et des conséquences coûteuses : justice contre protection, loyauté contre autonomie, présent contre avenir. Certaines évoquent la mort ou l'injustice, sans descriptions graphiques. Le scénario du centre commercial est inclus. Les issues imposées sont des conventions de jeu, pas des conseils pour une situation réelle.
 
 ## Lancer le projet
 
@@ -31,7 +31,7 @@ Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé et Vites
 ## Fonctionnalités
 
 - FR/EN détecté depuis le navigateur, modifiable pendant la partie ; nom Dilemme/Dilemma selon la langue.
-- Parties adaptatives de 10, 15 ou 25 questions. Ordre des options alterné pour limiter le biais de position.
+- Parties équilibrées de 10, 15 ou 25 questions, avec un pack présélectionné. Ordre des options alterné pour limiter le biais de position.
 - Clavier ←/→, clic, glissement horizontal sur les cartes tactiles, focus visible, lien d'évitement, réduction des animations.
 - Thèmes clair et sombre ; responsive pour téléphone et ordinateur.
 - Pause explicite et pause quand l'onglet est masqué. Le chronomètre commence quand le dilemme est révélé.
@@ -71,15 +71,13 @@ public/
 
 Aucun pôle n'est supérieur à l'autre. Les poids sont des choix éditoriaux sur une tension donnée, pas une évaluation morale de la personne. Un même arbitrage pourrait avoir plusieurs motivations que ce jeu ne peut pas distinguer.
 
-Chaque option touche 1 à 3 axes avec des poids non nuls de −3 à +3. Moins de 3 secondes : ×1,25 ; plus de 15 secondes : ×0,75 ; sinon ×1. Les temps de pause et d'onglet masqué sont exclus. La lecture et les distractions peuvent néanmoins allonger une réponse : l'interface le précise. Après rechargement, la question en attente est révélée à nouveau et son chronomètre repart à zéro.
-
-Pour chaque axe, le score est la somme pondérée divisée par la somme des poids absolus maximaux proposés sur cet axe, multipliés par 1,25, puis ramenée sur [−100,100]. Une option non choisie peut augmenter la capacité, mais ne crée ni preuve ni confiance. La normalisation conserve l'effet du temps, même pour une réponse isolée.
+Les nouvelles parties utilisent un seul axe par question, avec des poids +3/−3 et aucun multiplicateur de vitesse. Le score est la moyenne des choix sur cet axe, ramenée sur [−100,100]. Les durées restent disponibles pour les hésitations. Les anciennes sauvegardes gardent leur moteur historique (poids secondaires et multiplicateur de temps) pour ne pas modifier leurs résultats.
 
 La cohérence vaut `abs(somme des contributions) / somme(abs(contributions))`. La confiance combine nombre de réponses effectives et cohérence : `(1 − exp(−n/3)) × (0,5 + 0,5 × cohérence)`. Un axe sans réponse est inconnu. Un axe touché au moins deux fois, de cohérence inférieure à 0,5, est ambigu.
 
-La sélection moyenne les besoins des joueurs, favorise les axes peu mesurés ou ambigus et ajoute une priorité de couverture aux axes jamais touchés, pour empêcher les contradictions de monopoliser la partie. Elle évite les deux derniers thèmes lorsque possible, exclut les questions déjà répondues et encourage à compléter une paire de cohérence. La graine enregistrée départage les égalités de manière reproductible ; elle ne remplace pas la sélection adaptative par du hasard.
+Le tirage est enregistré dès le début de partie. Dans l’ordre des axes du tableau, les quotas sont [2,2,2,2,1,1] pour 10 questions, [3,3,3,2,2,2] pour 15 et [5,4,4,4,4,4] pour 25. Ils restent identiques quels que soient la graine, le pack et les réponses. Chaque pack thématique contient cinq questions par axe. Le format général utilise des variantes calibrées des 60 questions originales ; les identifiants historiques restent disponibles pour les anciennes sauvegardes.
 
-Les six paires de cohérence mesurent le même axe dans deux contextes. Les signes opposés alimentent les contradictions sans pénalité. La section présente aussi les axes avec une faible cohérence globale ; si une paire n'a pas été entièrement jouée, aucune conclusion spécifique n'en est tirée.
+À choix équivalents par dimension, les scores sont identiques malgré un autre tirage ou une autre vitesse de réponse. Des choix différents peuvent toujours produire un autre portrait : l’équilibrage ne garantit pas une personnalité immuable. La cohérence globale sert à montrer les contradictions des nouvelles parties ; les anciennes parties conservent aussi leurs paires de cohérence et leur sélection adaptative.
 
 Les archétypes sont classés par distance euclidienne dans les six dimensions. La rareté est `prior / somme(prior) × 100`, une distribution théorique éditoriale. La compatibilité est `100 × (1 − distance / (200 × √6))`, arrondie et bornée. Une question divise au maximum lorsqu'elle partage le groupe également ; seules les questions répondues par tous comptent.
 
@@ -102,7 +100,7 @@ q(
 );
 ```
 
-Le helper attribue +3 à l'option A et −3 à l'option B sur l'axe principal. Pour opposer deux axes distincts ou varier les poids, ajouter directement un objet `Question` typé. Le contenu reste indépendant du moteur. Les sept thèmes disponibles sont `travel`, `work`, `relationships`, `powers`, `everyday`, `absurd`, `ethics`.
+Le helper attribue +3 à l'option A et −3 à l'option B sur l'axe principal. Les variantes des nouvelles parties ne conservent que cet axe principal. Pour enrichir un pack, ajouter une ligne bilingue dans `src/data/packs.ts`, en conservant les quotas disponibles. Le contenu reste indépendant du moteur. Les sept thèmes disponibles sont `travel`, `work`, `relationships`, `powers`, `everyday`, `absurd`, `ethics`.
 
 Exiger deux coûts explicites, éviter la réponse caricaturalement vertueuse, adapter l'anglais naturellement et ne pas insérer de détails graphiques. Une paire partage `consistency.pairId` et `consistency.axis` ainsi que la convention de signe. Mettre à jour le test de paires si le catalogue gagne des paires supplémentaires.
 

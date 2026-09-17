@@ -1,3 +1,4 @@
+import { packNames, packDescriptions, PACKS, type PackId } from "./data/packs";
 import { ProposeDilemma, AdminDilemmas } from "./components/Community";
 import { Gallery } from "./components/Gallery";
 import { AnimatedLogo } from "./components/ui/animated-logo";
@@ -48,6 +49,7 @@ export default function App() {
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(loadSession);
   const [storageError, setStorageError] = useState(false);
+  const [pack, setPack] = useState<PackId>("general");
   const [mode, setMode] = useState<"solo" | "group">("solo");
   const [length, setLength] = useState<GameLength>(15),
     [count, setCount] = useState(2);
@@ -109,6 +111,7 @@ export default function App() {
         ),
         length,
         seed,
+        pack,
       ),
     );
     setScreen("handoff");
@@ -149,6 +152,31 @@ export default function App() {
               <span className="brand-period">.</span>
             </span>
           </button>
+          <nav
+            className="header-nav"
+            aria-label={
+              locale === "fr" ? "Découvrir Dilemme" : "Explore Dilemma"
+            }
+          >
+            <button
+              aria-current={screen === "gallery" ? "page" : undefined}
+              onClick={() => {
+                leaveShare();
+                setScreen("gallery");
+              }}
+            >
+              {locale === "fr" ? "Les dix personnages" : "The ten characters"}
+            </button>
+            <button
+              aria-current={screen === "propose" ? "page" : undefined}
+              onClick={() => {
+                leaveShare();
+                setScreen("propose");
+              }}
+            >
+              {locale === "fr" ? "Proposer un dilemme" : "Suggest a dilemma"}
+            </button>
+          </nav>
           <div className="header-tools">
             <div className="locale-switch" aria-label={t.language}>
               {(["fr", "en"] as const).map((l) => (
@@ -212,7 +240,7 @@ export default function App() {
                   </button>
                 )}
                 <div className="hero-facts">
-                  <span>{`${questions.length} ${locale === "fr" ? "dilemmes" : "dilemmas"}`}</span>
+                  <span>{`${questions.filter((q) => q.pack).length} ${locale === "fr" ? "dilemmes" : "dilemmas"}`}</span>
                   <span>{t.feature2}</span>
                   <span>{t.feature3}</span>
                 </div>
@@ -239,30 +267,11 @@ export default function App() {
                   <span>{t.exampleFoot}</span>
                 </div>
                 <span className="art-caption">
-                  01 — 60 <span>↗</span>
+                  01 — {questions.filter((q) => q.pack).length} <span>↗</span>
                 </span>
               </div>
               <p className="content-note">{t.note}</p>
             </section>
-          )}
-          {screen === "home" && (
-            <nav
-              className="home-community"
-              aria-label={
-                locale === "fr" ? "Découvrir Dilemme" : "Explore Dilemma"
-              }
-            >
-              <button onClick={() => setScreen("gallery")}>
-                {locale === "fr"
-                  ? "Les dix personnages ↗"
-                  : "Meet the ten characters ↗"}
-              </button>
-              <button onClick={() => setScreen("propose")}>
-                {locale === "fr"
-                  ? "Proposer un dilemme ↗"
-                  : "Suggest a dilemma ↗"}
-              </button>
-            </nav>
           )}
           {screen === "propose" && (
             <ProposeDilemma locale={locale} onBack={() => setScreen("home")} />
@@ -300,6 +309,33 @@ export default function App() {
                   </button>
                 ))}
               </div>
+              <fieldset className="pack-selector">
+                <legend>
+                  {locale === "fr" ? "Choisis ton pack" : "Choose your pack"}
+                </legend>
+                <div className="pack-grid">
+                  {PACKS.map((id) => (
+                    <button
+                      key={id}
+                      className={`pack-card ${pack === id ? "active" : ""}`}
+                      aria-pressed={pack === id}
+                      onClick={() => setPack(id)}
+                    >
+                      <strong>{packNames[id][locale]}</strong>
+                      <span>{packDescriptions[id][locale]}</span>
+                      <small>
+                        {questions.filter((q) => q.pack === id).length}{" "}
+                        {t.questions}
+                      </small>
+                    </button>
+                  ))}
+                </div>
+                <p className="fine-print">
+                  {locale === "fr"
+                    ? "Un seul pack par partie. Les six dimensions sont mesurées avec des quotas fixes pour chaque format, à une question près. Le temps de réponse n’influence plus ton portrait."
+                    : "One pack per game. The six dimensions use fixed quotas for each length, differing by at most one question. Response time no longer affects your portrait."}
+                </p>
+              </fieldset>
               <fieldset>
                 <legend>{t.duration}</legend>
                 <div className="length-grid">
@@ -498,24 +534,6 @@ export default function App() {
             {t.brand}. <span className="muted">FR / EN</span>
           </span>
           <nav>
-            <button
-              className="text-button"
-              onClick={() => {
-                leaveShare();
-                setScreen("gallery");
-              }}
-            >
-              {locale === "fr" ? "Les personnages" : "The characters"}
-            </button>
-            <button
-              className="text-button"
-              onClick={() => {
-                leaveShare();
-                setScreen("propose");
-              }}
-            >
-              {locale === "fr" ? "Proposer un dilemme" : "Suggest a dilemma"}
-            </button>
             <button
               className="text-button"
               onClick={() => {

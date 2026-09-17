@@ -26,6 +26,8 @@ export interface Option {
   weights: Weights;
 }
 export interface Question {
+  pack?: "general" | "friendship" | "couple" | "family";
+  stableScoring?: boolean;
   id: string;
   theme: Theme;
   prompt: Localized;
