@@ -1,5 +1,7 @@
 # Dilemme / Dilemma
 
+**[Jouer à Dilemme](https://hollandejeancharles-hash.github.io/choices-games/)**
+
 **Deux choix. Aucune réponse facile.** Un jeu bilingue de dilemmes moraux, en solo ou à 2–6 sur le même appareil. Ancien nom : Choices ; le dépôt GitHub conserve son nom `choices-games`.
 
 60 situations fictives opposent des valeurs et des conséquences coûteuses : justice contre protection, loyauté contre autonomie, présent contre avenir. Certaines évoquent la mort ou l'injustice, sans descriptions graphiques. Le scénario du centre commercial est inclus. Les issues imposées sont des conventions de jeu, pas des conseils pour une situation réelle.
@@ -114,7 +116,7 @@ Ajouter un objet `Archetype` dans `src/data/archetypes.ts` : identifiant unique,
 
 Le fragment `#r=…` contient un JSON versionné encodé en base64url : scores, compteurs, cohérence, marqueurs de contradiction, durée du format et langue. Il ne contient ni prénom ni réponses détaillées. Le décodage valide types et bornes ; un lien corrompu affiche un message et permet de jouer. L'encodage n'est ni un chiffrement ni une signature.
 
-Un lien `localhost`/`127.0.0.1` fonctionne seulement sur l'appareil qui sert le jeu. Pour partager avec d'autres personnes, héberger le dossier `dist/` sur un hébergement statique HTTPS. Le `base` relatif permet de servir le jeu dans un sous-dossier, notamment sous le nom du dépôt. Aucun déploiement ni workflow GitHub Pages n'est activé automatiquement.
+Un lien `localhost`/`127.0.0.1` fonctionne seulement sur l'appareil qui sert le jeu. Pour partager avec d'autres personnes, héberger le dossier `dist/` sur un hébergement statique HTTPS. Le `base` relatif permet de servir le jeu dans un sous-dossier, notamment sous le nom du dépôt. Le workflow `.github/workflows/deploy-pages.yml` lance les tests et le build à chaque push sur `main`, puis publie `dist/` sur GitHub Pages. Un échec de test ou de build bloque le déploiement.
 
 ## Identité visuelle
 
