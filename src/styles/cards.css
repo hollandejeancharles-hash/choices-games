@@ -1,0 +1,66 @@
+/* Tonal cards: one hue for the surface, copy, symbols and selection. */
+.mode-card {
+  --card-bg: var(--color-emerald-100);
+  --card-hover: var(--color-emerald-200);
+  --card-ink: var(--color-emerald-700);
+}
+.mode-card:nth-child(2),
+.length-card:nth-child(2),
+.choice-1 {
+  --card-bg: var(--color-fresh-sky-100);
+  --card-hover: var(--color-fresh-sky-200);
+  --card-ink: var(--color-fresh-sky-700);
+}
+.length-card {
+  --card-bg: var(--color-sunflower-gold-100);
+  --card-hover: var(--color-sunflower-gold-200);
+  --card-ink: var(--color-sunflower-gold-700);
+}
+.length-card:nth-child(3) {
+  --card-bg: var(--color-tangerine-dream-100);
+  --card-hover: var(--color-tangerine-dream-200);
+  --card-ink: var(--color-tangerine-dream-700);
+}
+.choice-0 {
+  --card-bg: var(--color-vibrant-coral-100);
+  --card-hover: var(--color-vibrant-coral-200);
+  --card-ink: var(--color-vibrant-coral-600);
+}
+:is(.mode-card, .length-card, .choice):is(.mode-card, .length-card, .choice) {
+  background: var(--card-bg);
+  color: var(--card-ink);
+  border: 2px solid transparent;
+  border-radius: 20px;
+  box-shadow: none;
+}
+:is(.mode-card, .length-card, .choice) :is(strong, small, span) {
+  color: inherit;
+}
+.mode-card strong {
+  font-size: clamp(24px, 2.5vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+.choice .choice-text {
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+:is(.mode-card, .length-card, .choice):hover:not(:disabled) {
+  background: var(--card-hover);
+  border-color: transparent;
+  box-shadow: none;
+}
+:is(.mode-card, .length-card).active,
+.choice.chosen {
+  background: var(--card-bg) !important;
+  color: var(--card-ink);
+  border-color: var(--card-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--card-ink);
+}
+:root :is(.mode-card, .length-card).active > span:first-child,
+.choice.chosen :is(.choice-label, .choice-bottom) {
+  color: var(--card-ink);
+}
+:is(.mode-card, .length-card, .choice):focus-visible {
+  outline-color: var(--card-ink);
+}
