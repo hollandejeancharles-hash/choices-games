@@ -1,17 +1,3 @@
-.online-home-link {
-  display: block;
-  background: none;
-  border: 0;
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 22px;
-  padding: 4px 0;
-  font-weight: 650;
-  text-align: left;
-}
-.online-home-link span {
-  margin-left: 12px;
-}
 .online-entry,
 .online-lobby {
   max-width: 1060px;

@@ -252,15 +252,6 @@ export default function App() {
                   {t.start}
                   <span aria-hidden="true">↗</span>
                 </GlowButton>
-                <button
-                  className="online-home-link"
-                  onClick={() => setScreen("online")}
-                >
-                  {locale === "fr"
-                    ? "Jouer chacun sur son téléphone"
-                    : "Play on separate phones"}{" "}
-                  <span aria-hidden="true">↗</span>
-                </button>
                 {session && (
                   <button
                     className="resume"
