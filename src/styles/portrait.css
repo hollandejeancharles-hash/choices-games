@@ -343,3 +343,44 @@
     filter: none;
   }
 }
+
+/* Keep every text role on the dark-side cards in the same tonal palette. */
+.portrait-redesign .bonus-dark {
+  --muted: var(--color-vibrant-coral-700);
+}
+:root[data-theme="dark"] .portrait-redesign .bonus-dark {
+  --muted: #e3b7b0;
+  --line: #63423f;
+  --soft: #442d30;
+  --accent: var(--color-vibrant-coral-300);
+  background: #302328;
+  color: var(--color-vibrant-coral-100);
+  border: 1px solid var(--line);
+}
+:root[data-theme="dark"]
+  .portrait-redesign
+  .bonus-dark
+  :is(.eyebrow, .fine-print, .bonus-score > span) {
+  color: var(--muted);
+}
+:root[data-theme="dark"] .portrait-redesign .fiction-card {
+  --muted: #c6bfaf;
+  --line: #504839;
+  background: #292720;
+  color: var(--color-sunflower-gold-100);
+  border-color: var(--line);
+}
+:root[data-theme="dark"] .fiction-card .fiction-traits {
+  background: #45381f;
+  color: var(--color-sunflower-gold-200);
+}
+:root[data-theme="dark"] .fiction-downside p {
+  color: var(--muted);
+}
+:root[data-theme="dark"] .portrait-redesign .profile-heading {
+  background: #1d303d;
+  color: var(--color-fresh-sky-100);
+}
+:root[data-theme="dark"] .portrait-redesign .secondary-archetype strong {
+  color: inherit;
+}
