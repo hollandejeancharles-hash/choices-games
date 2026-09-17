@@ -1,6 +1,6 @@
-# Choices
+# Dilemme / Dilemma
 
-Jeu bilingue « Tu préfères… » entièrement côté navigateur. Étape 1 : moteur et socle technique. L'interface actuelle est un écran temporaire, pas encore un jeu jouable.
+Jeu bilingue « Tu préfères… » entièrement côté navigateur. Moteur et catalogue bilingue disponibles. L'interface actuelle est un écran temporaire, pas encore un jeu jouable.
 
 ## Développement
 
