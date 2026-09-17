@@ -284,109 +284,174 @@ export default function App() {
           )}
           {screen === "home" && <Testimonials locale={locale} />}
           {screen === "setup" && (
-            <section className="setup page-in">
+            <section className="setup setup-redesign page-in">
               <button className="text-button" onClick={() => setScreen("home")}>
                 ← {t.back}
               </button>
-              <span className="eyebrow">01 / {t.brand}</span>
-              <h1>{t.setupTitle}</h1>
-              <p className="lead">{t.setupIntro}</p>
-              <div className="mode-grid">
-                {(["solo", "group"] as const).map((m) => (
-                  <button
-                    key={m}
-                    className={`mode-card ${mode === m ? "active" : ""}`}
-                    aria-pressed={mode === m}
-                    onClick={() => setMode(m)}
-                  >
-                    <span>{m === "solo" ? "◉" : "◉ ◉"}</span>
-                    <strong>{t[m]}</strong>
-                    <small>{t[m === "solo" ? "soloDesc" : "groupDesc"]}</small>
-                  </button>
-                ))}
-              </div>
-              <fieldset className="pack-selector">
-                <legend>
-                  {locale === "fr" ? "Choisis ton pack" : "Choose your pack"}
-                </legend>
-                <div className="pack-grid">
-                  {PACKS.map((id) => (
-                    <button
-                      key={id}
-                      className={`pack-card ${pack === id ? "active" : ""}`}
-                      aria-pressed={pack === id}
-                      onClick={() => setPack(id)}
-                    >
-                      <strong>{packNames[id][locale]}</strong>
-                      <span>{packDescriptions[id][locale]}</span>
-                      <small>
-                        {questions.filter((q) => q.pack === id).length}{" "}
-                        {t.questions}
-                      </small>
-                    </button>
-                  ))}
-                </div>
-                <p className="fine-print">
+              <div className="setup-heading">
+                <span className="eyebrow">
                   {locale === "fr"
-                    ? "Un seul pack par partie. Les six dimensions sont mesurées avec des quotas fixes pour chaque format, à une question près. Le temps de réponse n’influence plus ton portrait."
-                    : "One pack per game. The six dimensions use fixed quotas for each length, differing by at most one question. Response time no longer affects your portrait."}
+                    ? "À CHAQUE PARTIE, UN NOUVEL ANGLE"
+                    : "A NEW ANGLE, EVERY GAME"}
+                </span>
+                <h1>
+                  {locale === "fr"
+                    ? "À toi de choisir le terrain."
+                    : "Choose your playground."}
+                </h1>
+                <p>
+                  {locale === "fr"
+                    ? "Des liens qui comptent. Des choix qui bousculent. Compose ta partie."
+                    : "Real connections. Tough choices. Make this game yours."}
                 </p>
-              </fieldset>
-              <fieldset>
-                <legend>{t.duration}</legend>
-                <div className="length-grid">
-                  {([10, 15, 25] as const).map((n, i) => (
-                    <button
-                      key={n}
-                      className={`length-card ${length === n ? "active" : ""}`}
-                      aria-pressed={length === n}
-                      onClick={() => setLength(n)}
-                    >
-                      <strong>{n}</strong>
-                      <span>{t.questions}</span>
-                      <small>{[t.short, t.standard, t.long][i]}</small>
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-              {mode === "group" && (
-                <div className="group-setup">
-                  <label>
-                    {t.players}
-                    <select
-                      value={count}
-                      onChange={(e) => setCount(Number(e.target.value))}
-                    >
-                      {[2, 3, 4, 5, 6].map((n) => (
-                        <option key={n}>{n}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="name-grid">
-                    {Array.from({ length: count }, (_, i) => (
-                      <label key={i}>
-                        {t.player} {i + 1}
-                        <input
-                          maxLength={40}
-                          value={names[i]}
-                          placeholder={`${t.name} ${i + 1}`}
-                          onChange={(e) =>
-                            setNames(
-                              names.map((name, j) =>
-                                j === i ? e.target.value : name,
-                              ),
-                            )
-                          }
-                        />
-                      </label>
+              </div>
+              <div className="setup-layout">
+                <fieldset className="setup-packs">
+                  <legend>
+                    <span className="setup-step">01</span>
+                    {locale === "fr"
+                      ? "De quoi on parle ?"
+                      : "What’s on the table?"}
+                  </legend>
+                  <div className="setup-pack-grid">
+                    {PACKS.map((id, i) => (
+                      <button
+                        key={id}
+                        className={`setup-pack setup-pack--${id}`}
+                        aria-pressed={pack === id}
+                        onClick={() => setPack(id)}
+                      >
+                        <span className="setup-pack-top">
+                          <span
+                            className="setup-pack-symbol"
+                            aria-hidden="true"
+                          >
+                            {["✳", "◎", "♡", "⌂"][i]}
+                          </span>
+                          <span className="setup-pack-check" aria-hidden="true">
+                            {pack === id ? "✓" : "+"}
+                          </span>
+                        </span>
+                        <strong>{packNames[id][locale]}</strong>
+                        <span className="setup-pack-description">
+                          {packDescriptions[id][locale]}
+                        </span>
+                        <span className="setup-pack-bottom">
+                          <small>
+                            {questions.filter((q) => q.pack === id).length}{" "}
+                            {locale === "fr"
+                              ? "dilemmes à explorer"
+                              : "dilemmas to explore"}
+                          </small>
+                          <span aria-hidden="true">↗</span>
+                        </span>
+                      </button>
                     ))}
                   </div>
-                </div>
-              )}
-              <button className="primary" onClick={start}>
-                {t.launch}
-                <span>→</span>
-              </button>
+                </fieldset>
+                <aside
+                  className="setup-settings"
+                  aria-label={locale === "fr" ? "Ta partie" : "Your game"}
+                >
+                  <fieldset>
+                    <legend>
+                      <span className="setup-step">02</span>
+                      {locale === "fr" ? "Avec qui ?" : "Who’s playing?"}
+                    </legend>
+                    <div className="setup-mode-switch">
+                      {(["solo", "group"] as const).map((m) => (
+                        <button
+                          key={m}
+                          aria-pressed={mode === m}
+                          onClick={() => setMode(m)}
+                        >
+                          {t[m]}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="setup-help">
+                      {t[mode === "solo" ? "soloDesc" : "groupDesc"]}
+                    </p>
+                  </fieldset>
+                  {mode === "group" && (
+                    <div className="group-setup">
+                      <label>
+                        {t.players}
+                        <select
+                          value={count}
+                          onChange={(e) => setCount(Number(e.target.value))}
+                        >
+                          {[2, 3, 4, 5, 6].map((n) => (
+                            <option key={n}>{n}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <div className="name-grid">
+                        {Array.from({ length: count }, (_, i) => (
+                          <label key={i}>
+                            {t.player} {i + 1}
+                            <input
+                              maxLength={40}
+                              value={names[i]}
+                              placeholder={`${t.name} ${i + 1}`}
+                              onChange={(e) =>
+                                setNames(
+                                  names.map((name, j) =>
+                                    j === i ? e.target.value : name,
+                                  ),
+                                )
+                              }
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <fieldset>
+                    <legend>
+                      <span className="setup-step">03</span>
+                      {locale === "fr"
+                        ? "Jusqu’où on va ?"
+                        : "How deep do we go?"}
+                    </legend>
+                    <div className="setup-lengths">
+                      {([10, 15, 25] as const).map((n, i) => (
+                        <button
+                          key={n}
+                          aria-pressed={length === n}
+                          onClick={() => setLength(n)}
+                        >
+                          <strong>{n}</strong>
+                          <span>{t.questions}</span>
+                          <small>{[t.short, t.standard, t.long][i]}</small>
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <div className="setup-recap" aria-live="polite">
+                    <span>
+                      {locale === "fr" ? "AU PROGRAMME" : "YOUR LINE-UP"}
+                    </span>
+                    <strong>{packNames[pack][locale]}</strong>
+                    <p>
+                      {length} {t.questions} ·{" "}
+                      {mode === "solo"
+                        ? t.solo
+                        : `${count} ${locale === "fr" ? "joueurs" : "players"}`}
+                    </p>
+                  </div>
+                  <button className="primary setup-launch" onClick={start}>
+                    {t.launch}
+                    <span>→</span>
+                  </button>
+                  <p className="setup-endnote">
+                    {locale === "fr"
+                      ? "Suis ton instinct. Prends le temps qu’il te faut."
+                      : "Trust your instinct. Take all the time you need."}
+                  </p>
+                </aside>
+              </div>
             </section>
           )}
           {screen === "handoff" && session && (
