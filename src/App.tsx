@@ -1,3 +1,4 @@
+import { AnimatedLogo } from "./components/ui/animated-logo";
 import { GlowButton } from "./components/ui/glow";
 import { useEffect, useState } from "react";
 import type { GameLength } from "./core/types";
@@ -215,7 +216,7 @@ export default function App() {
                 </div>
                 <div className="example-card">
                   <span className="eyebrow">{t.exampleTag}</span>
-                  <img src="./dilemme-logo.png" alt="" />
+                  <AnimatedLogo />
                   <p>{t.example}</p>
                   <div className="example-rule" aria-hidden="true">
                     <i />
@@ -355,7 +356,7 @@ export default function App() {
           {screen === "analysis" && (
             <section className="analysis" role="status">
               <div className="analysis-symbol">
-                <img src="./dilemme-logo.png" alt="" />
+                <AnimatedLogo compact />
               </div>
               <h1>{t.analysis}</h1>
               <p>{t.analysisCopy}</p>

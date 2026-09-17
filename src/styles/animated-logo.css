@@ -1,0 +1,85 @@
+.animated-logo {
+  --logo-duration: 1.8s;
+  display: grid;
+  place-items: center;
+  width: 122px;
+  height: 122px;
+  border-radius: 28%;
+  background: #faf5eb;
+  margin: 18px auto 16px;
+}
+.animated-logo svg {
+  width: 76%;
+  overflow: visible;
+}
+.animated-logo__assembly {
+  transform-origin: 160px 160px;
+  animation: logo-settle var(--logo-duration) ease-in-out both;
+}
+.animated-logo__navy {
+  fill: #191e27;
+  transform-origin: 160px 160px;
+  animation: logo-navy-in var(--logo-duration) cubic-bezier(0.22, 0.75, 0.25, 1)
+    both;
+}
+.animated-logo__coral {
+  fill: #fa635f;
+  opacity: 0.88;
+  transform-origin: 160px 160px;
+  animation: logo-coral-in var(--logo-duration)
+    cubic-bezier(0.22, 0.75, 0.25, 1) both;
+}
+.animated-logo--quick {
+  --logo-duration: 1.3s;
+}
+@keyframes logo-navy-in {
+  0% {
+    transform: translateX(-75px) rotate(-14deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  64%,
+  100% {
+    transform: translateX(0) rotate(0);
+    opacity: 1;
+  }
+}
+@keyframes logo-coral-in {
+  0%,
+  10% {
+    transform: translateX(75px) rotate(14deg);
+    opacity: 0;
+  }
+  28% {
+    opacity: 0.88;
+  }
+  66%,
+  100% {
+    transform: translateX(0) rotate(0);
+    opacity: 0.88;
+  }
+}
+@keyframes logo-settle {
+  0%,
+  57% {
+    transform: scale(1);
+  }
+  72% {
+    transform: scale(1.045, 0.97);
+  }
+  85% {
+    transform: scale(0.99, 1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animated-logo__assembly,
+  .animated-logo__navy,
+  .animated-logo__coral {
+    animation: none;
+  }
+}
