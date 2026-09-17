@@ -5,8 +5,7 @@
   --card-ink: var(--color-emerald-700);
 }
 .mode-card:nth-child(2),
-.length-card:nth-child(2),
-.choice-1 {
+.length-card:nth-child(2) {
   --card-bg: var(--color-fresh-sky-100);
   --card-hover: var(--color-fresh-sky-200);
   --card-ink: var(--color-fresh-sky-700);
@@ -21,10 +20,12 @@
   --card-hover: var(--color-tangerine-dream-200);
   --card-ink: var(--color-tangerine-dream-700);
 }
-.choice-0 {
-  --card-bg: var(--color-vibrant-coral-100);
-  --card-hover: var(--color-vibrant-coral-200);
-  --card-ink: var(--color-vibrant-coral-600);
+.choice {
+  --card-bg: var(--color-fresh-sky-100);
+  --card-ink: var(--color-fresh-sky-700);
+  --card-hover: color-mix(in srgb, var(--card-bg), var(--card-ink) 10%);
+  --card-selected: color-mix(in srgb, var(--card-bg), var(--card-ink) 17%);
+  transition: background-color 180ms ease;
 }
 :is(.mode-card, .length-card, .choice):is(.mode-card, .length-card, .choice) {
   background: var(--card-bg);
@@ -50,8 +51,7 @@
   border-color: transparent;
   box-shadow: none;
 }
-:is(.mode-card, .length-card).active,
-.choice.chosen {
+:is(.mode-card, .length-card).active {
   background: var(--card-bg) !important;
   color: var(--card-ink);
   border-color: var(--card-ink) !important;
@@ -63,4 +63,24 @@
 }
 :is(.mode-card, .length-card, .choice):focus-visible {
   outline-color: var(--card-ink);
+}
+
+/* Both answers carry exactly the same visual weight. */
+.choice.choice:hover:not(:disabled) {
+  transform: none;
+}
+.choice.choice.chosen {
+  background: var(--card-selected);
+  color: var(--card-ink);
+  border-color: transparent;
+  box-shadow: none;
+}
+.choice.choice:focus-visible {
+  outline: 2px dashed var(--card-ink);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .choice {
+    transition: none;
+  }
 }
