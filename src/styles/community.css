@@ -230,3 +230,24 @@ footer nav {
     flex-shrink: 0;
   }
 }
+@media (max-width: 400px) {
+  .app-shell header .brand {
+    font-size: 23px;
+    gap: 6px;
+  }
+  .app-shell header .brand .animated-logo {
+    width: 32px;
+    height: 32px;
+  }
+  .app-shell header .header-tools {
+    gap: 6px;
+  }
+  .app-shell header .locale-switch button {
+    min-width: 32px;
+    padding: 8px 6px;
+  }
+  .app-shell header .theme-button {
+    width: 32px;
+    flex-shrink: 0;
+  }
+}
