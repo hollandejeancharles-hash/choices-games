@@ -37,6 +37,9 @@ export function initialLocale(): Locale {
 }
 export interface Session extends Game {
   seed: number;
+  groupOptions?: { reveal: "round" | "end"; timer: 0 | 20 | 30 };
+  pendingReveal?: number;
+  pendingRecap?: boolean;
   pack?: PackId;
   deck?: string[];
 }
@@ -95,6 +98,15 @@ export function parseSession(raw: string | null): Session | null {
     )
       return null;
     if (data.pack === undefined && data.deck !== undefined) return null;
+    if (
+      data.groupOptions !== undefined &&
+      (data.mode !== "group" ||
+        !record(data.groupOptions) ||
+        !["round", "end"].includes(String(data.groupOptions.reveal)) ||
+        ![0, 20, 30].includes(Number(data.groupOptions.timer)) ||
+        typeof data.groupOptions.timer !== "number")
+    )
+      return null;
     const players: Player[] = [];
     for (const p of data.players) {
       if (
@@ -138,7 +150,36 @@ export function parseSession(raw: string | null): Session | null {
     )
       return null;
     if (complete && data.currentPlayer !== 0) return null;
+    const completedRounds = Math.min(...players.map((p) => p.answers.length));
+    if (
+      data.pendingReveal !== undefined &&
+      (!record(data.groupOptions) ||
+        data.groupOptions.reveal !== "round" ||
+        data.pendingReveal !== completedRounds - 1 ||
+        completedRounds < 1 ||
+        data.currentPlayer !== 0)
+    )
+      return null;
+    if (
+      data.pendingRecap !== undefined &&
+      (data.pendingRecap !== true ||
+        !record(data.groupOptions) ||
+        data.groupOptions.reveal !== "end" ||
+        !complete)
+    )
+      return null;
     return {
+      ...(data.groupOptions
+        ? {
+            groupOptions: data.groupOptions as NonNullable<
+              Session["groupOptions"]
+            >,
+          }
+        : {}),
+      ...(typeof data.pendingReveal === "number"
+        ? { pendingReveal: data.pendingReveal }
+        : {}),
+      ...(data.pendingRecap === true ? { pendingRecap: true } : {}),
       version: 1,
       mode: data.mode as Game["mode"],
       length: data.length as GameLength,
@@ -175,9 +216,16 @@ export function createSession(
   length: GameLength,
   seed: number,
   pack: PackId = "general",
+  groupOptions?: Session["groupOptions"],
 ): Session {
   if (names.length < 1 || names.length > 6 || ![10, 15, 25].includes(length))
     throw new Error("Invalid game settings");
+  if (
+    groupOptions &&
+    (!["round", "end"].includes(groupOptions.reveal) ||
+      ![0, 20, 30].includes(groupOptions.timer))
+  )
+    throw new Error("Invalid group settings");
   const players = names.map((name, i) => ({
     id: String(i + 1),
     name: name.trim().slice(0, 40),
@@ -189,6 +237,7 @@ export function createSession(
     length,
   );
   return {
+    ...(names.length > 1 && groupOptions ? { groupOptions } : {}),
     version: 1,
     mode: names.length === 1 ? "solo" : "group",
     length,
@@ -208,7 +257,12 @@ export function recordAnswer(
   option: 0 | 1,
   durationMs: number,
 ): Session {
-  if (isComplete(session)) return session;
+  if (
+    isComplete(session) ||
+    session.pendingReveal !== undefined ||
+    session.pendingRecap
+  )
+    return session;
   const id = session.questionIds.at(-1)!;
   const current = session.players[session.currentPlayer]!;
   if (current.answers.some((a) => a.questionId === id)) return session;
@@ -224,7 +278,18 @@ export function recordAnswer(
   );
   if (session.currentPlayer < players.length - 1)
     return { ...session, players, currentPlayer: session.currentPlayer + 1 };
-  const updated = { ...session, players, currentPlayer: 0 };
+  const updated: Session = {
+    ...session,
+    players,
+    currentPlayer: 0,
+    ...(session.groupOptions?.reveal === "round"
+      ? { pendingReveal: session.questionIds.length - 1 }
+      : {}),
+    ...(session.groupOptions?.reveal === "end" &&
+    players.every((p) => p.answers.length === session.length)
+      ? { pendingRecap: true }
+      : {}),
+  };
   if (isComplete(updated)) return updated;
   if (session.deck) {
     const nextId = session.deck[session.questionIds.length];
@@ -238,4 +303,18 @@ export function recordAnswer(
   );
   if (!next) throw new Error("Question bank exhausted");
   return { ...updated, questionIds: [...session.questionIds, next.id] };
+}
+
+export function acknowledgeReveal(session: Session): Session {
+  const next = { ...session };
+  delete next.pendingReveal;
+  delete next.pendingRecap;
+  return next;
+}
+export function sessionScreen(
+  session: Session,
+): "round-reveal" | "recap" | "result" | "handoff" {
+  if (session.pendingReveal !== undefined) return "round-reveal";
+  if (session.pendingRecap) return "recap";
+  return isComplete(session) ? "result" : "handoff";
 }

@@ -37,7 +37,9 @@ Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé et Vites
 - Pause explicite et pause quand l'onglet est masqué. Le chronomètre commence quand le dilemme est révélé.
 - Reprise de la dernière partie, langue et thème conservés avec `localStorage`, accès protégés par `try/catch`. Une sauvegarde invalide est ignorée ; un échec d'écriture est signalé.
 - Profils avec 10 archétypes, second archétype, radar, trois tendances, contradictions et décisions longues.
-- Pass-and-play : une question commune, puis chaque joueur répond derrière un écran de passage ; les résultats sont visibles ensemble à la fin.
+- Pass-and-play : une question commune, puis chaque joueur répond derrière un écran de passage. Le groupe choisit une révélation après chaque question (par défaut) ou un récapitulatif de toutes les réponses à la fin. Les portraits viennent ensuite.
+- Chrono groupe optionnel : 20 secondes (par défaut), 30 secondes ou sans limite. À zéro, la réponse reste possible et aucun choix automatique n’est effectué. Les pauses suspendent le chrono ; comme le temps de réponse, il redémarre si la question est rechargée.
+- Les révélations en attente sont sauvegardées ; le récapitulatif reste accessible depuis les résultats du groupe.
 - Comparaison de tous les duos et question la plus divisée. Les égalités sont départagées dans l'ordre du catalogue ou des joueurs ; avec deux joueurs, le même duo est nécessairement le plus proche et le plus contrasté.
 - PNG 1200 × 1400 et lien de portrait autonome.
 

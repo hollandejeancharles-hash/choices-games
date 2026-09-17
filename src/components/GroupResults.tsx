@@ -20,6 +20,11 @@ export function GroupResults({
   const divided = questions.find(
     (q) => q.id === group.mostDivisive?.questionId,
   );
+  const dividedOrder =
+    divided &&
+    (session.seed + session.questionIds.indexOf(divided.id) + 1) % 2 === 0
+      ? ([1, 0] as const)
+      : ([0, 1] as const);
   const names = (ids: readonly string[]) =>
     ids.map((id) => session.players.find((p) => p.id === id)?.name).join(" × ");
   const allEqual = group.pairs.every(
@@ -58,11 +63,12 @@ export function GroupResults({
           <>
             <h2>{divided.prompt[locale]}</h2>
             <div className="division-options">
-              {divided.options.map((o, index) => {
+              {dividedOrder.map((option, index) => {
+                const o = divided.options[option];
                 const picked = session.players.filter(
                   (p) =>
                     p.answers.find((a) => a.questionId === divided.id)
-                      ?.option === index,
+                      ?.option === option,
                 );
                 return (
                   <div key={index}>

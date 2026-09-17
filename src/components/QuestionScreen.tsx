@@ -10,6 +10,7 @@ interface Props {
   onAnswer: (option: 0 | 1, durationMs: number) => void;
   onPause: () => void;
   name: string;
+  timeLimit?: 0 | 20 | 30;
 }
 export function QuestionScreen({
   question,
@@ -20,11 +21,37 @@ export function QuestionScreen({
   onAnswer,
   onPause,
   name,
+  timeLimit = 0,
 }: Props) {
   const t = copy[locale];
   const [paused, setPaused] = useState(() => document.hidden),
     [selected, setSelected] = useState<number | null>(null);
-  const clock = useRef({ start: performance.now(), elapsed: 0, running: true });
+  const clock = useRef({
+    start: performance.now(),
+    elapsed: 0,
+    running: !document.hidden,
+  });
+  const [remaining, setRemaining] = useState<number>(timeLimit);
+  useEffect(() => {
+    if (!timeLimit || paused || selected !== null) return;
+    const update = () =>
+      setRemaining(
+        Math.max(
+          0,
+          Math.ceil(
+            timeLimit -
+              (clock.current.elapsed +
+                (clock.current.running
+                  ? performance.now() - clock.current.start
+                  : 0)) /
+                1000,
+          ),
+        ),
+      );
+    update();
+    const interval = setInterval(update, 200);
+    return () => clearInterval(interval);
+  }, [timeLimit, paused, selected]);
   const locked = useRef(false),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pointer = useRef<{ x: number; y: number } | null>(null);
@@ -130,6 +157,36 @@ export function QuestionScreen({
         </div>
       ) : (
         <>
+          {timeLimit > 0 && (
+            <div
+              className={`group-countdown ${remaining === 0 ? "expired" : ""}`}
+            >
+              <div className="countdown-track" aria-hidden="true">
+                <i style={{ width: `${(remaining / timeLimit) * 100}%` }} />
+              </div>
+              <span
+                role="timer"
+                aria-label={
+                  locale === "fr" ? "Temps restant" : "Time remaining"
+                }
+              >
+                {remaining > 0
+                  ? `${remaining} s`
+                  : locale === "fr"
+                    ? "Temps écoulé"
+                    : "Time’s up"}
+              </span>
+              <span className="countdown-help" role="status">
+                {remaining === 0
+                  ? locale === "fr"
+                    ? "Prends ta décision, tu peux encore répondre."
+                    : "Make your choice — you can still answer."
+                  : locale === "fr"
+                    ? "Suis ton instinct."
+                    : "Trust your instinct."}
+              </span>
+            </div>
+          )}
           <div className="question-heading">
             <span className="eyebrow">
               {t.themeNames[question.theme]} <span className="dot">/</span>{" "}

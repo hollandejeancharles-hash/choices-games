@@ -1,3 +1,4 @@
+import { GroupReveal } from "./components/GroupReveal";
 import { packNames, packDescriptions, PACKS, type PackId } from "./data/packs";
 import { ProposeDilemma, AdminDilemmas } from "./components/Community";
 import { Gallery } from "./components/Gallery";
@@ -9,6 +10,8 @@ import { copy } from "./i18n";
 import { questions } from "./data/questions";
 import {
   createSession,
+  acknowledgeReveal,
+  sessionScreen,
   initialLocale,
   isComplete,
   loadSession,
@@ -35,7 +38,9 @@ type Screen =
   | "handoff"
   | "question"
   | "analysis"
-  | "result";
+  | "result"
+  | "round-reveal"
+  | "recap";
 export default function App() {
   const [shared, setShared] = useState(() => resultFromHash(location.hash));
   const [invalidLink, setInvalidLink] = useState(
@@ -50,6 +55,8 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(loadSession);
   const [storageError, setStorageError] = useState(false);
   const [pack, setPack] = useState<PackId>("general");
+  const [revealMode, setRevealMode] = useState<"round" | "end">("round");
+  const [timeLimit, setTimeLimit] = useState<0 | 20 | 30>(20);
   const [mode, setMode] = useState<"solo" | "group">("solo");
   const [length, setLength] = useState<GameLength>(15),
     [count, setCount] = useState(2);
@@ -112,6 +119,7 @@ export default function App() {
         length,
         seed,
         pack,
+        mode === "group" ? { reveal: revealMode, timer: timeLimit } : undefined,
       ),
     );
     setScreen("handoff");
@@ -121,11 +129,15 @@ export default function App() {
     const updated = recordAnswer(session, option, duration);
     setSession(updated);
     setScreen(
-      isComplete(updated)
-        ? "analysis"
-        : updated.mode === "group"
-          ? "handoff"
-          : "question",
+      updated.pendingReveal !== undefined
+        ? "round-reveal"
+        : updated.pendingRecap
+          ? "recap"
+          : isComplete(updated)
+            ? "analysis"
+            : updated.mode === "group"
+              ? "handoff"
+              : "question",
     );
   }
   const current = session
@@ -232,9 +244,7 @@ export default function App() {
                 {session && (
                   <button
                     className="resume"
-                    onClick={() =>
-                      setScreen(isComplete(session) ? "result" : "handoff")
-                    }
+                    onClick={() => setScreen(sessionScreen(session))}
                   >
                     {t.resume} <span>→</span>
                   </button>
@@ -429,6 +439,73 @@ export default function App() {
                       ))}
                     </div>
                   </fieldset>
+                  {mode === "group" && (
+                    <fieldset className="group-rhythm">
+                      <legend>
+                        {locale === "fr"
+                          ? "Le rythme du groupe"
+                          : "Your group’s rhythm"}
+                      </legend>
+                      <span className="group-setting-label">
+                        {locale === "fr"
+                          ? "Quand découvrir les réponses ?"
+                          : "When do we reveal answers?"}
+                      </span>
+                      <div className="reveal-mode-options">
+                        {(["round", "end"] as const).map((value) => (
+                          <button
+                            key={value}
+                            aria-pressed={revealMode === value}
+                            onClick={() => setRevealMode(value)}
+                          >
+                            <strong>
+                              {value === "round"
+                                ? locale === "fr"
+                                  ? "Après chaque question"
+                                  : "After each question"
+                                : locale === "fr"
+                                  ? "Tout à la fin"
+                                  : "All at the end"}
+                            </strong>
+                            <span>
+                              {value === "round"
+                                ? locale === "fr"
+                                  ? "On choisit, on découvre, on débat."
+                                  : "Choose, reveal, discuss."
+                                : locale === "fr"
+                                  ? "On garde le suspense jusqu’au récap."
+                                  : "Keep the suspense until the recap."}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <span className="group-setting-label">
+                        {locale === "fr"
+                          ? "Temps pour choisir"
+                          : "Time to choose"}
+                      </span>
+                      <div className="timer-options">
+                        {([20, 30, 0] as const).map((value) => (
+                          <button
+                            key={value}
+                            aria-pressed={timeLimit === value}
+                            onClick={() => setTimeLimit(value)}
+                          >
+                            {value
+                              ? `${value} s`
+                              : locale === "fr"
+                                ? "Sans limite"
+                                : "No limit"}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="setup-help">
+                        {locale === "fr"
+                          ? "À zéro, tu peux encore répondre. Le chrono ne change pas ton portrait."
+                          : "At zero, you can still answer. The timer does not affect your portrait."}
+                      </p>
+                    </fieldset>
+                  )}
                   <div className="setup-recap" aria-live="polite">
                     <span>
                       {locale === "fr" ? "AU PROGRAMME" : "YOUR LINE-UP"}
@@ -465,7 +542,15 @@ export default function App() {
                   ? session.players[session.currentPlayer]?.name
                   : t.brand + "."}
               </h1>
-              <p>{session.mode === "group" ? t.private : t.readyCopy}</p>
+              <p>
+                {session.mode === "group"
+                  ? session.groupOptions?.reveal === "round"
+                    ? locale === "fr"
+                      ? "Les choix restent cachés jusqu’au dernier joueur. Passe l’appareil sans dévoiler ta réponse."
+                      : "Choices stay hidden until the last player answers. Pass the device without revealing your answer."
+                    : t.private
+                  : t.readyCopy}
+              </p>
               <button className="primary" onClick={() => setScreen("question")}>
                 {t.reveal}
                 <span>→</span>
@@ -488,8 +573,26 @@ export default function App() {
                   ? session.players[session.currentPlayer]!.name
                   : ""
               }
+              timeLimit={
+                session.mode === "group"
+                  ? (session.groupOptions?.timer ?? 0)
+                  : 0
+              }
               onAnswer={answer}
               onPause={() => setScreen("home")}
+            />
+          )}
+          {(screen === "round-reveal" || screen === "recap") && session && (
+            <GroupReveal
+              key={`${screen}-${session.pendingReveal ?? "all"}`}
+              session={session}
+              locale={locale}
+              recap={screen === "recap"}
+              onContinue={() => {
+                const updated = acknowledgeReveal(session);
+                setSession(updated);
+                setScreen(isComplete(updated) ? "analysis" : "handoff");
+              }}
             />
           )}
           {screen === "analysis" && (
@@ -530,15 +633,25 @@ export default function App() {
             !shared &&
             session &&
             (session.mode === "group" && !selectedPlayer ? (
-              <GroupResults
-                session={session}
-                locale={locale}
-                onPlayer={(id) => {
-                  setSelectedPlayer(id);
-                  window.scrollTo({ top: 0 });
-                }}
-                onReplay={replay}
-              />
+              <>
+                <button
+                  className="text-button recap-return"
+                  onClick={() => setScreen("recap")}
+                >
+                  {locale === "fr"
+                    ? "↗ Revoir toutes nos réponses"
+                    : "↗ Review all our answers"}
+                </button>
+                <GroupResults
+                  session={session}
+                  locale={locale}
+                  onPlayer={(id) => {
+                    setSelectedPlayer(id);
+                    window.scrollTo({ top: 0 });
+                  }}
+                  onReplay={replay}
+                />
+              </>
             ) : (
               <>
                 {session.mode === "group" && (

@@ -17,3 +17,5 @@ void loadCommunityQuestions().finally(() =>
     </StrictMode>,
   ),
 );
+
+import "./styles/group-reveal.css";
