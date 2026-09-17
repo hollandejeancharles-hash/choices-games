@@ -3,6 +3,8 @@ import type { GameLength } from './core/types';
 import { copy } from './i18n';
 import { questions } from './data/questions';
 import { createSession, initialLocale, isComplete, loadSession, readPreference, recordAnswer, savePreference, saveSession, type Session } from './services/session';
+import { scoreAnswers } from './core/engine';
+import { ProfileView } from './components/Profile';
 import { QuestionScreen } from './components/QuestionScreen';
 type Screen = 'home' | 'setup' | 'handoff' | 'question' | 'analysis' | 'result';
 export default function App() {
@@ -39,7 +41,7 @@ export default function App() {
       {screen === 'handoff' && session && <section className="handoff page-in"><img src="./dilemma-mark.png" alt=""/><span className="eyebrow">{session.mode === 'group' ? t.pass : t.ready}</span><h1>{session.mode === 'group' ? session.players[session.currentPlayer]?.name : t.brand + '.'}</h1><p>{session.mode === 'group' ? t.private : t.readyCopy}</p><button className="primary" onClick={() => setScreen('question')}>{t.reveal}<span>→</span></button><button className="text-button" onClick={() => setScreen('home')}>{t.quit}</button></section>}
       {screen === 'question' && session && current && <QuestionScreen key={`${current.id}-${session.currentPlayer}`} question={current} locale={locale} index={session.questionIds.length} length={session.length} reversed={(session.seed + session.questionIds.length) % 2 === 0} name={session.mode === 'group' ? session.players[session.currentPlayer]!.name : ''} onAnswer={answer} onPause={() => setScreen('home')}/>}
       {screen === 'analysis' && <section className="analysis" role="status"><div className="analysis-symbol"><img src="./dilemma-mark.png" alt=""/></div><h1>{t.analysis}</h1><p>{t.analysisCopy}</p><div className="loading-line"/></section>}
-      {screen === 'result' && session && <section className="handoff"><span className="eyebrow">{t.temporaryResult}</span><h1>{session.length} / {session.length}</h1><button className="primary" onClick={() => setScreen('setup')}>{t.replay}</button></section>}
+      {screen === 'result' && session && <ProfileView portrait={{ profile: scoreAnswers(questions, session.players[0]!.answers), name: session.mode === 'solo' ? '' : session.players[0]!.name, length: session.length }} locale={locale}><button className="primary" onClick={() => setScreen('setup')}>{t.replay}<span>↻</span></button></ProfileView>}
     </main><footer><span>{t.brand}. <span className="muted">FR / EN</span></span><span>{t.tagline}</span></footer>
   </div>;
 }
