@@ -270,7 +270,6 @@ export default function App() {
                   01 — {questions.filter((q) => q.pack).length} <span>↗</span>
                 </span>
               </div>
-              <p className="content-note">{t.note}</p>
             </section>
           )}
           {screen === "propose" && (
@@ -387,7 +386,6 @@ export default function App() {
                   </div>
                 </div>
               )}
-              <p className="content-note">{t.note}</p>
               <button className="primary" onClick={start}>
                 {t.launch}
                 <span>→</span>
