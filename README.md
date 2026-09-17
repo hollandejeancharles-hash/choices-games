@@ -40,7 +40,7 @@ Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé et Vites
 - Pass-and-play : une question commune, puis chaque joueur répond derrière un écran de passage. Le groupe choisit une révélation après chaque question (par défaut) ou un récapitulatif de toutes les réponses à la fin. Les portraits viennent ensuite.
 - Chrono groupe optionnel : 20 secondes (par défaut), 30 secondes ou sans limite. À zéro, la réponse reste possible et aucun choix automatique n’est effectué. Les pauses suspendent le chrono ; comme le temps de réponse, il redémarre si la question est rechargée.
 - Les révélations en attente sont sauvegardées ; le récapitulatif reste accessible depuis les résultats du groupe.
-- Comparaison de tous les duos et question la plus divisée. Les égalités sont départagées dans l'ordre du catalogue ou des joueurs ; avec deux joueurs, le même duo est nécessairement le plus proche et le plus contrasté.
+- Comparaison de tous les duos et question la plus divisée. Les égalités sont départagées dans l'ordre du catalogue ou des joueurs. À deux, une carte « Votre duo » affiche les réponses communes, les dimensions proches (écart maximal de 20 points sur l’échelle −100 à +100) et toutes les dimensions ex æquo pour le plus grand écart.
 - PNG 1200 × 1400 et lien de portrait autonome.
 
 La confidentialité entre les tours est visuelle, pas une protection contre une personne qui inspecterait le stockage local de l'appareil. Le portrait est ludique, non clinique. La rareté affichée est explicitement fictive.
