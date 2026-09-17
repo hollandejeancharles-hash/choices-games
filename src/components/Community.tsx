@@ -157,8 +157,10 @@ export function ProposeDilemma({
 export function AdminDilemmas({
   locale,
   onBack,
+  onRecovery,
 }: {
   locale: Locale;
+  onRecovery: () => void;
   onBack: () => void;
 }) {
   const fr = locale === "fr";
@@ -275,6 +277,9 @@ export function AdminDilemmas({
           </p>
           <button className="primary" disabled={busy}>
             {fr ? "Connexion admin" : "Admin sign in"}
+          </button>
+          <button type="button" className="text-button" onClick={onRecovery}>
+            {fr ? "Mot de passe oublié ?" : "Forgot password?"}
           </button>
         </form>
       ) : (

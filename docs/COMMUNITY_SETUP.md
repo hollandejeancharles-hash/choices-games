@@ -60,3 +60,25 @@ du catalogue en ligne. Ce test est exécuté en CI.
 Documentation officielle :
 - https://supabase.com/docs/guides/database/postgres/row-level-security
 - https://supabase.com/docs/guides/auth/passwords
+
+## Mot de passe oublié
+
+Depuis Admin → « Mot de passe oublié ? », saisir l'adresse du compte. Supabase
+expédie son e-mail de récupération, avec retour autorisé vers
+`https://hollandejeancharles-hash.github.io/choices-games/?recovery=1`.
+La Site URL du projet pointe également vers le site public, et non localhost.
+Le lien ouvre le formulaire de nouveau mot de passe (12 caractères minimum,
+confirmation identique). Le jeton est conservé uniquement en mémoire et retiré
+immédiatement de l'URL. L'accès admin est vérifié côté serveur avant la modification.
+Après succès, la session de récupération est effacée et une déconnexion globale
+est demandée. Se reconnecter avec le nouveau mot de passe.
+
+Un lien expiré/utilisé ou un rechargement après consommation du jeton nécessite
+une nouvelle demande. Le texte de confirmation n'indique pas si l'adresse existe.
+Les erreurs d'envoi et limitations de débit ne sont pas présentées comme des succès.
+Le mécanisme utilise l'envoi d'e-mail Supabase; sa délivrabilité et ses quotas
+restent dépendants de la configuration SMTP du projet.
+
+Les tests automatisés vérifient le parsing, le nettoyage de l'URL, le contrôle du
+rôle, la mise à jour et les erreurs avec un transport simulé. Aucun mot de passe
+réel n'a été modifié par l'agent pour tester ce parcours.

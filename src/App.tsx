@@ -1,3 +1,5 @@
+import { recoveryLanding } from "./services/recovery";
+import { PasswordRecovery } from "./components/PasswordRecovery";
 import { GroupReveal } from "./components/GroupReveal";
 import { packNames, packDescriptions, PACKS, type PackId } from "./data/packs";
 import { ProposeDilemma, AdminDilemmas } from "./components/Community";
@@ -33,6 +35,7 @@ import { QuestionScreen } from "./components/QuestionScreen";
 import { AuroraBackground } from "./components/ui/aurora-background";
 import { Testimonials } from "./components/ui/3d-testimonials";
 type Screen =
+  | "recovery"
   | "online"
   | "propose"
   | "admin"
@@ -55,7 +58,13 @@ export default function App() {
     () => readPreference("dilemma.theme") === "dark",
   );
   const [screen, setScreen] = useState<Screen>(
-    location.hash.startsWith("#room=") ? "online" : shared ? "result" : "home",
+    recoveryLanding
+      ? "recovery"
+      : location.hash.startsWith("#room=")
+        ? "online"
+        : shared
+          ? "result"
+          : "home",
   );
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(loadSession);
@@ -313,8 +322,18 @@ export default function App() {
           {screen === "propose" && (
             <ProposeDilemma locale={locale} onBack={() => setScreen("home")} />
           )}
+          {screen === "recovery" && (
+            <PasswordRecovery
+              locale={locale}
+              onLogin={() => setScreen("admin")}
+            />
+          )}
           {screen === "admin" && (
-            <AdminDilemmas locale={locale} onBack={() => setScreen("home")} />
+            <AdminDilemmas
+              locale={locale}
+              onBack={() => setScreen("home")}
+              onRecovery={() => setScreen("recovery")}
+            />
           )}
           {screen === "gallery" && (
             <Gallery
