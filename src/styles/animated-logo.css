@@ -76,6 +76,44 @@
     transform: scale(1);
   }
 }
+.brand .animated-logo {
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  flex-shrink: 0;
+}
+.animated-logo--interactive
+  :is(.animated-logo__assembly, .animated-logo__navy, .animated-logo__coral) {
+  animation-name: none;
+}
+.brand:is(:hover, :focus-visible)
+  .animated-logo--interactive
+  .animated-logo__assembly {
+  animation-name: logo-settle;
+}
+.brand:is(:hover, :focus-visible)
+  .animated-logo--interactive
+  .animated-logo__navy {
+  animation-name: logo-navy-in;
+}
+.brand:is(:hover, :focus-visible)
+  .animated-logo--interactive
+  .animated-logo__coral {
+  animation-name: logo-coral-in;
+}
+@media (max-width: 720px) {
+  .brand .animated-logo {
+    width: 40px;
+    height: 40px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand:is(:hover, :focus-visible)
+    .animated-logo--interactive
+    :is(.animated-logo__assembly, .animated-logo__navy, .animated-logo__coral) {
+    animation: none;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .animated-logo__assembly,
   .animated-logo__navy,

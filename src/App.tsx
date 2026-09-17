@@ -132,7 +132,7 @@ export default function App() {
             }}
             aria-label={`${t.brand} · ${t.home}`}
           >
-            <img src="./dilemme-logo.png" alt="" />
+            <AnimatedLogo interactive />
             <span>
               {t.brand}
               <span className="brand-period">.</span>

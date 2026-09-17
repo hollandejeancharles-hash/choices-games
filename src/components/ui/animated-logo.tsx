@@ -1,10 +1,16 @@
 import "../../styles/animated-logo.css";
 
 /** The approved two-piece icon animation; decorative beside the game's text. */
-export function AnimatedLogo({ compact = false }: { compact?: boolean }) {
+export function AnimatedLogo({
+  compact = false,
+  interactive = false,
+}: {
+  compact?: boolean;
+  interactive?: boolean;
+}) {
   return (
     <span
-      className={`animated-logo${compact ? " animated-logo--quick" : ""}`}
+      className={`animated-logo${compact ? " animated-logo--quick" : ""}${interactive ? " animated-logo--interactive" : ""}`}
       aria-hidden="true"
     >
       <svg viewBox="0 0 320 320" focusable="false">
