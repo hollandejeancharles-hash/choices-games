@@ -2,9 +2,9 @@ import { balancedVariant } from "../core/balanced";
 import type { Axis, Locale, Question } from "../core/types";
 import { AXES } from "../core/types";
 import { questions } from "../data/questions";
-const env = (import.meta as ImportMeta & { env: Record<string, string> }).env;
-const url = (env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
-const key = env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+import { supabaseUrl, supabaseKey } from "./supabase-config";
+const url = supabaseUrl.replace(/\/$/, "");
+const key = supabaseKey;
 export const communityEnabled =
   /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url) && !!key;
 export interface Submission {

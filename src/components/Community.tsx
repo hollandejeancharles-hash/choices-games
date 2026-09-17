@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Locale } from "../core/types";
 import { AXES } from "../core/types";
 import { axisCopy } from "../data/archetypes";
@@ -162,6 +162,7 @@ export function AdminDilemmas({
   onBack: () => void;
 }) {
   const fr = locale === "fr";
+  const [refreshToken, setRefreshToken] = useState("");
   const [token, setToken] = useState(""),
     [rows, setRows] = useState<Submission[]>([]),
     [selected, setSelected] = useState<Submission | null>(null),
@@ -186,6 +187,33 @@ export function AdminDilemmas({
           ? "Opération impossible. Réessaie ; aucune confirmation de succès n’a été reçue."
           : "Operation failed. Please retry; no success was confirmed.",
     );
+  useEffect(() => {
+    if (!refreshToken) return;
+    const id = setInterval(
+      () => {
+        void communityRequest("/auth/v1/token?grant_type=refresh_token", {
+          refresh_token: refreshToken,
+        })
+          .then((auth) => {
+            setToken(auth.access_token);
+            setRefreshToken(auth.refresh_token);
+          })
+          .catch(() => {
+            setToken("");
+            setRefreshToken("");
+            setRows([]);
+            setSelected(null);
+            setError(
+              fr
+                ? "Session expirée. Reconnecte-toi pour continuer."
+                : "Session expired. Sign in again to continue.",
+            );
+          });
+      },
+      30 * 60 * 1000,
+    );
+    return () => clearInterval(id);
+  }, [refreshToken, fr]);
   return (
     <section className="community-page admin-page page-in">
       <button className="text-button" onClick={onBack}>
@@ -219,6 +247,7 @@ export function AdminDilemmas({
               if (allowed !== true) throw new Error("access-denied");
               await refresh(auth.access_token);
               setToken(auth.access_token);
+              setRefreshToken(auth.refresh_token);
             } catch (e) {
               report(e);
             } finally {
@@ -239,6 +268,11 @@ export function AdminDilemmas({
               required
             />
           </label>
+          <p className="fine-print">
+            {fr
+              ? "Accès réservé aux comptes autorisés. Ta session reste uniquement dans cet onglet."
+              : "Authorized accounts only. Your session stays in this tab only."}
+          </p>
           <button className="primary" disabled={busy}>
             {fr ? "Connexion admin" : "Admin sign in"}
           </button>
@@ -253,6 +287,7 @@ export function AdminDilemmas({
                   () => {},
                 );
                 setToken("");
+                setRefreshToken("");
                 setRows([]);
                 setSelected(null);
                 setError("");

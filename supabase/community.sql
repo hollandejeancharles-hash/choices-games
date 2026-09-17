@@ -80,6 +80,10 @@ begin
     jsonb_build_object('text',jsonb_build_object('fr',btrim(p_draft->>'a_fr'),'en',btrim(p_draft->>'a_en')),'weights',jsonb_build_object(axis,3)),
     jsonb_build_object('text',jsonb_build_object('fr',btrim(p_draft->>'b_fr'),'en',btrim(p_draft->>'b_en')),'weights',jsonb_build_object(axis,-3))));
  insert into public.published_dilemmas(id,question) values(p_id,q);
+ -- Keep online room validation in sync with the balanced local catalog.
+ insert into public.dilemma_room_questions(id,pack,axis,question)
+ values ('balanced-community-'||p_id,'general',axis,
+ q || jsonb_build_object('id','balanced-community-'||p_id,'pack','general','stableScoring',true));
  update public.dilemma_submissions set status='published',reviewed_at=now(),reviewed_by=auth.uid() where id=p_id;
 end;
 $$;

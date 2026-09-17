@@ -1,33 +1,21 @@
 # Activer les propositions publiques et la modération
 
-La galerie fonctionne immédiatement. Le formulaire et l’admin restent explicitement
-indisponibles tant que Supabase n’est pas configuré : aucune fausse confirmation
-et aucune proposition enregistrée uniquement dans le navigateur.
+Le formulaire utilise le même projet Supabase que les salons en ligne. Les tables
+et fonctions ont été installées le 17 septembre 2026. La configuration publique
+commune se trouve dans `src/services/supabase-config.ts`; les variables Vite
+permettent de choisir un autre projet.
 
-## Mise en service
+## Mise en service sur un autre projet
 
-1. Créer un projet sur https://supabase.com/dashboard. Choisir une région adaptée
-   aux utilisateurs. Aucun compte payant n’a été créé par cette modification.
-2. Exécuter `supabase/community.sql` **une seule fois** dans SQL Editor, sur un
-   projet neuf. Le script crée les tables, droits et fonctions de modération.
-3. Dans Authentication, désactiver les inscriptions publiques. Créer le compte
-   administrateur dans le tableau de bord (adresse vérifiée et mot de passe fort).
-4. Copier son UUID puis exécuter dans SQL Editor :
-
-```sql
-insert into public.dilemma_admins(user_id) values ('UUID_DU_COMPTE_ADMIN');
-```
-
-5. Dans GitHub → dépôt → Settings → Secrets and variables → Actions → Variables,
-   définir `VITE_SUPABASE_URL` et `VITE_SUPABASE_PUBLISHABLE_KEY`, depuis les
-   paramètres API du projet. Utiliser uniquement la clé **publishable** publique,
-   jamais `service_role` ou une clé secrète. L’URL attendue est
-   `https://<project-ref>.supabase.co`.
-6. Relancer « Test and deploy Dilemme » dans Actions. En local, copier `.env.example`
-   en `.env.local` et renseigner les mêmes valeurs.
-7. Tester avec une proposition fictive : elle apparaît dans Admin après connexion,
-   mais pas dans le catalogue public. Compléter FR/EN, choisir l’axe, puis publier.
-   Recharger le jeu pour récupérer la nouvelle question.
+1. Installer `supabase/multiplayer.sql`, puis `supabase/community.sql` une seule fois.
+2. Créer le compte dans Supabase → Authentication → Users, avec un mot de passe
+   défini par son propriétaire. Ajouter son UUID à `public.dilemma_admins` depuis
+   SQL Editor. Aucun utilisateur ne peut s’attribuer ce rôle depuis le site.
+3. Configurer `VITE_SUPABASE_URL` et `VITE_SUPABASE_PUBLISHABLE_KEY` dans `.env.local`
+   et les variables GitHub Actions, puis déployer. Ne jamais utiliser service_role
+   dans le navigateur.
+4. Ouvrir « Admin » en bas du site et se connecter. Une inscription ordinaire
+   éventuelle ne donne aucun droit de modération.
 
 ## Fonctionnement
 
@@ -41,8 +29,11 @@ insert into public.dilemma_admins(user_id) values ('UUID_DU_COMPTE_ADMIN');
   stratégie de versionnement, pas un changement silencieux des scores existants.
 - Le catalogue public contient au maximum 1 000 nouvelles questions. Il est chargé
   avant l’application, avec délai maximal de 2,5 s et cache local des seules
-  questions publiques. Les 60 questions intégrées restent disponibles hors ligne.
-- Le jeton admin reste en mémoire ; rechargement ou sortie de l’écran = reconnexion.
+  questions publiques. Les 150 questions intégrées restent disponibles hors ligne.
+- Les jetons admin restent en mémoire et sont renouvelés toutes les 30 minutes ;
+  rechargement ou sortie de l’écran = reconnexion.
+- Les publications alimentent le pack « Tous les horizons » et son catalogue de
+  validation serveur pour les salons QR. Les quotas de dimensions restent inchangés.
 - Les refus sont conservés dans la base. Définir une durée de conservation et les
   supprimer depuis le tableau de bord selon la politique retenue.
 
@@ -62,8 +53,9 @@ avec un champ piège dans le formulaire. Ce n’est pas une protection anti-bot 
 pour une audience importante, ajouter un CAPTCHA vérifié par une Edge Function et
 une limite par source. Aucun secret ne doit être ajouté au frontend.
 
-Les tests SQL et les appels réels d’authentification/publication n’ont pas pu être
-exécutés tant qu’aucun projet Supabase n’est fourni.
+`npm run test:community` teste PostgreSQL via PGlite : soumission, file privée,
+refus des non-admins, validation bilingue, publication, rejet et synchronisation
+du catalogue en ligne. Ce test est exécuté en CI.
 
 Documentation officielle :
 - https://supabase.com/docs/guides/database/postgres/row-level-security
