@@ -157,3 +157,11 @@ Les résultats individuels (solo, groupe et liens partagés) incluent deux bonus
 
 Le calcul est dans `src/core/bonus.ts`. Les liens existants permettent de recalculer
 ces bonus sans modifier leur format. La carte PNG reste le résumé du portrait principal.
+
+### Avatars chibi
+
+Les dix archétypes possèdent un avatar chibi 2D original, généré avec imagegen à
+partir de la référence de style fournie. Les fichiers `public/avatars/<id>.png`
+sont associés aux identifiants stables des archétypes, dans les deux langues.
+Ils apparaissent sur le portrait individuel, les boutons des résultats de groupe
+et dans la carte PNG exportée. Les images sont hébergées avec le jeu.

@@ -23,6 +23,13 @@ export async function downloadPortrait(
     ctx.fillRect(i * 240, 0, 240, 16);
     ctx.fillRect(i * 240, 1360, 240, 40);
   });
+  const avatar = new Image();
+  avatar.src = new URL(
+    `./avatars/${ranking[0]!.archetype.id}.png`,
+    document.baseURI,
+  ).href;
+  await avatar.decode();
+  ctx.drawImage(avatar, 885, 370, 240, 240);
   const logo = new Image();
   logo.src = new URL("./dilemme-logo.png", document.baseURI).href;
   await logo.decode();

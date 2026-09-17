@@ -89,6 +89,14 @@ export function GroupResults({
             className="player-profile"
             onClick={() => onPlayer(player.id)}
           >
+            <img
+              className="player-chibi"
+              src={`./avatars/${rankArchetypes(profile.vector, archetypes)[0]!.archetype.id}.png`}
+              alt=""
+              width={80}
+              height={80}
+              loading="lazy"
+            />
             <span>{player.name}</span>
             <strong>
               {

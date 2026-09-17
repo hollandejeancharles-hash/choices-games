@@ -140,7 +140,13 @@ export function ProfileView({
               {t.nuance} <strong>{secondary.archetype.name[locale]}</strong>
             </p>
           </div>
-          <img src="./dilemme-logo.png" alt="" />
+          <img
+            className="portrait-chibi"
+            src={`./avatars/${primary.archetype.id}.png`}
+            alt={`${locale === "fr" ? "Avatar chibi" : "Chibi avatar"} · ${primary.archetype.name[locale]}`}
+            width={240}
+            height={240}
+          />
         </div>
         <p className="profile-description">
           {primary.archetype.description[locale]}

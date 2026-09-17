@@ -571,3 +571,27 @@ footer {
     padding: 7px 8px;
   }
 }
+
+/* Individual chibi portraits, shared across both languages. */
+.profile-title img.portrait-chibi {
+  width: clamp(150px, 22vw, 240px);
+  height: auto;
+  flex-shrink: 0;
+  border-radius: 32px;
+  object-fit: contain;
+  box-shadow: 0 12px 35px #1418200a;
+}
+.player-profile .player-chibi {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  object-fit: contain;
+}
+@media (max-width: 600px) {
+  .profile-title {
+    flex-wrap: wrap;
+  }
+  .profile-title img.portrait-chibi {
+    width: 160px;
+  }
+}
