@@ -202,14 +202,6 @@ h1 em {
   color: #59616d;
   font-weight: 550;
 }
-.art-caption {
-  bottom: -12px;
-  font-weight: 650;
-  letter-spacing: 1px;
-}
-.home > .content-note {
-  margin-top: 45px;
-}
 .setup h1,
 .handoff h1,
 .analysis h1,
@@ -529,14 +521,6 @@ footer {
   }
   .example-card p {
     font-size: 23px;
-  }
-  .art-caption {
-    bottom: 0;
-    left: 5px;
-    right: 5px;
-  }
-  .home > .content-note {
-    margin-top: 20px;
   }
   .question-heading h1 {
     font-size: 23px;

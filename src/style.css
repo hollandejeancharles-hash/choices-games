@@ -304,29 +304,6 @@ h1 em {
   font-size: 10px;
   color: #bfc2b0;
 }
-.art-caption {
-  position: absolute;
-  bottom: 0;
-  right: 30px;
-  left: 30px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: var(--muted);
-}
-.content-note {
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 700px;
-}
-.home > .content-note {
-  grid-column: 1/-1;
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line);
-}
 .text-button {
   padding: 10px 0;
   border: 0;
@@ -427,9 +404,6 @@ legend {
 .length-card small {
   margin-top: 10px;
   font-size: 11px;
-}
-.setup > .content-note {
-  margin: 26px 0 20px;
 }
 .group-setup {
   margin-top: 24px;
@@ -765,9 +739,6 @@ progress::-moz-progress-bar {
   .example-card {
     width: 300px;
     min-height: 360px;
-  }
-  .home > .content-note {
-    margin-top: 10px;
   }
   .hero-facts {
     margin-top: 28px;

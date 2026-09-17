@@ -266,9 +266,6 @@ export default function App() {
                   </div>
                   <span>{t.exampleFoot}</span>
                 </div>
-                <span className="art-caption">
-                  01 — {questions.filter((q) => q.pack).length} <span>↗</span>
-                </span>
               </div>
             </section>
           )}
