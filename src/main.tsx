@@ -8,6 +8,8 @@ import "./styles/brand.css";
 import "./styles/cards.css";
 import "./styles/setup.css";
 import "./styles/portrait.css";
+import "./styles/group-reveal.css";
+import "./styles/online.css";
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing root");
 void loadCommunityQuestions().finally(() =>
@@ -17,5 +19,3 @@ void loadCommunityQuestions().finally(() =>
     </StrictMode>,
   ),
 );
-
-import "./styles/group-reveal.css";

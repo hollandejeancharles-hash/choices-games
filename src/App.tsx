@@ -4,7 +4,10 @@ import { ProposeDilemma, AdminDilemmas } from "./components/Community";
 import { Gallery } from "./components/Gallery";
 import { AnimatedLogo } from "./components/ui/animated-logo";
 import { GlowButton } from "./components/ui/glow";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+const OnlineRoom = lazy(() =>
+  import("./components/OnlineRoom").then((m) => ({ default: m.OnlineRoom })),
+);
 import type { GameLength } from "./core/types";
 import { copy } from "./i18n";
 import { questions } from "./data/questions";
@@ -30,6 +33,7 @@ import { QuestionScreen } from "./components/QuestionScreen";
 import { AuroraBackground } from "./components/ui/aurora-background";
 import { Testimonials } from "./components/ui/3d-testimonials";
 type Screen =
+  | "online"
   | "propose"
   | "admin"
   | "gallery"
@@ -50,7 +54,9 @@ export default function App() {
   const [dark, setDark] = useState(
     () => readPreference("dilemma.theme") === "dark",
   );
-  const [screen, setScreen] = useState<Screen>(shared ? "result" : "home");
+  const [screen, setScreen] = useState<Screen>(
+    location.hash.startsWith("#room=") ? "online" : shared ? "result" : "home",
+  );
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(loadSession);
   const [storageError, setStorageError] = useState(false);
@@ -96,6 +102,11 @@ export default function App() {
   }
   useEffect(() => {
     const changed = () => {
+      if (location.hash.startsWith("#room=")) {
+        setShared(null);
+        setScreen("online");
+        return;
+      }
       const result = resultFromHash(location.hash);
       setShared(result);
       setInvalidLink(location.hash.startsWith("#r=") && !result);
@@ -241,6 +252,15 @@ export default function App() {
                   {t.start}
                   <span aria-hidden="true">↗</span>
                 </GlowButton>
+                <button
+                  className="online-home-link"
+                  onClick={() => setScreen("online")}
+                >
+                  {locale === "fr"
+                    ? "Jouer chacun sur son téléphone"
+                    : "Play on separate phones"}{" "}
+                  <span aria-hidden="true">↗</span>
+                </button>
                 {session && (
                   <button
                     className="resume"
@@ -278,6 +298,17 @@ export default function App() {
                 </div>
               </div>
             </section>
+          )}
+          {screen === "online" && (
+            <Suspense
+              fallback={
+                <p role="status">
+                  {locale === "fr" ? "Chargement du salon…" : "Loading room…"}
+                </p>
+              }
+            >
+              <OnlineRoom locale={locale} onBack={() => setScreen("home")} />
+            </Suspense>
           )}
           {screen === "propose" && (
             <ProposeDilemma locale={locale} onBack={() => setScreen("home")} />
