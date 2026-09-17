@@ -122,6 +122,14 @@ Un lien `localhost`/`127.0.0.1` fonctionne seulement sur l'appareil qui sert le 
 
 Logo fourni par le propriétaire du projet, intégré sans modification dans `public/dilemme-logo.png`. Typographie Inter variable, hébergée localement via Fontsource (licence OFL). La direction visuelle reprend les titres massifs et les aplats colorés de [Coolors](https://coolors.co/?home). Les 55 teintes fournies (Vibrant Coral, Emerald, Fresh Sky, Sunflower Gold, Tangerine Dream) sont conservées dans `src/styles/palette.css`. Le thème clair est proposé par défaut ; le thème sombre et les préférences existantes sont conservés. La carte PNG utilise la même palette, la même police et le logo fourni. L’ancienne proposition de logo et son prompt restent archivés dans le dépôt.
 
+### Fond Aurora
+
+`src/components/ui/aurora-background.tsx` adapte le composant fourni. Le dossier `components/ui` isole les primitives visuelles réutilisables des écrans du jeu, conformément à la convention shadcn. Le projet dispose déjà de React, TypeScript strict et Tailwind CSS v4 ; aucun nouveau scaffolding ni configuration Tailwind v3 n'est nécessaire.
+
+Le composant accepte les props HTML d'un `div`, `children`, `className`, `enabled` et `showRadialGradient`. Il utilise les variables de la palette et `data-theme` existants, sans état partagé, alias supplémentaire, image distante ou dépendance Framer Motion. Le CSS se trouve dans `src/styles/aurora.css`.
+
+L'aurore est réservée à l'accueil et démontée pendant les autres écrans. Le mouvement lent utilise une transformation CSS ; les couleurs ne sont pas inversées. Le masque atténue les lumières sous le texte et vers le bas de page. Le mobile utilise une seule couche ; les préférences de réduction du mouvement figent le fond, et le contraste renforcé le masque. La couche décorative ne reçoit aucun clic, est ignorée par les lecteurs d'écran et n'ajoute pas de second élément `main`.
+
 ## Validation
 
 22 tests unitaires couvrent pondération temporelle, bornes, confiance, contradictions, sélection, archétypes, compatibilité, contenu, reprise de session, groupe et sérialisation du partage. Vérification TypeScript stricte et build Vite.

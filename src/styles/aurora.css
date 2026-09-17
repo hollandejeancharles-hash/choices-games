@@ -1,0 +1,133 @@
+.aurora-background {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  background: var(--bg);
+  --aurora-band-base: #fff;
+  --aurora-coral: var(--color-vibrant-coral-200);
+  --aurora-emerald: var(--color-emerald-200);
+  --aurora-sky: var(--color-fresh-sky-200);
+  --aurora-gold: var(--color-sunflower-gold-200);
+  --aurora-tangerine: var(--color-tangerine-dream-200);
+}
+.aurora-background__content {
+  position: relative;
+  z-index: 1;
+}
+.aurora-background__veil {
+  position: absolute;
+  inset: 0 0 auto;
+  height: min(100%, 1100px);
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.72;
+}
+.aurora-background__veil--masked {
+  mask-image: radial-gradient(
+    ellipse at 75% 0%,
+    #000 5%,
+    #0009 45%,
+    transparent 78%
+  );
+}
+.aurora-background__ribbons {
+  --aurora-stripes: repeating-linear-gradient(
+    105deg,
+    var(--aurora-band-base) 0%,
+    var(--aurora-band-base) 6%,
+    transparent 10%,
+    transparent 13%,
+    var(--aurora-band-base) 18%
+  );
+  --aurora-colors: repeating-linear-gradient(
+    105deg,
+    var(--aurora-coral) 0%,
+    var(--aurora-sky) 8%,
+    var(--aurora-emerald) 16%,
+    var(--aurora-gold) 24%,
+    var(--aurora-tangerine) 32%,
+    var(--aurora-coral) 40%
+  );
+  position: absolute;
+  inset: -22% -18%;
+  background-image: var(--aurora-stripes), var(--aurora-colors);
+  background-size:
+    180% 140%,
+    140% 100%;
+  background-position: 50% 50%;
+  filter: blur(24px);
+  transform-origin: 70% 30%;
+  animation: dilemme-aurora 60s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.aurora-background__ribbons::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--aurora-colors);
+  background-size: 220% 100%;
+  background-position: 80% 50%;
+  opacity: 0.22;
+  mix-blend-mode: soft-light;
+}
+:root[data-theme="dark"] .aurora-background {
+  --aurora-band-base: var(--bg);
+  --aurora-coral: var(--color-vibrant-coral-600);
+  --aurora-emerald: var(--color-emerald-600);
+  --aurora-sky: var(--color-fresh-sky-600);
+  --aurora-gold: var(--color-sunflower-gold-600);
+  --aurora-tangerine: var(--color-tangerine-dream-600);
+}
+:root[data-theme="dark"] .aurora-background__veil {
+  opacity: 0.35;
+}
+@keyframes dilemme-aurora {
+  from {
+    transform: translate3d(-6%, -2%, 0) rotate(-4deg) scale(1.04);
+  }
+  to {
+    transform: translate3d(6%, 3%, 0) rotate(4deg) scale(1.08);
+  }
+}
+@media (max-width: 720px) {
+  .aurora-background__veil {
+    height: min(100%, 1000px);
+    opacity: 0.6;
+  }
+  .aurora-background__veil--masked {
+    mask-image: radial-gradient(
+      ellipse at 100% 10%,
+      #000 0%,
+      #0009 35%,
+      transparent 75%
+    );
+  }
+  .aurora-background__ribbons {
+    filter: blur(18px);
+    animation-duration: 80s;
+  }
+  .aurora-background__ribbons::after {
+    display: none;
+  }
+  :root[data-theme="dark"] .aurora-background__veil {
+    opacity: 0.3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora-background__ribbons {
+    animation: none;
+    will-change: auto;
+    transform: none;
+  }
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  .aurora-background__veil {
+    display: none;
+  }
+}
+@media print {
+  .aurora-background__veil {
+    display: none;
+  }
+}
