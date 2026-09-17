@@ -1,3 +1,4 @@
+import { GlowButton } from "./components/ui/glow";
 import { useEffect, useState } from "react";
 import type { GameLength } from "./core/types";
 import { copy } from "./i18n";
@@ -184,10 +185,10 @@ export default function App() {
                   <em>{t.heroC}</em>
                 </h1>
                 <p className="hero-intro">{t.intro}</p>
-                <button className="primary" onClick={() => setScreen("setup")}>
+                <GlowButton onClick={() => setScreen("setup")}>
                   {t.start}
-                  <span>↗</span>
-                </button>
+                  <span aria-hidden="true">↗</span>
+                </GlowButton>
                 {session && (
                   <button
                     className="resume"

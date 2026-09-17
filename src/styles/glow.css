@@ -1,0 +1,65 @@
+@property --cta-glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.glow-button {
+  position: relative;
+  display: inline-flex;
+  isolation: isolate;
+  max-width: 100%;
+}
+.glow-button__halo {
+  position: absolute;
+  z-index: -1;
+  inset: -5px;
+  border-radius: 16px;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--cta-glow-angle),
+    var(--color-vibrant-coral-500),
+    var(--color-emerald-500),
+    var(--color-fresh-sky-500),
+    var(--color-sunflower-gold-500),
+    var(--color-tangerine-dream-500),
+    var(--color-vibrant-coral-500)
+  );
+  filter: blur(13px);
+  opacity: 0.65;
+  animation: cta-glow-rotate 6s linear infinite;
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
+.glow-button > .primary {
+  position: relative;
+  box-shadow: none;
+}
+.glow-button:hover .glow-button__halo,
+.glow-button:focus-within .glow-button__halo {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+.glow-button[data-disabled] .glow-button__halo {
+  display: none;
+}
+@keyframes cta-glow-rotate {
+  to {
+    --cta-glow-angle: 360deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glow-button__halo {
+    animation: none;
+    transition: none;
+  }
+  .glow-button:hover .glow-button__halo,
+  .glow-button:focus-within .glow-button__halo {
+    transform: none;
+  }
+}
+@media (forced-colors: active) {
+  .glow-button__halo {
+    display: none;
+  }
+}
