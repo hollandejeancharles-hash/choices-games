@@ -1,0 +1,345 @@
+.portrait-redesign {
+  position: relative;
+  min-height: 70vh;
+}
+.portrait-reveal-stage {
+  position: fixed;
+  inset: 96px 0 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at center, var(--soft), var(--bg) 65%);
+  transition:
+    opacity 0.6s 0.4s,
+    visibility 0s 1s;
+  overflow: auto;
+  padding: 30px 16px;
+}
+.portrait-reveal-cluster {
+  text-align: center;
+}
+.portrait-reveal-cluster > p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 25px;
+}
+.portrait-reveal-cluster > p > span {
+  margin-left: 9px;
+}
+.portrait-reveal-orb {
+  position: relative;
+  isolation: isolate;
+  width: min(330px, 78vw);
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  padding: 5px;
+  background: var(--color-fresh-sky-100);
+  overflow: hidden;
+  box-shadow: 0 25px 100px #2d9ed21a;
+  transition:
+    transform 0.65s 0.25s,
+    opacity 0.5s 0.3s;
+}
+.portrait-reveal-orb::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  z-index: -1;
+  background: conic-gradient(
+    transparent 0deg,
+    transparent 210deg,
+    #2d9ed2 260deg,
+    #3bc47b 295deg,
+    #f79f08 325deg,
+    transparent 360deg
+  );
+  animation: portrait-orbit 4s linear infinite;
+}
+.portrait-orb-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fffefa;
+  color: #191d25;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.portrait-orb-inner img {
+  width: 62%;
+  height: 62%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  filter: blur(9px);
+  transform: scale(0.96);
+  transition:
+    filter 0.55s,
+    transform 0.55s;
+}
+.portrait-orb-inner strong {
+  font-size: clamp(20px, 3vw, 27px);
+  letter-spacing: -1px;
+  margin: 2px 15px 22px;
+}
+.portrait-reveal-orb:hover {
+  transform: scale(1.025);
+}
+.portrait-revealed .portrait-reveal-stage {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.portrait-revealed .portrait-reveal-orb {
+  transform: scale(1.35);
+  opacity: 0;
+}
+.portrait-revealed .portrait-orb-inner img {
+  filter: blur(0);
+  transform: scale(1);
+}
+.portrait-content {
+  opacity: 0;
+  transform: translateY(32px);
+  filter: blur(10px);
+  transition:
+    opacity 0.8s 0.55s,
+    transform 0.8s 0.55s,
+    filter 0.8s 0.55s;
+}
+.portrait-content[inert] {
+  max-height: 60vh;
+  overflow: hidden;
+}
+.portrait-revealed .portrait-content {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+.portrait-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+.portrait-replay {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 25px;
+  color: var(--muted);
+  padding: 10px 14px;
+  font-size: 11px;
+}
+.portrait-redesign .profile-heading {
+  max-width: none;
+  background: var(--color-fresh-sky-50);
+  color: var(--color-fresh-sky-700);
+  padding: 34px 40px;
+  border: 0;
+  border-radius: 28px;
+}
+.portrait-redesign .profile-heading > .eyebrow {
+  display: none;
+}
+.portrait-redesign .profile-title {
+  margin: 0;
+}
+.portrait-redesign .profile-title h1 {
+  font-size: clamp(38px, 5.5vw, 66px);
+  line-height: 1.06;
+  letter-spacing: -0.055em;
+}
+.portrait-redesign .profile-title h1:focus {
+  outline: none;
+}
+.portrait-redesign .profile-title h1 span {
+  color: inherit;
+}
+.portrait-redesign .profile-description {
+  max-width: 760px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: inherit;
+  margin: 15px 0 0;
+}
+.portrait-redesign .secondary-archetype {
+  color: inherit;
+  font-size: 12px;
+}
+.portrait-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 28px 0 22px;
+}
+.portrait-tabs button {
+  border: 1px solid var(--line);
+  border-radius: 25px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 12px;
+  padding: 12px 18px;
+}
+.portrait-tabs button[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+.portrait-redesign [hidden] {
+  display: none !important;
+}
+.portrait-redesign .profile-grid {
+  margin-top: 0;
+  align-items: start;
+}
+.portrait-redesign .profile-panel {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 27px;
+}
+.portrait-redesign .radar-panel {
+  --accent: var(--color-fresh-sky-700);
+}
+.portrait-nuances {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.portrait-nuances > .rarity {
+  margin: 0;
+}
+.portrait-nuances > .muted {
+  align-self: center;
+  font-size: 11px;
+}
+.portrait-dark-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+.portrait-redesign .bonus-portraits {
+  display: block;
+  margin-top: 0;
+}
+.portrait-redesign .bonus-dark {
+  height: 100%;
+  background: var(--color-vibrant-coral-50);
+  color: var(--color-vibrant-coral-700);
+  border: 0;
+}
+.portrait-redesign .bonus-dark :is(.eyebrow, .fine-print, .bonus-score > span) {
+  color: inherit;
+}
+.portrait-redesign .bonus-values {
+  margin-top: 20px;
+}
+.fiction-card h2 {
+  font-size: 34px;
+  letter-spacing: -1.3px;
+  margin: 16px 0 8px;
+}
+.fiction-universe {
+  font-size: 11px;
+  color: var(--muted);
+}
+.fiction-card .fiction-traits {
+  display: inline-block;
+  background: var(--color-sunflower-gold-100);
+  color: var(--color-sunflower-gold-700);
+  font-size: 11px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  margin: 22px 0 8px;
+}
+.fiction-card p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.fiction-downside {
+  border-top: 1px solid var(--line);
+  margin-top: 22px;
+  padding-top: 18px;
+}
+.fiction-downside strong {
+  font-size: 13px;
+}
+.fiction-card > small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+  margin-top: 18px;
+}
+.portrait-redesign button:focus-visible {
+  outline: 2px dashed var(--color-fresh-sky-700);
+  outline-offset: 5px;
+}
+@keyframes portrait-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 900px) {
+  .portrait-reveal-stage {
+    inset: 140px 0 0;
+  }
+}
+@media (max-width: 650px) {
+  .portrait-redesign .profile-heading {
+    padding: 25px;
+  }
+  .portrait-redesign .profile-title {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+  }
+  .portrait-redesign .portrait-chibi {
+    width: 150px;
+    height: 150px;
+    align-self: center;
+  }
+  .portrait-redesign .profile-description {
+    font-size: 14px;
+  }
+  .portrait-dark-grid,
+  .portrait-nuances {
+    grid-template-columns: 1fr;
+  }
+  .portrait-tabs {
+    gap: 6px;
+  }
+  .portrait-tabs button {
+    font-size: 11px;
+    padding: 10px 12px;
+  }
+  .portrait-topline {
+    align-items: flex-start;
+  }
+  .portrait-topline .eyebrow {
+    font-size: 9px;
+  }
+  .portrait-replay {
+    font-size: 10px;
+  }
+  .portrait-redesign .profile-panel {
+    padding: 22px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .portrait-reveal-orb,
+  .portrait-reveal-orb::before,
+  .portrait-reveal-stage,
+  .portrait-orb-inner img,
+  .portrait-content {
+    animation: none;
+    transition: none;
+  }
+  .portrait-content {
+    transform: none;
+    filter: none;
+  }
+}

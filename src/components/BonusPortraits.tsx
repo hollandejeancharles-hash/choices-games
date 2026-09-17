@@ -82,9 +82,11 @@ const villains: Record<
 export function BonusPortraits({
   profile,
   locale,
+  section = "all",
 }: {
   profile: Profile;
   locale: Locale;
+  section?: "all" | "dark" | "values";
 }) {
   const fr = locale === "fr",
     { dark, values } = bonusPortraits(profile);
@@ -92,135 +94,139 @@ export function BonusPortraits({
   const balanced = values && values.autonomy >= 40 && values.autonomy <= 60;
   return (
     <div className="bonus-portraits">
-      <section
-        className="profile-panel bonus-dark"
-        aria-labelledby="dark-title"
-      >
-        <span className="eyebrow">
-          05 / {fr ? "TON DARK SIDE" : "YOUR DARK SIDE"}
-        </span>
-        <h2 id="dark-title">
-          {dark && villain
-            ? dark.intensity < 15
-              ? fr
-                ? "Le méchant encore en casting"
-                : "The villain still auditioning"
-              : (dark.positive ? villain.positive : villain.negative)[locale]
-            : fr
-              ? "Le mystère reste entier"
-              : "Still a mystery"}
-        </h2>
-        <p>
-          {dark && villain
-            ? dark.intensity < 15
-              ? fr
-                ? "Ton double maléfique hésite encore sur son costume. Aucun trait ne domine assez pour lui écrire un grand monologue."
-                : "Your evil twin is still choosing a costume. No tendency stands out enough to write their grand monologue."
-              : (dark.positive ? villain.high : villain.low)[locale]
-            : fr
-              ? "Pas encore assez de réponses pour cette caricature."
-              : "Not enough answers for this caricature yet."}
-        </p>
-        {dark && (
-          <>
-            <div className="bonus-score">
-              <strong>
-                {dark.intensity}
-                <small>/100</small>
-              </strong>
-              <span>
-                {fr ? "Intensité de la caricature" : "Caricature intensity"}
-              </span>
-            </div>
-            <meter
-              min={0}
-              max={100}
-              value={dark.intensity}
-              aria-label={
-                fr ? "Intensité de la caricature" : "Caricature intensity"
-              }
-            />
-          </>
-        )}
-        <p className="fine-print">
-          {fr
-            ? "100 % second degré. Ce chiffre amplifie ton trait le plus marqué dans cette partie : il ne mesure ni ta méchanceté ni ta moralité."
-            : "Purely tongue-in-cheek. This number exaggerates your strongest tendency in this round: it measures neither cruelty nor morality."}
-        </p>
-      </section>
-      <section
-        className="profile-panel bonus-values"
-        aria-labelledby="values-title"
-      >
-        <span className="eyebrow">
-          06 / {fr ? "SOLIDARITÉ ↔ AUTONOMIE" : "SOLIDARITY ↔ AUTONOMY"}
-        </span>
-        <h2 id="values-title">
-          {!values
-            ? fr
-              ? "À explorer"
-              : "Still to explore"
-            : balanced
-              ? fr
-                ? "Un pied de chaque côté"
-                : "A foot on either side"
-              : values.autonomy > 60
+      {section !== "values" && (
+        <section
+          className="profile-panel bonus-dark"
+          aria-labelledby="dark-title"
+        >
+          <span className="eyebrow">
+            05 / {fr ? "TON DARK SIDE" : "YOUR DARK SIDE"}
+          </span>
+          <h2 id="dark-title">
+            {dark && villain
+              ? dark.intensity < 15
                 ? fr
-                  ? "Ta liberté fait le poids"
-                  : "Your freedom carries weight"
-                : fr
-                  ? "Le lien fait la force"
-                  : "Strength in connection"}
-        </h2>
-        <p>
-          {!values
-            ? fr
-              ? "Cette partie n’a pas encore mesuré le rapport entre collectif et indépendance."
-              : "This round hasn’t measured the balance between community and independence yet."
-            : balanced
-              ? fr
-                ? "Tes choix font une place au lien commun comme à ta marge de liberté. Le contexte peut faire pencher la balance."
-                : "Your choices leave room for shared bonds as well as personal freedom. Context can tip the balance."
-              : values.autonomy > 60
+                  ? "Le méchant encore en casting"
+                  : "The villain still auditioning"
+                : (dark.positive ? villain.positive : villain.negative)[locale]
+              : fr
+                ? "Le mystère reste entier"
+                : "Still a mystery"}
+          </h2>
+          <p>
+            {dark && villain
+              ? dark.intensity < 15
                 ? fr
-                  ? "Dans ces situations, tu protèges davantage ta capacité à décider par toi-même, même quand le groupe attend autre chose."
-                  : "In these situations, you lean toward protecting your ability to decide for yourself, even when the group expects something else."
-                : fr
-                  ? "Dans ces situations, tu fais davantage de place au lien commun, quitte à céder une part de ta liberté de décision."
-                  : "In these situations, you make more room for shared bonds, even at the cost of some freedom to decide."}
-        </p>
-        {values && (
-          <>
-            <div className="bonus-poles">
-              <span>{fr ? "Solidarité" : "Solidarity"}</span>
-              <span>{fr ? "Autonomie" : "Autonomy"}</span>
-            </div>
-            <meter
-              min={0}
-              max={100}
-              value={values.autonomy}
-              aria-label={
-                fr ? "Position vers l’autonomie" : "Position toward autonomy"
-              }
-            />
-            <p className="fine-print">
-              {values.count}{" "}
-              {fr ? "réponse(s) sur cet axe" : "answer(s) on this axis"} ·{" "}
-              {values.autonomy}/100{" "}
-              {fr ? "vers l’autonomie" : "toward autonomy"}
-              {values.mixed &&
-                (fr
-                  ? " · Tes réponses varient selon la situation."
-                  : " · Your answers vary with the situation.")}
-            </p>
-          </>
-        )}
-        <p className="fine-print">
-          {fr
-            ? "Lecture ludique de l’axe collectif / indépendance de cette partie. Ni une affiliation politique, ni une mesure de ta générosité."
-            : "A playful reading of this round’s community / independence axis. Neither a political affiliation nor a measure of your generosity."}
-        </p>
-      </section>
+                  ? "Ton double maléfique hésite encore sur son costume. Aucun trait ne domine assez pour lui écrire un grand monologue."
+                  : "Your evil twin is still choosing a costume. No tendency stands out enough to write their grand monologue."
+                : (dark.positive ? villain.high : villain.low)[locale]
+              : fr
+                ? "Pas encore assez de réponses pour cette caricature."
+                : "Not enough answers for this caricature yet."}
+          </p>
+          {dark && (
+            <>
+              <div className="bonus-score">
+                <strong>
+                  {dark.intensity}
+                  <small>/100</small>
+                </strong>
+                <span>
+                  {fr ? "Intensité de la caricature" : "Caricature intensity"}
+                </span>
+              </div>
+              <meter
+                min={0}
+                max={100}
+                value={dark.intensity}
+                aria-label={
+                  fr ? "Intensité de la caricature" : "Caricature intensity"
+                }
+              />
+            </>
+          )}
+          <p className="fine-print">
+            {fr
+              ? "100 % second degré. Ce chiffre amplifie ton trait le plus marqué dans cette partie : il ne mesure ni ta méchanceté ni ta moralité."
+              : "Purely tongue-in-cheek. This number exaggerates your strongest tendency in this round: it measures neither cruelty nor morality."}
+          </p>
+        </section>
+      )}
+      {section !== "dark" && (
+        <section
+          className="profile-panel bonus-values"
+          aria-labelledby="values-title"
+        >
+          <span className="eyebrow">
+            06 / {fr ? "SOLIDARITÉ ↔ AUTONOMIE" : "SOLIDARITY ↔ AUTONOMY"}
+          </span>
+          <h2 id="values-title">
+            {!values
+              ? fr
+                ? "À explorer"
+                : "Still to explore"
+              : balanced
+                ? fr
+                  ? "Un pied de chaque côté"
+                  : "A foot on either side"
+                : values.autonomy > 60
+                  ? fr
+                    ? "Ta liberté fait le poids"
+                    : "Your freedom carries weight"
+                  : fr
+                    ? "Le lien fait la force"
+                    : "Strength in connection"}
+          </h2>
+          <p>
+            {!values
+              ? fr
+                ? "Cette partie n’a pas encore mesuré le rapport entre collectif et indépendance."
+                : "This round hasn’t measured the balance between community and independence yet."
+              : balanced
+                ? fr
+                  ? "Tes choix font une place au lien commun comme à ta marge de liberté. Le contexte peut faire pencher la balance."
+                  : "Your choices leave room for shared bonds as well as personal freedom. Context can tip the balance."
+                : values.autonomy > 60
+                  ? fr
+                    ? "Dans ces situations, tu protèges davantage ta capacité à décider par toi-même, même quand le groupe attend autre chose."
+                    : "In these situations, you lean toward protecting your ability to decide for yourself, even when the group expects something else."
+                  : fr
+                    ? "Dans ces situations, tu fais davantage de place au lien commun, quitte à céder une part de ta liberté de décision."
+                    : "In these situations, you make more room for shared bonds, even at the cost of some freedom to decide."}
+          </p>
+          {values && (
+            <>
+              <div className="bonus-poles">
+                <span>{fr ? "Solidarité" : "Solidarity"}</span>
+                <span>{fr ? "Autonomie" : "Autonomy"}</span>
+              </div>
+              <meter
+                min={0}
+                max={100}
+                value={values.autonomy}
+                aria-label={
+                  fr ? "Position vers l’autonomie" : "Position toward autonomy"
+                }
+              />
+              <p className="fine-print">
+                {values.count}{" "}
+                {fr ? "réponse(s) sur cet axe" : "answer(s) on this axis"} ·{" "}
+                {values.autonomy}/100{" "}
+                {fr ? "vers l’autonomie" : "toward autonomy"}
+                {values.mixed &&
+                  (fr
+                    ? " · Tes réponses varient selon la situation."
+                    : " · Your answers vary with the situation.")}
+              </p>
+            </>
+          )}
+          <p className="fine-print">
+            {fr
+              ? "Lecture ludique de l’axe collectif / indépendance de cette partie. Ni une affiliation politique, ni une mesure de ta générosité."
+              : "A playful reading of this round’s community / independence axis. Neither a political affiliation nor a measure of your generosity."}
+          </p>
+        </section>
+      )}
     </div>
   );
 }

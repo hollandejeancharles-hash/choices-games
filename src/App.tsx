@@ -506,6 +506,7 @@ export default function App() {
             <>
               <p className="notice">{t.shared}</p>
               <ProfileView
+                key={`shared-${JSON.stringify(shared.profile.vector)}`}
                 portrait={{
                   profile: shared.profile,
                   name: "",
@@ -549,6 +550,7 @@ export default function App() {
                   </button>
                 )}
                 <ProfileView
+                  key={`${session.seed}-${selectedPlayer ?? "solo"}`}
                   portrait={{
                     profile: scoreAnswers(
                       questions,

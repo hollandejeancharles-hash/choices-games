@@ -7,6 +7,7 @@ import "./style.css";
 import "./styles/brand.css";
 import "./styles/cards.css";
 import "./styles/setup.css";
+import "./styles/portrait.css";
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing root");
 void loadCommunityQuestions().finally(() =>
