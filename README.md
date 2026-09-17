@@ -135,3 +135,25 @@ L'aurore est réservée à l'accueil et démontée pendant les autres écrans. L
 22 tests unitaires couvrent pondération temporelle, bornes, confiance, contradictions, sélection, archétypes, compatibilité, contenu, reprise de session, groupe et sérialisation du partage. Vérification TypeScript stricte et build Vite.
 
 Vérifications navigateur : partie solo FR complète, reprise après rechargement, partie groupe EN (deux joueurs, dix questions communes), portraits individuels, téléchargement PNG, copie et ouverture d'un lien partagé, vues mobile et ordinateur. Les tests automatisés complètent ces parcours, notamment pour les formats 15/25 et les séries de réponses contradictoires.
+
+### Avis illustratifs et portraits bonus
+
+Les cartes en perspective de `src/components/ui/3d-testimonials.tsx` présentent six
+avis **fictifs**, signalés comme tels, traduits en français et en anglais. Le
+composant Marquee est adapté à la structure existante React / TypeScript / Tailwind
+4, sans dépendance Avatar ou photos externes. Pause manuelle, au survol et au focus ;
+une grille statique remplace l'animation avec `prefers-reduced-motion`.
+
+Les résultats individuels (solo, groupe et liens partagés) incluent deux bonus :
+
+- **Ton dark side / Your dark side** : caricature du pôle le plus marqué parmi les
+  axes mesurés. Son intensité est la valeur absolue du score de cet axe, arrondie
+  sur 100 ; elle ne mesure pas la méchanceté. Douze personnages bilingues, avec un
+  texte neutre lorsque tous les scores sont proches du centre.
+- **Solidarité ↔ Autonomie / Solidarity ↔ Autonomy** : lecture de l'axe existant
+  collectif / indépendance. Position = `(score + 100) / 2`, zone équilibrée de 40
+  à 60, nombre de réponses et divergences affichés. Aucune affiliation politique
+  n'est déduite. Un axe absent reste « à explorer ».
+
+Le calcul est dans `src/core/bonus.ts`. Les liens existants permettent de recalculer
+ces bonus sans modifier leur format. La carte PNG reste le résumé du portrait principal.

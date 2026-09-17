@@ -1,3 +1,4 @@
+import { BonusPortraits } from "./BonusPortraits";
 import type { Locale, Profile as ProfileData } from "../core/types";
 import { AXES } from "../core/types";
 import { rankArchetypes } from "../core/engine";
@@ -252,6 +253,7 @@ export function ProfileView({
           </section>
         </div>
       </div>
+      <BonusPortraits profile={profile} locale={locale} />
       <p className="profile-disclaimer">
         {length === 10 && <>{t.few} </>}
         {t.disclaimer}
