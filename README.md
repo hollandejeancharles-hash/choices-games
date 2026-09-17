@@ -165,3 +165,14 @@ partir de la référence de style fournie. Les fichiers `public/avatars/<id>.png
 sont associés aux identifiants stables des archétypes, dans les deux langues.
 Ils apparaissent sur le portrait individuel, les boutons des résultats de groupe
 et dans la carte PNG exportée. Les images sont hébergées avec le jeu.
+
+### Galerie et propositions communautaires
+
+La galerie FR/EN présente les dix personnages depuis l’accueil et le pied de page.
+Le formulaire public et l’espace admin utilisent un projet Supabase séparé. Sans
+configuration, ils affichent un état indisponible explicite et n’envoient rien.
+Voir [le guide de mise en service](docs/COMMUNITY_SETUP.md) et la migration
+`supabase/community.sql`. Les variables publiques de build sont décrites dans
+`.env.example`. Les propositions ne rejoignent le catalogue qu’après validation
+admin avec traductions et axe de score. Les contrôles SQL doivent être exécutés
+sur le projet réel avant ouverture des propositions.

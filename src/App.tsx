@@ -1,3 +1,5 @@
+import { ProposeDilemma, AdminDilemmas } from "./components/Community";
+import { Gallery } from "./components/Gallery";
 import { AnimatedLogo } from "./components/ui/animated-logo";
 import { GlowButton } from "./components/ui/glow";
 import { useEffect, useState } from "react";
@@ -23,7 +25,16 @@ import { ProfileView } from "./components/Profile";
 import { QuestionScreen } from "./components/QuestionScreen";
 import { AuroraBackground } from "./components/ui/aurora-background";
 import { Testimonials } from "./components/ui/3d-testimonials";
-type Screen = "home" | "setup" | "handoff" | "question" | "analysis" | "result";
+type Screen =
+  | "propose"
+  | "admin"
+  | "gallery"
+  | "home"
+  | "setup"
+  | "handoff"
+  | "question"
+  | "analysis"
+  | "result";
 export default function App() {
   const [shared, setShared] = useState(() => resultFromHash(location.hash));
   const [invalidLink, setInvalidLink] = useState(
@@ -201,7 +212,7 @@ export default function App() {
                   </button>
                 )}
                 <div className="hero-facts">
-                  <span>{t.feature1}</span>
+                  <span>{`${questions.length} ${locale === "fr" ? "dilemmes" : "dilemmas"}`}</span>
                   <span>{t.feature2}</span>
                   <span>{t.feature3}</span>
                 </div>
@@ -233,6 +244,38 @@ export default function App() {
               </div>
               <p className="content-note">{t.note}</p>
             </section>
+          )}
+          {screen === "home" && (
+            <nav
+              className="home-community"
+              aria-label={
+                locale === "fr" ? "Découvrir Dilemme" : "Explore Dilemma"
+              }
+            >
+              <button onClick={() => setScreen("gallery")}>
+                {locale === "fr"
+                  ? "Les dix personnages ↗"
+                  : "Meet the ten characters ↗"}
+              </button>
+              <button onClick={() => setScreen("propose")}>
+                {locale === "fr"
+                  ? "Proposer un dilemme ↗"
+                  : "Suggest a dilemma ↗"}
+              </button>
+            </nav>
+          )}
+          {screen === "propose" && (
+            <ProposeDilemma locale={locale} onBack={() => setScreen("home")} />
+          )}
+          {screen === "admin" && (
+            <AdminDilemmas locale={locale} onBack={() => setScreen("home")} />
+          )}
+          {screen === "gallery" && (
+            <Gallery
+              locale={locale}
+              onBack={() => setScreen("home")}
+              onPlay={replay}
+            />
           )}
           {screen === "home" && <Testimonials locale={locale} />}
           {screen === "setup" && (
@@ -454,6 +497,35 @@ export default function App() {
           <span>
             {t.brand}. <span className="muted">FR / EN</span>
           </span>
+          <nav>
+            <button
+              className="text-button"
+              onClick={() => {
+                leaveShare();
+                setScreen("gallery");
+              }}
+            >
+              {locale === "fr" ? "Les personnages" : "The characters"}
+            </button>
+            <button
+              className="text-button"
+              onClick={() => {
+                leaveShare();
+                setScreen("propose");
+              }}
+            >
+              {locale === "fr" ? "Proposer un dilemme" : "Suggest a dilemma"}
+            </button>
+            <button
+              className="text-button"
+              onClick={() => {
+                leaveShare();
+                setScreen("admin");
+              }}
+            >
+              Admin
+            </button>
+          </nav>
           <span>{t.tagline}</span>
         </footer>
       </div>
