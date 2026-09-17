@@ -20,6 +20,7 @@ import { resultFromHash } from "./services/share";
 import { ProfileView } from "./components/Profile";
 import { QuestionScreen } from "./components/QuestionScreen";
 import { AuroraBackground } from "./components/ui/aurora-background";
+import { Testimonials } from "./components/ui/3d-testimonials";
 type Screen = "home" | "setup" | "handoff" | "question" | "analysis" | "result";
 export default function App() {
   const [shared, setShared] = useState(() => resultFromHash(location.hash));
@@ -231,6 +232,7 @@ export default function App() {
               <p className="content-note">{t.note}</p>
             </section>
           )}
+          {screen === "home" && <Testimonials locale={locale} />}
           {screen === "setup" && (
             <section className="setup page-in">
               <button className="text-button" onClick={() => setScreen("home")}>
