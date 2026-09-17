@@ -23,8 +23,10 @@ import { scoreAnswers } from "../core/engine";
 export function OnlineRoom({
   locale,
   onBack,
+  initialSettings,
 }: {
   locale: Locale;
+  initialSettings?: RoomSettings;
   onBack: () => void;
 }) {
   const fr = locale === "fr";
@@ -39,12 +41,14 @@ export function OnlineRoom({
   const [room, setRoom] = useState<RoomState | null>(null),
     [name, setName] = useState(""),
     [code, setCode] = useState(() => roomCodeFromHash(location.hash));
-  const [settings, setSettings] = useState<RoomSettings>({
-    pack: "general",
-    length: 10,
-    timer: 20,
-    reveal: "round",
-  });
+  const [settings, setSettings] = useState<RoomSettings>(
+    initialSettings ?? {
+      pack: "general",
+      length: 10,
+      timer: 20,
+      reveal: "round",
+    },
+  );
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [qr, setQr] = useState(""),
@@ -341,7 +345,10 @@ export function OnlineRoom({
                 disabled={!name.trim() || busy}
                 onClick={() => connect(false)}
               >
-                {fr ? "Créer mon salon" : "Create my room"} →
+                {fr
+                  ? "Créer mon salon et son QR code"
+                  : "Create my room and QR code"}{" "}
+                →
               </button>
             </section>
           )}

@@ -343,3 +343,30 @@
     transform: none;
   }
 }
+
+.setup-online-access {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  margin: 0 0 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  color: var(--ink);
+  text-align: left;
+  transition: background 0.2s ease;
+}
+.setup-online-access strong {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+.setup-online-access > span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.setup-online-access:hover {
+  background: color-mix(in srgb, var(--soft), var(--color-fresh-sky-500) 12%);
+}

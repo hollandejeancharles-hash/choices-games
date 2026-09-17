@@ -307,7 +307,16 @@ export default function App() {
                 </p>
               }
             >
-              <OnlineRoom locale={locale} onBack={() => setScreen("home")} />
+              <OnlineRoom
+                locale={locale}
+                initialSettings={{
+                  pack,
+                  length,
+                  timer: timeLimit,
+                  reveal: revealMode,
+                }}
+                onBack={() => setScreen("home")}
+              />
             </Suspense>
           )}
           {screen === "propose" && (
@@ -411,11 +420,31 @@ export default function App() {
                       ))}
                     </div>
                     <p className="setup-help">
-                      {t[mode === "solo" ? "soloDesc" : "groupDesc"]}
+                      {mode === "solo"
+                        ? t.soloDesc
+                        : locale === "fr"
+                          ? "Sur cet appareil : passez-vous l’écran à tour de rôle."
+                          : "On this device: take turns passing the screen."}
                     </p>
                   </fieldset>
                   {mode === "group" && (
                     <div className="group-setup">
+                      <button
+                        className="setup-online-access"
+                        onClick={() => setScreen("online")}
+                      >
+                        <strong>
+                          {locale === "fr"
+                            ? "Chacun sur son téléphone"
+                            : "Each on your own phone"}{" "}
+                          <span aria-hidden="true">↗</span>
+                        </strong>
+                        <span>
+                          {locale === "fr"
+                            ? "Créer un salon et afficher le QR code d’invitation"
+                            : "Create a room and show the invitation QR code"}
+                        </span>
+                      </button>
                       <label>
                         {t.players}
                         <select
