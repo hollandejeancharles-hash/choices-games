@@ -1,0 +1,323 @@
+.game-wizard {
+  max-width: 960px;
+  margin: 36px auto 64px;
+}
+.wizard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.wizard-top b {
+  margin-left: 18px;
+  color: var(--ink);
+}
+.wizard-progress {
+  display: flex;
+  gap: 7px;
+  margin: 24px 0 42px;
+}
+.wizard-progress span {
+  height: 4px;
+  flex: 1;
+  background: var(--line);
+  border-radius: 9px;
+}
+.wizard-progress .filled {
+  background: var(--color-fresh-sky-500);
+}
+.wizard-stage {
+  animation: wizard-enter 0.32s ease both;
+  min-height: 390px;
+}
+.wizard-stage .wizard-heading {
+  margin-bottom: 32px;
+}
+.wizard-stage h1 {
+  font-size: clamp(32px, 4.4vw, 54px);
+  font-weight: 850;
+  line-height: 1.06;
+  letter-spacing: -0.055em;
+  margin: 12px 0 16px;
+  outline: none;
+}
+.wizard-stage .wizard-heading > p:last-child {
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 670px;
+  font-size: 15px;
+}
+.wizard-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.wizard-options:empty {
+  display: none;
+}
+.wizard-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.wizard-card {
+  --tile: #d8f3e5;
+  --word: #23764a;
+  background: var(--tile);
+  color: var(--word);
+  border: 0;
+  border-radius: 22px;
+  padding: 26px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  min-height: 205px;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+  position: relative;
+}
+.wizard-card.tone-1 {
+  --tile: #d5ecf6;
+  --word: #1b5f7e;
+}
+.wizard-card.tone-2 {
+  --tile: #fdecce;
+  --word: #946005;
+}
+.wizard-card.tone-3 {
+  --tile: #fad5d1;
+  --word: #8b1c0e;
+}
+.wizard-card:hover {
+  background: color-mix(in srgb, var(--tile), var(--word) 9%);
+  transform: translateY(-2px);
+}
+.wizard-card[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--tile), var(--word) 16%);
+}
+.wizard-card-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 29px;
+  line-height: 1;
+}
+.wizard-check {
+  font-size: 15px;
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+.wizard-card strong {
+  font-size: clamp(22px, 2.5vw, 30px);
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+}
+.wizard-card > span:last-child {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.wizard-footer {
+  border-top: 1px solid var(--line);
+  margin-top: 32px;
+  padding-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.wizard-footer > span {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.wizard-footer .primary {
+  border-radius: 14px;
+  min-width: 190px;
+  justify-content: space-between;
+  font-size: 16px;
+}
+.wizard-players {
+  max-width: 680px;
+}
+.wizard-players label {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 13px;
+}
+.wizard-count {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 24px;
+}
+.wizard-count button {
+  background: var(--soft);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  height: 58px;
+  flex: 1;
+  font-size: 22px;
+  font-weight: 750;
+}
+.wizard-count button[aria-pressed="true"] {
+  background: var(--color-fresh-sky-200);
+  color: var(--color-fresh-sky-800);
+  border-color: var(--color-fresh-sky-400);
+}
+.wizard-names {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.wizard-names input {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+.wizard-summary {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 0 24px;
+  overflow: hidden;
+}
+.wizard-summary-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  align-items: center;
+  gap: 22px;
+  background: none;
+  color: var(--ink);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 17px 0;
+  text-align: left;
+  font-size: 13px;
+}
+.wizard-summary-row:last-child {
+  border-bottom: 0;
+}
+.wizard-summary-row > span,
+.wizard-summary-row small {
+  color: var(--muted);
+}
+.wizard-summary-row strong {
+  overflow-wrap: anywhere;
+}
+.wizard-summary-row:hover small {
+  color: var(--color-fresh-sky-500);
+}
+[data-theme="dark"] .wizard-card {
+  --tile: #173a2a;
+  --word: #89dcb0;
+}
+[data-theme="dark"] .wizard-card.tone-1 {
+  --tile: #173442;
+  --word: #81c5e4;
+}
+[data-theme="dark"] .wizard-card.tone-2 {
+  --tile: #3e321e;
+  --word: #fac66b;
+}
+[data-theme="dark"] .wizard-card.tone-3 {
+  --tile: #43262a;
+  --word: #f6aca2;
+}
+@keyframes wizard-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 650px) {
+  .game-wizard {
+    margin-top: 22px;
+  }
+  .wizard-top > span {
+    font-size: 8px;
+    letter-spacing: 0.04em;
+  }
+  .wizard-top b {
+    margin-left: 7px;
+  }
+  .wizard-progress {
+    margin: 20px 0 30px;
+  }
+  .wizard-stage {
+    min-height: 0;
+  }
+  .wizard-options,
+  .wizard-three {
+    grid-template-columns: 1fr;
+  }
+  .wizard-card {
+    min-height: 150px;
+    padding: 21px;
+    gap: 11px;
+  }
+  .wizard-stage .wizard-heading {
+    margin-bottom: 24px;
+  }
+  .wizard-stage h1 {
+    font-size: 36px;
+  }
+  .wizard-card-top {
+    font-size: 25px;
+  }
+  .wizard-card strong {
+    font-size: 26px;
+  }
+  .wizard-footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--paper, var(--bg));
+    padding: 16px 0;
+    gap: 12px;
+  }
+  .wizard-footer > span {
+    max-width: 45%;
+    font-size: 11px;
+  }
+  .wizard-footer .primary {
+    min-width: 155px;
+    font-size: 14px;
+    padding: 17px;
+  }
+  .wizard-names {
+    grid-template-columns: 1fr;
+  }
+  .wizard-summary {
+    padding: 0 17px;
+  }
+  .wizard-summary-row {
+    grid-template-columns: 75px 1fr;
+    gap: 10px;
+    font-size: 12px;
+  }
+  .wizard-summary-row small {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wizard-stage {
+    animation: none;
+  }
+  .wizard-card {
+    transition: none;
+  }
+  .wizard-card:hover {
+    transform: none;
+  }
+}

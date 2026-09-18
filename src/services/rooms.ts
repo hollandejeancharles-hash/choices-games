@@ -2,6 +2,8 @@ import { supabase } from "./supabase";
 import type { Question, GameLength } from "../core/types";
 import type { PackId } from "../data/packs";
 export interface RoomSettings {
+  expectedPlayers?: number;
+  context?: string;
   pack: PackId;
   length: GameLength;
   timer: 0 | 20 | 30;

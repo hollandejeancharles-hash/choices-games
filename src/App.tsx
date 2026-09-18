@@ -1,16 +1,17 @@
+import { GameSetup, type GameConfig } from "./components/GameSetup";
 import { recoveryLanding } from "./services/recovery";
 import { PasswordRecovery } from "./components/PasswordRecovery";
 import { GroupReveal } from "./components/GroupReveal";
-import { packNames, packDescriptions, PACKS, type PackId } from "./data/packs";
+
 import { ProposeDilemma, AdminDilemmas } from "./components/Community";
 import { Gallery } from "./components/Gallery";
 import { AnimatedLogo } from "./components/ui/animated-logo";
 import { GlowButton } from "./components/ui/glow";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 const OnlineRoom = lazy(() =>
   import("./components/OnlineRoom").then((m) => ({ default: m.OnlineRoom })),
 );
-import type { GameLength } from "./core/types";
+
 import { copy } from "./i18n";
 import { questions } from "./data/questions";
 import {
@@ -69,13 +70,6 @@ export default function App() {
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(loadSession);
   const [storageError, setStorageError] = useState(false);
-  const [pack, setPack] = useState<PackId>("general");
-  const [revealMode, setRevealMode] = useState<"round" | "end">("round");
-  const [timeLimit, setTimeLimit] = useState<0 | 20 | 30>(20);
-  const [mode, setMode] = useState<"solo" | "group">("solo");
-  const [length, setLength] = useState<GameLength>(15),
-    [count, setCount] = useState(2);
-  const [names, setNames] = useState(["", "", "", "", "", ""]);
   const t = copy[locale];
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -127,19 +121,47 @@ export default function App() {
     window.addEventListener("hashchange", changed);
     return () => window.removeEventListener("hashchange", changed);
   }, []);
-  function start() {
+  const onlineAttempt = useRef<{ key: string; token: string } | null>(null);
+  async function start(config: GameConfig) {
     setSelectedPlayer(null);
     const seed = crypto.getRandomValues(new Uint32Array(1))[0]!;
+    const names =
+      config.mode === "solo"
+        ? [t.player + " 1"]
+        : config.names.slice(0, config.count).map((n) => n.trim());
+    if (config.mode === "group" && config.screens === "phones") {
+      const { roomRequest, storeRoom } = await import("./services/rooms");
+      const key = JSON.stringify(config);
+      if (onlineAttempt.current?.key !== key)
+        onlineAttempt.current = { key, token: crypto.randomUUID() };
+      const credential = { code: "", token: onlineAttempt.current.token };
+      const settings = {
+        pack: config.pack,
+        length: config.length,
+        timer: config.timer,
+        reveal: config.reveal,
+        expectedPlayers: config.count,
+        context: config.context,
+      };
+      const room = await roomRequest("create", credential, {
+        name: names[0],
+        settings,
+        deck: createSession(["host"], config.length, seed, config.pack).deck,
+      });
+      storeRoom({ code: room.code, token: credential.token });
+      onlineAttempt.current = null;
+      setScreen("online");
+      return;
+    }
     setSession(
       createSession(
-        Array.from(
-          { length: mode === "solo" ? 1 : count },
-          (_, i) => names[i]?.trim() || `${t.player} ${i + 1}`,
-        ),
-        length,
+        names,
+        config.length,
         seed,
-        pack,
-        mode === "group" ? { reveal: revealMode, timer: timeLimit } : undefined,
+        config.pack,
+        config.mode === "group"
+          ? { reveal: config.reveal, timer: config.timer }
+          : undefined,
       ),
     );
     setScreen("handoff");
@@ -307,16 +329,7 @@ export default function App() {
                 </p>
               }
             >
-              <OnlineRoom
-                locale={locale}
-                initialSettings={{
-                  pack,
-                  length,
-                  timer: timeLimit,
-                  reveal: revealMode,
-                }}
-                onBack={() => setScreen("home")}
-              />
+              <OnlineRoom locale={locale} onBack={() => setScreen("home")} />
             </Suspense>
           )}
           {screen === "propose" && (
@@ -344,262 +357,11 @@ export default function App() {
           )}
           {screen === "home" && <Testimonials locale={locale} />}
           {screen === "setup" && (
-            <section className="setup setup-redesign page-in">
-              <button className="text-button" onClick={() => setScreen("home")}>
-                ← {t.back}
-              </button>
-              <div className="setup-heading">
-                <span className="eyebrow">
-                  {locale === "fr"
-                    ? "À CHAQUE PARTIE, UN NOUVEL ANGLE"
-                    : "A NEW ANGLE, EVERY GAME"}
-                </span>
-                <h1>
-                  {locale === "fr"
-                    ? "À toi de choisir le terrain."
-                    : "Choose your playground."}
-                </h1>
-                <p>
-                  {locale === "fr"
-                    ? "Des liens qui comptent. Des choix qui bousculent. Compose ta partie."
-                    : "Real connections. Tough choices. Make this game yours."}
-                </p>
-              </div>
-              <div className="setup-layout">
-                <fieldset className="setup-packs">
-                  <legend>
-                    <span className="setup-step">01</span>
-                    {locale === "fr"
-                      ? "De quoi on parle ?"
-                      : "What’s on the table?"}
-                  </legend>
-                  <div className="setup-pack-grid">
-                    {PACKS.map((id, i) => (
-                      <button
-                        key={id}
-                        className={`setup-pack setup-pack--${id}`}
-                        aria-pressed={pack === id}
-                        onClick={() => setPack(id)}
-                      >
-                        <span className="setup-pack-top">
-                          <span
-                            className="setup-pack-symbol"
-                            aria-hidden="true"
-                          >
-                            {["✳", "◎", "♡", "⌂"][i]}
-                          </span>
-                          <span className="setup-pack-check" aria-hidden="true">
-                            {pack === id ? "✓" : "+"}
-                          </span>
-                        </span>
-                        <strong>{packNames[id][locale]}</strong>
-                        <span className="setup-pack-description">
-                          {packDescriptions[id][locale]}
-                        </span>
-                        <span className="setup-pack-bottom">
-                          <small>
-                            {questions.filter((q) => q.pack === id).length}{" "}
-                            {locale === "fr"
-                              ? "dilemmes à explorer"
-                              : "dilemmas to explore"}
-                          </small>
-                          <span aria-hidden="true">↗</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-                <aside
-                  className="setup-settings"
-                  aria-label={locale === "fr" ? "Ta partie" : "Your game"}
-                >
-                  <fieldset>
-                    <legend>
-                      <span className="setup-step">02</span>
-                      {locale === "fr" ? "Avec qui ?" : "Who’s playing?"}
-                    </legend>
-                    <div className="setup-mode-switch">
-                      {(["solo", "group"] as const).map((m) => (
-                        <button
-                          key={m}
-                          aria-pressed={mode === m}
-                          onClick={() => setMode(m)}
-                        >
-                          {t[m]}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="setup-help">
-                      {mode === "solo"
-                        ? t.soloDesc
-                        : locale === "fr"
-                          ? "Sur cet appareil : passez-vous l’écran à tour de rôle."
-                          : "On this device: take turns passing the screen."}
-                    </p>
-                  </fieldset>
-                  {mode === "group" && (
-                    <div className="group-setup">
-                      <button
-                        className="setup-online-access"
-                        onClick={() => setScreen("online")}
-                      >
-                        <strong>
-                          {locale === "fr"
-                            ? "Chacun sur son téléphone"
-                            : "Each on your own phone"}{" "}
-                          <span aria-hidden="true">↗</span>
-                        </strong>
-                        <span>
-                          {locale === "fr"
-                            ? "Créer un salon et afficher le QR code d’invitation"
-                            : "Create a room and show the invitation QR code"}
-                        </span>
-                      </button>
-                      <label>
-                        {t.players}
-                        <select
-                          value={count}
-                          onChange={(e) => setCount(Number(e.target.value))}
-                        >
-                          {[2, 3, 4, 5, 6].map((n) => (
-                            <option key={n}>{n}</option>
-                          ))}
-                        </select>
-                      </label>
-                      <div className="name-grid">
-                        {Array.from({ length: count }, (_, i) => (
-                          <label key={i}>
-                            {t.player} {i + 1}
-                            <input
-                              maxLength={40}
-                              value={names[i]}
-                              placeholder={`${t.name} ${i + 1}`}
-                              onChange={(e) =>
-                                setNames(
-                                  names.map((name, j) =>
-                                    j === i ? e.target.value : name,
-                                  ),
-                                )
-                              }
-                            />
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <fieldset>
-                    <legend>
-                      <span className="setup-step">03</span>
-                      {locale === "fr"
-                        ? "Jusqu’où on va ?"
-                        : "How deep do we go?"}
-                    </legend>
-                    <div className="setup-lengths">
-                      {([10, 15, 25] as const).map((n, i) => (
-                        <button
-                          key={n}
-                          aria-pressed={length === n}
-                          onClick={() => setLength(n)}
-                        >
-                          <strong>{n}</strong>
-                          <span>{t.questions}</span>
-                          <small>{[t.short, t.standard, t.long][i]}</small>
-                        </button>
-                      ))}
-                    </div>
-                  </fieldset>
-                  {mode === "group" && (
-                    <fieldset className="group-rhythm">
-                      <legend>
-                        {locale === "fr"
-                          ? "Le rythme du groupe"
-                          : "Your group’s rhythm"}
-                      </legend>
-                      <span className="group-setting-label">
-                        {locale === "fr"
-                          ? "Quand découvrir les réponses ?"
-                          : "When do we reveal answers?"}
-                      </span>
-                      <div className="reveal-mode-options">
-                        {(["round", "end"] as const).map((value) => (
-                          <button
-                            key={value}
-                            aria-pressed={revealMode === value}
-                            onClick={() => setRevealMode(value)}
-                          >
-                            <strong>
-                              {value === "round"
-                                ? locale === "fr"
-                                  ? "Après chaque question"
-                                  : "After each question"
-                                : locale === "fr"
-                                  ? "Tout à la fin"
-                                  : "All at the end"}
-                            </strong>
-                            <span>
-                              {value === "round"
-                                ? locale === "fr"
-                                  ? "On choisit, on découvre, on débat."
-                                  : "Choose, reveal, discuss."
-                                : locale === "fr"
-                                  ? "On garde le suspense jusqu’au récap."
-                                  : "Keep the suspense until the recap."}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                      <span className="group-setting-label">
-                        {locale === "fr"
-                          ? "Temps pour choisir"
-                          : "Time to choose"}
-                      </span>
-                      <div className="timer-options">
-                        {([20, 30, 0] as const).map((value) => (
-                          <button
-                            key={value}
-                            aria-pressed={timeLimit === value}
-                            onClick={() => setTimeLimit(value)}
-                          >
-                            {value
-                              ? `${value} s`
-                              : locale === "fr"
-                                ? "Sans limite"
-                                : "No limit"}
-                          </button>
-                        ))}
-                      </div>
-                      <p className="setup-help">
-                        {locale === "fr"
-                          ? "À zéro, tu peux encore répondre. Le chrono ne change pas ton portrait."
-                          : "At zero, you can still answer. The timer does not affect your portrait."}
-                      </p>
-                    </fieldset>
-                  )}
-                  <div className="setup-recap" aria-live="polite">
-                    <span>
-                      {locale === "fr" ? "AU PROGRAMME" : "YOUR LINE-UP"}
-                    </span>
-                    <strong>{packNames[pack][locale]}</strong>
-                    <p>
-                      {length} {t.questions} ·{" "}
-                      {mode === "solo"
-                        ? t.solo
-                        : `${count} ${locale === "fr" ? "joueurs" : "players"}`}
-                    </p>
-                  </div>
-                  <button className="primary setup-launch" onClick={start}>
-                    {t.launch}
-                    <span>→</span>
-                  </button>
-                  <p className="setup-endnote">
-                    {locale === "fr"
-                      ? "Suis ton instinct. Prends le temps qu’il te faut."
-                      : "Trust your instinct. Take all the time you need."}
-                  </p>
-                </aside>
-              </div>
-            </section>
+            <GameSetup
+              locale={locale}
+              onBack={() => setScreen("home")}
+              onStart={start}
+            />
           )}
           {screen === "handoff" && session && (
             <section className="handoff page-in">

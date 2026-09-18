@@ -450,6 +450,14 @@ export function OnlineRoom({
           {fr ? "questions" : "questions"} ·{" "}
           {fr ? "2 à 6 joueurs" : "2–6 players"}
         </p>
+        {room.settings.expectedPlayers && (
+          <p className="fine-print">
+            {room.players.length}/{room.settings.expectedPlayers}{" "}
+            {fr
+              ? "joueurs attendus sont arrivés. Chacun rejoint avec son propre pseudo."
+              : "expected players have arrived. Everyone joins with their own nickname."}
+          </p>
+        )}
         <div className="lobby-grid">
           <div className="room-invite">
             {qr && (
