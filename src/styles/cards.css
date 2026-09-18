@@ -84,3 +84,69 @@
     transition: none;
   }
 }
+
+/* Stable theme colors shared by solo, pass-and-play and online questions. */
+.question-screen[data-question-theme="travel"] {
+  --theme-bg: #d8f3e5;
+  --theme-ink: #174f31;
+  --theme-dark: #143426;
+  --theme-light: #b0e8ca;
+}
+.question-screen[data-question-theme="work"] {
+  --theme-bg: #d5ecf6;
+  --theme-ink: #123f54;
+  --theme-dark: #173442;
+  --theme-light: #abd8ed;
+}
+.question-screen[data-question-theme="relationships"] {
+  --theme-bg: #fce1eb;
+  --theme-ink: #762c4b;
+  --theme-dark: #432333;
+  --theme-light: #fac2d8;
+}
+.question-screen[data-question-theme="powers"] {
+  --theme-bg: #e9e0fc;
+  --theme-ink: #4f3481;
+  --theme-dark: #302543;
+  --theme-light: #d8c5fc;
+}
+.question-screen[data-question-theme="everyday"] {
+  --theme-bg: #fdecce;
+  --theme-ink: #634003;
+  --theme-dark: #3e321c;
+  --theme-light: #fcd99c;
+}
+.question-screen[data-question-theme="absurd"] {
+  --theme-bg: #fcd9cf;
+  --theme-ink: #902609;
+  --theme-dark: #47291e;
+  --theme-light: #f9b39f;
+}
+.question-screen[data-question-theme="ethics"] {
+  --theme-bg: #dce2fc;
+  --theme-ink: #303d83;
+  --theme-dark: #242c49;
+  --theme-light: #c2ccff;
+}
+.question-screen[data-question-theme] .choice {
+  --card-bg: var(--theme-bg);
+  --card-ink: var(--theme-ink);
+}
+.question-screen[data-question-theme] .question-heading > .eyebrow,
+.question-screen[data-question-theme] .question-heading .dot {
+  color: var(--theme-ink);
+}
+:root[data-theme="dark"] .question-screen[data-question-theme] .choice {
+  --card-bg: var(--theme-dark);
+  --card-ink: var(--theme-light);
+}
+:root[data-theme="dark"]
+  .question-screen[data-question-theme]
+  .question-heading
+  > .eyebrow,
+:root[data-theme="dark"]
+  .question-screen[data-question-theme]
+  .question-heading
+  .dot {
+  color: var(--theme-light);
+}

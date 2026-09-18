@@ -123,7 +123,10 @@ export function QuestionScreen({
       ?.focus();
   }, [question.id, paused]);
   return (
-    <section className="question-screen page-in">
+    <section
+      className="question-screen page-in"
+      data-question-theme={question.theme}
+    >
       <div className="progress-meta">
         <span>{name || t.ready}</span>
         <span>
