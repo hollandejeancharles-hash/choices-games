@@ -1,3 +1,4 @@
+import { ChoicesRecap } from "./ChoicesRecap";
 import { useState, type CSSProperties } from "react";
 import type { Locale } from "../core/types";
 import type { Session } from "../services/session";
@@ -15,6 +16,10 @@ export function GroupReveal({
 }) {
   const fr = locale === "fr";
   const [index, setIndex] = useState(0);
+  if (recap)
+    return (
+      <ChoicesRecap session={session} locale={locale} onContinue={onContinue} />
+    );
   const completed = Math.min(...session.players.map((p) => p.answers.length));
   const round = recap ? index : session.pendingReveal;
   if (round === undefined || round >= completed) return null;

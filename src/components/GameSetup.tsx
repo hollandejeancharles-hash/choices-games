@@ -119,7 +119,9 @@ export function GameSetup({
       "A little pressure or all the time you need. The timer is only a guide.",
     ],
     summary: [
-      c.mode === "solo" ? "Tout est prêt. Et toi ?" : "Tout est prêt. Et vous ?",
+      c.mode === "solo"
+        ? "Tout est prêt. Et toi ?"
+        : "Tout est prêt. Et vous ?",
       "All set. Are you?",
       "Un dernier regard avant le premier dilemme.",
       "One last look before the first dilemma.",
@@ -164,16 +166,74 @@ export function GameSetup({
   const row = (label: string, value: string, target: string) => (
     <button
       type="button"
-      className="wizard-summary-row"
+      className={`wizard-summary-row summary-${target}`}
+      disabled={busy}
       onClick={() => setStep(target)}
     >
-      <span>{label}</span>
-      <strong>{value}</strong>
+      <span className="summary-icon" aria-hidden="true">
+        <svg
+          viewBox="0 0 32 32"
+          width="36"
+          height="36"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {target === "mode" || target === "players" ? (
+            <>
+              <circle cx="16" cy="10" r="5" />
+              <path d="M6 28v-3a10 10 0 0 1 20 0v3Z" />
+            </>
+          ) : target === "pack" ? (
+            <>
+              <path d="m3 15 13-11 13 11M7 13v15h18V13M13 28V18h6v10" />
+            </>
+          ) : target === "length" ? (
+            <>
+              <rect x="5" y="4" width="17" height="23" rx="3" />
+              <path d="m23 8 5 2-4 19-8-2" />
+            </>
+          ) : (
+            <>
+              <circle cx="16" cy="16" r="12" />
+              <path d="M16 8v8l6 3" />
+            </>
+          )}
+        </svg>
+      </span>
+      <span className="summary-label">{label}</span>
+      <strong>
+        {value}
+        {target === "length" && (
+          <span className="summary-unit">{fr ? "dilemmes" : "dilemmas"}</span>
+        )}
+      </strong>
+      {["mode", "pack", "length"].includes(target) && (
+        <span className="summary-description">
+          {target === "mode"
+            ? c.mode === "solo"
+              ? fr
+                ? "Un moment pour toi."
+                : "A moment for yourself."
+              : fr
+                ? "Vos propres convictions."
+                : "Your own convictions."
+            : target === "pack"
+              ? packDescriptions[c.pack][locale]
+              : fr
+                ? "Chaque choix compte."
+                : "Every choice matters."}
+        </span>
+      )}
       <small>{fr ? "Modifier" : "Edit"} ↗</small>
     </button>
   );
   return (
-    <section className="game-wizard">
+    <section
+      className={`game-wizard ${step === "summary" ? "is-summary" : ""}`}
+    >
       <div className="wizard-top">
         <button
           disabled={busy}
@@ -207,7 +267,20 @@ export function GameSetup({
             {fr ? "AVANT LES GRANDS CHOIX" : "BEFORE THE BIG CHOICES"}
           </p>
           <h1 ref={heading} tabIndex={-1}>
-            {title[fr ? 0 : 1]}
+            {step === "summary" ? (
+              <>
+                {fr ? "Tout est prêt. " : "All set. "}
+                <em>
+                  {fr
+                    ? c.mode === "solo"
+                      ? "Et toi ?"
+                      : "Et vous ?"
+                    : "Are you?"}
+                </em>
+              </>
+            ) : (
+              title[fr ? 0 : 1]
+            )}
           </h1>
           <p>{title[fr ? 2 : 3]}</p>
         </div>
@@ -463,8 +536,12 @@ export function GameSetup({
                 )}
               </>
             )}
-            {row("Pack", packNames[c.pack][locale], "pack")}
-            {row(fr ? "Questions" : "Questions", String(c.length), "length")}
+            {row(
+              fr ? "Pack thématique" : "Theme pack",
+              packNames[c.pack][locale],
+              "pack",
+            )}
+            {row(fr ? "Format" : "Format", String(c.length), "length")}
             {c.mode === "group" && (
               <>
                 {row(
@@ -488,6 +565,14 @@ export function GameSetup({
           </div>
         )}
       </div>
+      {step === "summary" && (
+        <p className="summary-reassurance">
+          <span aria-hidden="true">✧</span>
+          {fr
+            ? "Pas de bonne réponse. Juste la tienne."
+            : "No right answer. Just yours."}
+        </p>
+      )}
       <div className="wizard-footer">
         <span>
           {step === "summary"
