@@ -1097,3 +1097,560 @@
     font-size: 11px;
   }
 }
+/* Reference composition: two choices cards, then discussion and portraits. */
+body:has(.choices-recap) {
+  background: #fffdf8;
+}
+.app-shell:has(.choices-recap) {
+  max-width: 1536px;
+  padding: 0 clamp(22px, 5.1vw, 78px);
+}
+.app-shell:has(.choices-recap) > header {
+  height: 74px;
+  border: 0;
+}
+.app-shell:has(.choices-recap) > header .brand {
+  font-size: 42px;
+  letter-spacing: -2.4px;
+  text-transform: lowercase;
+  font-weight: 900;
+  color: #101329;
+}
+.app-shell:has(.choices-recap) > header .brand img,
+.app-shell:has(.choices-recap) > header .header-nav {
+  display: none;
+}
+.app-shell:has(.choices-recap) > header .header-tools {
+  visibility: hidden;
+}
+.app-shell:has(.choices-recap) > footer {
+  display: none;
+}
+.choices-recap {
+  position: relative;
+  background: transparent;
+  margin: 10px auto 30px;
+  color: #101329;
+}
+.recap-end-label {
+  position: absolute;
+  top: -59px;
+  right: 0;
+  font-size: 16px;
+  color: #35394f;
+  margin: 0;
+}
+.recap-hero {
+  gap: 25px;
+  margin-bottom: 30px;
+  min-height: 172px;
+  align-items: center;
+}
+.recap-hero > div:first-child {
+  padding-left: 70px;
+  flex: 1;
+  min-width: 0;
+}
+.recap-hero h1 {
+  font-size: clamp(44px, 5vw, 76px);
+  line-height: 0.98;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  position: relative;
+  margin: 0 0 16px;
+}
+.recap-hero h1:before {
+  content: none;
+}
+.recap-title-rays {
+  position: absolute;
+  left: -53px;
+  top: 4px;
+  width: 43px;
+  height: 60px;
+  fill: none;
+  stroke: #ff625b;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.recap-hero p:not(.recap-handnote) {
+  font-size: clamp(16px, 1.65vw, 24px);
+  line-height: 1.35;
+  margin: 0;
+  color: #555969;
+}
+.recap-cast {
+  padding-left: 95px;
+  max-width: 44%;
+  flex-shrink: 0;
+  gap: 0;
+}
+.recap-cast > div {
+  min-width: 64px;
+  width: 78px;
+  max-width: 90px;
+  font-size: 14px;
+  margin-left: -4px;
+  overflow-wrap: anywhere;
+}
+.recap-cast .recap-avatar {
+  width: 84px;
+  height: 84px;
+  font-size: 32px;
+  font-weight: 600;
+  border: 2px solid #fffdf8;
+}
+.recap-handnote {
+  font-family: "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive;
+  font-size: 15px !important;
+  letter-spacing: 0.015em;
+}
+.recap-cast > .recap-handnote {
+  top: 0;
+  left: -40px;
+  width: 122px;
+  max-width: 122px;
+  color: #35394f;
+}
+.recap-stats {
+  margin: 0 0 16px;
+  gap: 22px;
+}
+.recap-stat {
+  min-height: 102px;
+  padding: 14px 20px;
+  gap: 20px;
+  border-radius: 18px;
+  color: #101329;
+  background: #edf8f2;
+  border-color: #dceee5;
+}
+.recap-stat.stat-1 {
+  background: #fff0ec;
+  border-color: #f9e1db;
+  color: #101329;
+}
+.recap-stat.stat-2 {
+  background: #eaf7ff;
+  border-color: #d3edff;
+  color: #101329;
+}
+.recap-stat strong {
+  font-size: 50px;
+  line-height: 1;
+  font-weight: 850;
+}
+.recap-stat span {
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+.recap-stat .recap-stat-icon {
+  width: 68px;
+  height: 68px;
+  background: #d8eee2;
+  font-size: 43px;
+}
+.stat-1 .recap-stat-icon {
+  background: #ffdfd6;
+}
+.stat-2 .recap-stat-icon {
+  background: #c7ebff;
+}
+.recap-sparks {
+  width: 36px;
+  height: 44px;
+  position: absolute;
+  right: 16px;
+  bottom: 19px;
+  fill: none;
+  stroke: #81d6b7;
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 1;
+}
+.stat-1 .recap-sparks {
+  stroke: #ff625b;
+}
+.stat-2 .recap-sparks {
+  stroke: #57b1db;
+}
+.recap-filters {
+  margin-bottom: 18px;
+  gap: 14px;
+}
+.recap-filters button {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 550;
+  color: #101329;
+  background: transparent;
+  border-color: #d7dae2;
+}
+.recap-filters button[aria-pressed="true"] {
+  background: #191a26;
+  color: white;
+  border-color: #191a26;
+}
+.recap-grid {
+  gap: 22px;
+  align-items: stretch;
+}
+.recap-card {
+  background: #fffefa;
+  border-color: #d9dde4;
+  padding: 14px 20px 20px;
+  border-radius: 22px;
+}
+.recap-card-top {
+  font-size: 14px;
+  font-weight: 600;
+}
+.recap-badge {
+  background: #c7eaff;
+  color: #102648;
+  padding: 8px 18px;
+  font-size: 13px;
+}
+.recap-badge.unanimous {
+  background: #c8eedf;
+  color: #17392a;
+}
+.recap-card h2 {
+  font-size: clamp(19px, 1.75vw, 26px);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 14px 0 16px;
+  letter-spacing: -0.035em;
+}
+.recap-sides {
+  gap: 14px;
+}
+.recap-side {
+  background: #ffede8;
+  padding: 16px 20px 14px;
+  border-radius: 18px;
+}
+.recap-side.side-1 {
+  background: #e4f5fe;
+}
+.recap-side h3 {
+  font-size: 17px;
+  line-height: 1.35;
+  font-weight: 600;
+  margin: 0 0 18px;
+  color: #101329;
+}
+.recap-voters {
+  gap: 10px;
+  align-items: center;
+  margin-top: auto;
+}
+.recap-voters > div {
+  flex: 0 1 58px;
+  font-size: 13px;
+  color: #101329;
+}
+.recap-avatar {
+  width: 48px;
+  height: 48px;
+  font-weight: 600;
+  font-size: 23px;
+  box-shadow: 0 2px 5px #1522350c;
+}
+.avatar-0 {
+  background: #ff625b;
+}
+.avatar-1 {
+  background: #57b7de;
+}
+.avatar-2 {
+  background: #ffe782;
+}
+.avatar-3 {
+  background: #b4e9d7;
+}
+.recap-no-votes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  color: #7c8597 !important;
+}
+.recap-no-votes svg {
+  width: 44px;
+  height: 44px;
+  fill: #9ba5b4;
+}
+.recap-vote-bar {
+  height: 38px;
+  margin-top: 10px;
+  border-radius: 14px;
+}
+.recap-vote-bar > span {
+  font-size: 15px;
+  color: #101329;
+}
+.bar-0 {
+  background: #ff6959;
+}
+.bar-1 {
+  background: #5ab5da;
+}
+.recap-conversation {
+  margin: 22px 0 18px;
+  background: #fff1a6;
+  min-height: 82px;
+  padding: 15px 28px;
+  border-radius: 19px;
+  color: #101329;
+  gap: 28px;
+}
+.recap-conversation > span {
+  font-family: Georgia, serif;
+  font-size: 68px;
+  line-height: 0.75;
+  padding-right: 28px;
+  height: 46px;
+}
+.recap-conversation strong {
+  font-size: 22px;
+  font-weight: 750;
+}
+.recap-conversation p {
+  margin: 2px 0 0;
+  font-size: 16px;
+}
+.recap-conversation .recap-handnote {
+  font-size: 14px !important;
+  text-align: center;
+  color: #35394f;
+}
+.recap-finish {
+  position: relative;
+}
+.recap-finish .primary {
+  background: #ff625b;
+  color: #101329;
+  border-radius: 40px;
+  min-width: 362px;
+  min-height: 52px;
+  padding: 14px 26px;
+  font-size: 16px;
+  font-weight: 750;
+  box-shadow: none;
+}
+.recap-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+.recap-pagination > button {
+  background: none;
+  border: 0;
+  color: #596176;
+  padding: 10px;
+}
+.recap-explore {
+  margin: 4px 0;
+  font-size: 14px;
+}
+.recap-explore span {
+  margin-left: 8px;
+  font-size: 11px;
+}
+.recap-footer-note {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  text-align: left;
+  color: #35394f;
+}
+:root[data-theme="dark"] body:has(.choices-recap) {
+  background: #141820;
+}
+:root[data-theme="dark"] .choices-recap,
+:root[data-theme="dark"] .app-shell:has(.choices-recap) > header .brand {
+  color: #f8fafc;
+}
+:root[data-theme="dark"] .recap-card {
+  background: #1d2430;
+}
+:root[data-theme="dark"] .recap-end-label,
+:root[data-theme="dark"] .recap-handnote,
+:root[data-theme="dark"] .recap-hero p:not(.recap-handnote) {
+  color: #cbd5e1;
+}
+:root[data-theme="dark"] .recap-filters button {
+  color: #f8fafc;
+}
+:root[data-theme="dark"] .recap-stat,
+:root[data-theme="dark"] .recap-side h3,
+:root[data-theme="dark"] .recap-voters > div {
+  color: #f8fafc;
+}
+@media (max-width: 1050px) {
+  .recap-hero > div:first-child {
+    padding-left: 35px;
+  }
+  .recap-title-rays {
+    left: -38px;
+    width: 30px;
+  }
+  .recap-cast {
+    padding-left: 0;
+    max-width: 38%;
+  }
+  .recap-cast > .recap-handnote {
+    display: none;
+  }
+  .recap-cast .recap-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 26px;
+  }
+  .recap-cast > div {
+    width: 58px;
+    min-width: 50px;
+  }
+  .recap-stat {
+    gap: 12px;
+    padding: 14px;
+  }
+  .recap-stat .recap-stat-icon {
+    width: 48px;
+    height: 48px;
+  }
+  .recap-stat strong {
+    font-size: 40px;
+  }
+  .recap-stat span {
+    font-size: 14px;
+  }
+  .recap-sparks {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .app-shell:has(.choices-recap) > header {
+    height: 70px;
+  }
+  .app-shell:has(.choices-recap) > header .brand {
+    font-size: 32px;
+  }
+  .choices-recap {
+    margin-top: 12px;
+  }
+  .recap-end-label {
+    font-size: 12px;
+    top: -52px;
+  }
+  .recap-hero {
+    display: block;
+    margin-bottom: 24px;
+  }
+  .recap-hero > div:first-child {
+    padding-left: 0;
+  }
+  .recap-title-rays {
+    display: none;
+  }
+  .recap-hero h1 {
+    font-size: 42px;
+    line-height: 1;
+  }
+  .recap-hero p:not(.recap-handnote) {
+    font-size: 16px;
+  }
+  .recap-cast {
+    max-width: 100%;
+    gap: 10px;
+    margin-top: 22px;
+    justify-content: flex-start;
+  }
+  .recap-cast > div {
+    font-size: 12px;
+  }
+  .recap-stats {
+    gap: 8px;
+  }
+  .recap-stat {
+    padding: 14px 10px;
+    gap: 10px;
+    min-height: 135px;
+  }
+  .recap-stat .recap-stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 26px;
+  }
+  .recap-stat strong {
+    font-size: 32px;
+  }
+  .recap-stat span {
+    font-size: 11px;
+  }
+  .recap-filters {
+    gap: 8px;
+  }
+  .recap-filters button {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+  .recap-card {
+    padding: 14px;
+  }
+  .recap-card h2 {
+    font-size: 20px;
+    line-height: 1.3;
+  }
+  .recap-side {
+    padding: 14px 12px;
+  }
+  .recap-side h3 {
+    font-size: 14px;
+  }
+  .recap-voters > div {
+    font-size: 12px;
+  }
+  .recap-conversation {
+    padding: 18px 16px;
+    gap: 16px;
+  }
+  .recap-conversation > span {
+    padding-right: 16px;
+  }
+  .recap-conversation strong {
+    font-size: 19px;
+  }
+  .recap-conversation p {
+    font-size: 14px;
+  }
+  .recap-finish .primary {
+    min-width: 0;
+    width: 100%;
+  }
+  .recap-footer-note {
+    display: none;
+  }
+  .recap-grid {
+    gap: 16px;
+  }
+}
+.app-shell:has(.choices-recap) > header .brand {
+  gap: 0;
+}
+@media (min-width: 1200px) {
+  .recap-hero h1 {
+    font-size: 72px;
+    line-height: 0.98;
+  }
+  .recap-cast {
+    margin-right: 70px;
+  }
+  .recap-hero {
+    margin-bottom: 26px;
+  }
+}
