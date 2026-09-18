@@ -286,7 +286,13 @@ export default function App() {
                 {session && (
                   <button
                     className="resume"
-                    onClick={() => setScreen(sessionScreen(session))}
+                    onClick={() =>
+                      setScreen(
+                        session.mode === "group" && isComplete(session)
+                          ? "recap"
+                          : sessionScreen(session),
+                      )
+                    }
                   >
                     {t.resume} <span>→</span>
                   </button>
@@ -423,7 +429,13 @@ export default function App() {
               onContinue={() => {
                 const updated = acknowledgeReveal(session);
                 setSession(updated);
-                setScreen(isComplete(updated) ? "analysis" : "handoff");
+                setScreen(
+                  updated.pendingRecap
+                    ? "recap"
+                    : isComplete(updated)
+                      ? "analysis"
+                      : "handoff",
+                );
               }}
             />
           )}

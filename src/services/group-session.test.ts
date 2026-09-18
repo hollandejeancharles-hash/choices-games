@@ -26,7 +26,9 @@ it("waits for the final player, persists every reveal and blocks answers until c
     expect(parseSession(JSON.stringify(game))).toEqual(game);
   }
   expect(isComplete(game)).toBe(true);
-  expect(sessionScreen(game)).toBe("result");
+  expect(sessionScreen(game)).toBe("recap");
+  expect(parseSession(JSON.stringify(game))).toEqual(game);
+  expect(sessionScreen(acknowledgeReveal(game))).toBe("result");
 });
 it("keeps all choices private until the end and restores the final recap", () => {
   let game = createSession(["A", "B"], 10, 42, "couple", {

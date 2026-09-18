@@ -164,7 +164,8 @@ export function parseSession(raw: string | null): Session | null {
       data.pendingRecap !== undefined &&
       (data.pendingRecap !== true ||
         !record(data.groupOptions) ||
-        data.groupOptions.reveal !== "end" ||
+        data.mode !== "group" ||
+        data.pendingReveal !== undefined ||
         !complete)
     )
       return null;
@@ -309,6 +310,12 @@ export function acknowledgeReveal(session: Session): Session {
   const next = { ...session };
   delete next.pendingReveal;
   delete next.pendingRecap;
+  if (
+    session.pendingReveal !== undefined &&
+    session.mode === "group" &&
+    isComplete(session)
+  )
+    next.pendingRecap = true;
   return next;
 }
 export function sessionScreen(

@@ -805,3 +805,295 @@
 .recap-side h3 {
   font-weight: 650;
 }
+
+/* Match the approved end-of-game artwork. */
+.choices-recap {
+  max-width: 1380px;
+  background: var(--bg);
+}
+.recap-end-label {
+  text-align: right;
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 22px;
+}
+.recap-hero {
+  position: relative;
+  margin-bottom: 26px;
+}
+.recap-hero h1 {
+  font-size: clamp(38px, 5.4vw, 76px);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+.recap-hero h1:before {
+  content: "〟";
+  position: absolute;
+  left: -36px;
+  top: 0;
+  color: #ed5945;
+  font-size: 60px;
+  transform: rotate(35deg);
+}
+.recap-hero p:not(.eyebrow) {
+  font-size: clamp(14px, 1.6vw, 22px);
+  margin: 14px 0;
+}
+.recap-cast {
+  align-items: center;
+  gap: 0;
+  position: relative;
+  padding-left: 90px;
+  max-width: 45%;
+}
+.recap-cast > div {
+  max-width: 85px;
+  min-width: 64px;
+  margin-left: -5px;
+}
+.recap-cast .recap-avatar {
+  width: 78px;
+  height: 78px;
+  font-size: 30px;
+  border-width: 3px;
+}
+.recap-handnote {
+  font-family: cursive;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  font-weight: 400;
+  transform: rotate(-8deg);
+}
+.recap-cast > .recap-handnote {
+  position: absolute;
+  left: -18px;
+  top: -15px;
+  max-width: 110px;
+  color: var(--ink);
+}
+.avatar-0 {
+  background: #ff625b;
+  color: #fff;
+}
+.avatar-1 {
+  background: #57b1db;
+  color: #fff;
+}
+.avatar-2 {
+  background: #ffe889;
+}
+.avatar-3 {
+  background: #b0e8ca;
+}
+.recap-stat {
+  gap: 20px;
+  padding: 18px 22px;
+  position: relative;
+  overflow: hidden;
+}
+.recap-stat > div {
+  display: flex;
+  flex-direction: column;
+}
+.recap-stat strong {
+  font-size: 44px;
+  line-height: 1.05;
+}
+.recap-stat span {
+  font-size: 16px;
+}
+.recap-stat .recap-stat-icon {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #00000007;
+  font-size: 40px;
+}
+.recap-sparks {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  font-size: 40px;
+  color: currentColor;
+  opacity: 0.45;
+}
+.recap-card {
+  padding: 20px;
+  border-radius: 22px;
+}
+.recap-card-top {
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.recap-card h2 {
+  font-size: clamp(19px, 1.8vw, 25px);
+  line-height: 1.3;
+  letter-spacing: -0.03em;
+  margin: 16px 0;
+  font-weight: 800;
+}
+.recap-side {
+  background: #fff0ed;
+  padding: 18px 20px;
+}
+.recap-side.side-1 {
+  background: #e5f5fd;
+}
+.recap-side h3 {
+  font-size: 16px;
+  color: #141b2b;
+}
+.recap-side h3 > span {
+  color: #9b2a18;
+}
+.recap-side.side-1 h3 > span {
+  color: #1b5f7e;
+}
+.recap-voters {
+  justify-content: center;
+}
+.recap-voters > div {
+  flex: 0 1 60px;
+}
+.recap-voters p {
+  color: #667085;
+}
+.recap-side > small {
+  color: inherit;
+}
+.recap-vote-bar {
+  height: 34px;
+  margin-top: 10px;
+  border-radius: 14px;
+}
+.recap-vote-bar > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 750;
+  color: white;
+}
+.bar-0 {
+  background: #c93c2f;
+}
+.bar-1 {
+  background: #247ea8;
+}
+.recap-conversation {
+  background: #fff1a9;
+  color: #121827;
+  padding: 20px 28px;
+  gap: 25px;
+}
+.recap-conversation > span {
+  border-right: 1px solid #bbaa62;
+  padding-right: 25px;
+  font-weight: 900;
+}
+.recap-conversation .recap-handnote {
+  margin-left: auto;
+}
+.recap-finish .primary {
+  background: #d53529;
+  color: #fff;
+  min-width: min(100%, 360px);
+  padding: 18px 30px;
+}
+.recap-explore {
+  display: block;
+  margin: 14px auto;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 8px;
+}
+:root[data-theme="dark"] .recap-side h3 {
+  color: #f5f5f5;
+}
+:root[data-theme="dark"] .recap-side h3 > span {
+  color: #f6aca2;
+}
+:root[data-theme="dark"] .recap-side.side-1 h3 > span {
+  color: #abd8ed;
+}
+:root[data-theme="dark"] .recap-voters p {
+  color: #cbd5e1;
+}
+@media (max-width: 900px) {
+  .recap-cast {
+    padding-left: 0;
+    max-width: 40%;
+    gap: 10px;
+  }
+  .recap-cast > .recap-handnote {
+    display: none;
+  }
+  .recap-cast .recap-avatar {
+    width: 54px;
+    height: 54px;
+    font-size: 22px;
+  }
+  .recap-stat {
+    gap: 10px;
+    padding: 18px 12px;
+  }
+  .recap-stat .recap-stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 28px;
+  }
+  .recap-stat span {
+    font-size: 13px;
+  }
+  .recap-sparks {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .recap-cast {
+    max-width: 100%;
+    gap: 12px;
+  }
+  .recap-hero h1:before {
+    display: none;
+  }
+  .recap-stat {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .recap-stat strong {
+    font-size: 32px;
+  }
+  .recap-stat span {
+    font-size: 11px;
+  }
+  .recap-card {
+    padding: 16px;
+  }
+  .recap-side {
+    padding: 12px;
+  }
+  .recap-side h3 {
+    font-size: 14px;
+  }
+  .recap-conversation .recap-handnote {
+    display: none;
+  }
+  .recap-conversation {
+    gap: 14px;
+    padding: 20px;
+  }
+  .recap-conversation > span {
+    padding-right: 14px;
+  }
+  .recap-vote-bar > span {
+    font-size: 11px;
+  }
+}

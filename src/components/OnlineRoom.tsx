@@ -70,7 +70,7 @@ export function OnlineRoom({
     if (data.phase === "finished" && data.deck) {
       if (!finishedInitialized.current) {
         finishedInitialized.current = true;
-        setView(data.settings.reveal === "end" ? "recap" : "results");
+        setView("recap");
       }
       for (const q of data.deck) {
         const index = questions.findIndex((x) => x.id === q.id);
