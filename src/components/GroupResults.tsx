@@ -37,8 +37,6 @@ export function GroupResults({
     (session.seed + session.questionIds.indexOf(divided.id) + 1) % 2 === 0
       ? ([1, 0] as const)
       : ([0, 1] as const);
-  const names = (ids: readonly string[]) =>
-    ids.map((id) => session.players.find((p) => p.id === id)?.name).join(" × ");
   return (
     <section className="group-results group-story page-in">
       <div className="story-hero">
@@ -61,14 +59,24 @@ export function GroupResults({
               </>
             )}
           </h1>
-          <p className="lead">{names(session.players.map((p) => p.id))}</p>
-        </div>
-        <div className="story-avatars" aria-hidden="true">
-          {session.players.map((p, i) => (
-            <span className={`recap-avatar avatar-${i % 4}`} key={p.id}>
-              {p.name.slice(0, 1).toUpperCase()}
-            </span>
-          ))}
+          <ul
+            className="story-participants"
+            aria-label={
+              fr ? "Les joueurs de cette partie" : "Players in this game"
+            }
+          >
+            {session.players.map((p, i) => (
+              <li key={p.id}>
+                <span
+                  className={`recap-avatar avatar-${i % 4}`}
+                  aria-hidden="true"
+                >
+                  {p.name.slice(0, 1).toUpperCase()}
+                </span>
+                <span>{p.name}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
       <p className="story-opening">

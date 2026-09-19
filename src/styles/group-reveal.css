@@ -1873,3 +1873,46 @@ body:has(.choices-recap) {
     transform: none;
   }
 }
+.story-participants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 8px;
+}
+.story-participants li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 6px 6px;
+  border: 1px solid var(--line);
+  border-radius: 40px;
+  background: var(--panel);
+  font-size: 15px;
+  font-weight: 650;
+  max-width: 100%;
+  color: var(--ink);
+}
+.story-participants li > span:last-child {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.story-participants .recap-avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  border: 0;
+  box-shadow: none;
+  flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  .story-participants {
+    margin-top: 20px;
+    gap: 8px;
+  }
+  .story-participants li {
+    font-size: 14px;
+    padding-right: 13px;
+  }
+}
