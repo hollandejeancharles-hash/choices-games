@@ -99,3 +99,18 @@ it("never changes a password when admin authorization is denied", async () => {
   expect(fetcher).toHaveBeenCalledTimes(1);
   recovery.clearRecovery();
 });
+
+it("leaves player recovery links for the player auth client", async () => {
+  vi.resetModules();
+  vi.stubGlobal("location", {
+    search: "?account=1",
+    hash: "#type=recovery&access_token=player-test-token",
+    pathname: "/choices-games/",
+  });
+  const replaceState = vi.fn();
+  vi.stubGlobal("history", { replaceState });
+  const recovery = await import("./recovery");
+  expect(recovery.recoveryLanding).toBe(false);
+  expect(recovery.hasRecoveryAccess()).toBe(false);
+  expect(replaceState).not.toHaveBeenCalled();
+});

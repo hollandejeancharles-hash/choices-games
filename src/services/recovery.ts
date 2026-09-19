@@ -7,13 +7,16 @@ export function parseRecovery(hash: string) {
     ? values.get("access_token") || ""
     : "";
 }
-// Capture once before rendering, then remove credentials from the address bar.
-export const recoveryLanding =
+// Admin recovery is deliberately scoped to its explicit callback. Player
+// recovery uses the same Supabase flow but is handled by playerAuth instead.
+const adminRecoveryRequested =
   typeof location !== "undefined" &&
-  (new URLSearchParams(location.search).get("recovery") === "1" ||
-    new URLSearchParams(location.hash.slice(1)).get("type") === "recovery");
+  new URLSearchParams(location.search).get("recovery") === "1";
+export const recoveryLanding = adminRecoveryRequested;
 let recoveryAccess =
-  typeof location === "undefined" ? "" : parseRecovery(location.hash);
+  adminRecoveryRequested && typeof location !== "undefined"
+    ? parseRecovery(location.hash)
+    : "";
 if (recoveryLanding && location.hash) {
   history.replaceState(null, "", location.pathname + "?recovery=1");
 }
