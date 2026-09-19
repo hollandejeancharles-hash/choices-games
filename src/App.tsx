@@ -1,3 +1,5 @@
+import { PredictionTurn } from "./components/PredictionTurn";
+import type { Guesses } from "./services/predictions";
 import { GameSetup, type GameConfig } from "./components/GameSetup";
 import { recoveryLanding } from "./services/recovery";
 import { PasswordRecovery } from "./components/PasswordRecovery";
@@ -142,6 +144,7 @@ export default function App() {
         reveal: config.reveal,
         expectedPlayers: config.count,
         context: config.context,
+        predictions: true,
       };
       const room = await roomRequest("create", credential, {
         name: names[0],
@@ -160,15 +163,15 @@ export default function App() {
         seed,
         config.pack,
         config.mode === "group"
-          ? { reveal: config.reveal, timer: config.timer }
+          ? { reveal: config.reveal, timer: config.timer, predictions: true }
           : undefined,
       ),
     );
     setScreen("handoff");
   }
-  function answer(option: 0 | 1, duration: number) {
+  function answer(option: 0 | 1, duration: number, guesses?: Guesses) {
     if (!session) return;
-    const updated = recordAnswer(session, option, duration);
+    const updated = recordAnswer(session, option, duration, guesses);
     setSession(updated);
     setScreen(
       updated.pendingReveal !== undefined
@@ -384,8 +387,8 @@ export default function App() {
                 {session.mode === "group"
                   ? session.groupOptions?.reveal === "round"
                     ? locale === "fr"
-                      ? "Les choix restent cachés jusqu’au dernier joueur. Passe l’appareil sans dévoiler ta réponse."
-                      : "Choices stay hidden until the last player answers. Pass the device without revealing your answer."
+                      ? "Choisis pour toi, puis devine les réponses des autres. Passe l’appareil sans dévoiler tes choix : une bonne prédiction vaut un point."
+                      : "Choose for yourself, then predict everyone else. Pass the device without revealing your choices: one correct prediction earns one point."
                     : t.private
                   : t.readyCopy}
               </p>
@@ -398,28 +401,58 @@ export default function App() {
               </button>
             </section>
           )}
-          {screen === "question" && session && current && (
-            <QuestionScreen
-              key={`${current.id}-${session.currentPlayer}`}
-              question={current}
-              locale={locale}
-              index={session.questionIds.length}
-              length={session.length}
-              reversed={(session.seed + session.questionIds.length) % 2 === 0}
-              name={
-                session.mode === "group"
-                  ? session.players[session.currentPlayer]!.name
-                  : ""
-              }
-              timeLimit={
-                session.mode === "group"
-                  ? (session.groupOptions?.timer ?? 0)
-                  : 0
-              }
-              onAnswer={answer}
-              onPause={() => setScreen("home")}
-            />
-          )}
+          {screen === "question" &&
+            session &&
+            current &&
+            (session.groupOptions?.predictions ? (
+              <PredictionTurn
+                key={`${current.id}-${session.currentPlayer}`}
+                question={current}
+                locale={locale}
+                index={session.questionIds.length}
+                length={session.length}
+                reversed={(session.seed + session.questionIds.length) % 2 === 0}
+                name={
+                  session.mode === "group"
+                    ? session.players[session.currentPlayer]!.name
+                    : ""
+                }
+                timeLimit={
+                  session.mode === "group"
+                    ? (session.groupOptions?.timer ?? 0)
+                    : 0
+                }
+                players={session.players}
+                me={session.players[session.currentPlayer]!.id}
+                storageKey={`dilemma.prediction.${session.seed}.${current.id}.${session.currentPlayer}`}
+                onSubmit={(option, duration, guesses) => {
+                  answer(option, duration, guesses);
+                  return true;
+                }}
+                onPause={() => setScreen("home")}
+              />
+            ) : (
+              <QuestionScreen
+                key={`${current.id}-${session.currentPlayer}`}
+                question={current}
+                locale={locale}
+                index={session.questionIds.length}
+                length={session.length}
+                reversed={(session.seed + session.questionIds.length) % 2 === 0}
+                name={
+                  session.mode === "group"
+                    ? session.players[session.currentPlayer]!.name
+                    : ""
+                }
+                timeLimit={
+                  session.mode === "group"
+                    ? (session.groupOptions?.timer ?? 0)
+                    : 0
+                }
+                onAnswer={answer}
+                onPause={() => setScreen("home")}
+              />
+            ))}
           {(screen === "round-reveal" || screen === "recap") && session && (
             <GroupReveal
               key={`${screen}-${session.pendingReveal ?? "all"}`}

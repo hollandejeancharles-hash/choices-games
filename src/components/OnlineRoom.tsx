@@ -1,3 +1,5 @@
+import { PredictionTurn } from "./PredictionTurn";
+import type { Guesses } from "../services/predictions";
 import { observeDiscussion } from "../services/discussion";
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
@@ -48,6 +50,7 @@ export function OnlineRoom({
       length: 10,
       timer: 20,
       reveal: "round",
+      predictions: true,
     },
   );
   const [busy, setBusy] = useState(false),
@@ -59,6 +62,7 @@ export function OnlineRoom({
   const [pending, setPending] = useState<{
     round: number;
     option: 0 | 1;
+    guesses?: Guesses;
   } | null>(null);
   const inFlight = useRef(false),
     mounted = useRef(true),
@@ -108,6 +112,7 @@ export function OnlineRoom({
       accept(data);
       setError("");
       if (action === "answer") setPending(null);
+      return true;
     } catch (e) {
       if (mounted.current)
         setError(e instanceof Error ? e.message : "connection-error");
@@ -162,7 +167,7 @@ export function OnlineRoom({
     const token = crypto.randomUUID();
     const creation = {
       name: name.trim(),
-      settings,
+      settings: { ...settings, predictions: true },
       deck: createSession(
         ["host"],
         settings.length,
@@ -581,10 +586,12 @@ export function OnlineRoom({
             <h1>
               {pending
                 ? fr
-                  ? "Envoi de ton choix…"
+                  ? "Envoi de tes choix…"
                   : "Sending your choice…"
                 : fr
-                  ? "Ton choix est à l’abri."
+                  ? room.settings.predictions
+                    ? "Tes choix et pronostics sont à l’abri."
+                    : "Ton choix est à l’abri."
                   : "Your choice is safe."}
             </h1>
             <p>
@@ -599,6 +606,25 @@ export function OnlineRoom({
               <i />
             </div>
           </section>
+        ) : room.settings.predictions ? (
+          <PredictionTurn
+            key={`${room.code}-${room.round}`}
+            question={room.question}
+            locale={locale}
+            index={room.round + 1}
+            length={room.settings.length}
+            reversed={(room.seed + room.round + 1) % 2 === 0}
+            name={me?.name ?? ""}
+            onPause={exit}
+            players={room.players}
+            me={room.me}
+            storageKey={`dilemma.prediction.online.${room.code}.${room.me}.${room.round}`}
+            onSubmit={async (option, _duration, guesses) => {
+              const answer = { round: room.round, option, guesses };
+              setPending(answer);
+              return Boolean(await request("answer", answer));
+            }}
+          />
         ) : (
           <QuestionScreen
             key={`${room.code}-${room.round}`}
@@ -631,6 +657,14 @@ export function OnlineRoom({
         i === room.round ? q.id : `past-${i}`,
       ),
       pendingReveal: room.round,
+      groupOptions: {
+        reveal: room.settings.reveal,
+        timer: room.settings.timer,
+        predictions: room.settings.predictions === true,
+      },
+      predictions: (room.predictions ?? [])
+        .filter((g) => g.round === room.round)
+        .map((g) => ({ ...g, questionId: q.id })),
       players: room.players.map((p) => ({
         id: p.id,
         name: p.name,
@@ -673,6 +707,15 @@ export function OnlineRoom({
       currentPlayer: 0,
       questionIds: room.deck.map((q) => q.id),
       discussionDurations: discussionDurations.current,
+      groupOptions: {
+        reveal: room.settings.reveal,
+        timer: room.settings.timer,
+        predictions: room.settings.predictions === true,
+      },
+      predictions: (room.predictions ?? []).map((g) => ({
+        ...g,
+        questionId: room.deck![g.round]!.id,
+      })),
       players: room.players.map((p) => ({
         id: p.id,
         name: p.name,

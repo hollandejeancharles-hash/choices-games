@@ -1,4 +1,4 @@
--- Dilemme private rooms v1. Run as project owner. No existing tables are changed.
+-- Dilemme private rooms v2. Run as project owner. Idempotent, preserves existing rooms.
 begin;
 create table if not exists public.dilemma_room_questions (id text primary key, pack text not null, axis text not null, question jsonb not null);
 create table if not exists public.dilemma_rooms (
@@ -15,6 +15,7 @@ create table if not exists public.dilemma_room_answers (
  code text not null references public.dilemma_rooms(code) on delete cascade, player_id uuid not null references public.dilemma_room_players(id) on delete cascade,
  round integer not null, option integer not null check(option in (0,1)), duration integer not null check(duration>=0), primary key(code,player_id,round)
 );
+alter table public.dilemma_room_answers add column if not exists guesses jsonb not null default '{}'::jsonb;
 alter table public.dilemma_room_questions enable row level security;
 alter table public.dilemma_rooms enable row level security;
 alter table public.dilemma_room_players enable row level security;
@@ -37,6 +38,7 @@ begin
      if (select count(*) from public.dilemma_rooms where created_at>now()-interval '1 minute')>=30 or (select count(*) from public.dilemma_rooms)>=2000 then raise exception 'busy'; end if;
      settings:=payload->'settings';
      if settings is null or settings->>'pack' not in ('general','friendship','couple','family') or settings->>'reveal' not in ('round','end') or settings->>'timer' not in ('0','20','30') or settings->>'length' not in ('10','15','25') then raise exception 'invalid-settings'; end if;
+     if settings ? 'predictions' and jsonb_typeof(settings->'predictions') <> 'boolean' then raise exception 'invalid-settings'; end if;
      n:=(settings->>'length')::integer;
      select array_agg(value) into ids from jsonb_array_elements_text(payload->'deck');
      if cardinality(ids) is distinct from n or (select count(distinct v) from unnest(ids) v)<>n then raise exception 'invalid-deck'; end if;
@@ -80,11 +82,18 @@ begin
  elsif action='answer' then
    idx:=(payload->>'round')::integer; opts:=(payload->>'option')::integer;
    if idx is null or opts is null or opts not in (0,1) then raise exception 'invalid-answer'; end if;
-   -- A retry of the same accepted answer is idempotent, even if the room advanced.
+   -- Commit the personal choice and all predictions atomically, before any reveal.
+   if r.settings->>'predictions'='true' then
+     if jsonb_typeof(payload->'guesses') is distinct from 'object' then raise exception 'incomplete-predictions'; end if;
+     if (select count(*) from jsonb_each(payload->'guesses')) <> (select count(*)-1 from public.dilemma_room_players where code=r.code)
+       or exists(select 1 from jsonb_each(payload->'guesses') g where g.value not in ('0'::jsonb,'1'::jsonb) or not exists(select 1 from public.dilemma_room_players m where m.code=r.code and m.id::text=g.key and m.id<>p.id)) then raise exception 'invalid-predictions'; end if;
+   end if;
+   -- Identical retries are safe; accepted predictions can never be changed.
+   if exists(select 1 from public.dilemma_room_answers a where a.code=r.code and a.player_id=p.id and a.round=idx and (a.option<>opts or (r.settings->>'predictions'='true' and a.guesses is distinct from payload->'guesses'))) then raise exception 'answer-locked'; end if;
    if exists(select 1 from public.dilemma_room_answers where code=r.code and player_id=p.id and round=idx and option=opts) then null;
    else
      if r.phase<>'question' or idx<>r.round then raise exception 'stale-question'; end if;
-     insert into public.dilemma_room_answers(code,player_id,round,option,duration) values(r.code,p.id,idx,opts,least(7200000,greatest(0,floor(extract(epoch from(now()-r.started_at))*1000)::integer)));
+     insert into public.dilemma_room_answers(code,player_id,round,option,guesses,duration) values(r.code,p.id,idx,opts,case when r.settings->>'predictions'='true' then payload->'guesses' else '{}'::jsonb end,least(7200000,greatest(0,floor(extract(epoch from(now()-r.started_at))*1000)::integer)));
      select count(*) into total from public.dilemma_room_players where code=r.code;
      if (select count(*) from public.dilemma_room_answers where code=r.code and round=r.round)=total then
        if r.settings->>'reveal'='round' then update public.dilemma_rooms set phase='reveal' where code=r.code;
@@ -105,6 +114,7 @@ begin
  'question',case when r.phase in ('question','reveal') then r.deck->r.round else null end,
  'deck',case when r.phase='finished' then r.deck else null end,
  'players',(select jsonb_agg(jsonb_build_object('id',m.id,'name',m.name,'online',m.seen_at>now()-interval '15 seconds','answered',exists(select 1 from public.dilemma_room_answers a where a.code=r.code and a.player_id=m.id and a.round=r.round)) order by m.joined_at,m.id) from public.dilemma_room_players m where m.code=r.code),
+ 'predictions',case when expose then coalesce((select jsonb_agg(jsonb_build_object('player',a.player_id,'target',g.key,'round',a.round,'option',g.value)) from public.dilemma_room_answers a cross join lateral jsonb_each(a.guesses) g where a.code=r.code and (r.phase='finished' or a.round=r.round)),'[]'::jsonb) else '[]'::jsonb end,
  'answers',case when expose then coalesce((select jsonb_agg(jsonb_build_object('player',a.player_id,'round',a.round,'option',a.option,'duration',a.duration)) from public.dilemma_room_answers a where a.code=r.code and (r.phase='finished' or a.round=r.round)),'[]'::jsonb) else '[]'::jsonb end) into result;
  return result;
 end $$;

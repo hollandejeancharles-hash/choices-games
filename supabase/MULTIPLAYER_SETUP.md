@@ -31,3 +31,11 @@ Un code partagé donne accès au lobby: ne pas publier le lien d'une partie priv
 - `npm run build`: TypeScript et bundle de production. Le module Supabase/QR est chargé à l'ouverture du mode en ligne.
 
 Les deux modes ont aussi été testés contre la RPC du projet Supabase réel, avec des salons de test fermés ensuite.
+
+## Pronostics (19 septembre 2026)
+
+Les nouvelles parties à plusieurs activent `settings.predictions`. Chaque joueur choisit sa réponse puis prédit celle de chaque autre participant. Une bonne prédiction rapporte un point, aucun point ne dépend du choix personnel ou de la rapidité. Les égalités partagent le rang et le titre.
+
+Réexécuter `multiplayer.sql` ajoute la colonne JSONB `guesses` et remplace la RPC sans supprimer les parties existantes. Les anciens salons continuent sans pronostics. La RPC exige exactement une prédiction (0 ou 1) par autre membre, enregistre réponse et pronostics ensemble, refuse les modifications après validation et masque les pronostics jusqu’à la révélation. Le classement est calculé à partir des réponses et pronostics validés, jamais à partir d’un score envoyé par le client.
+
+Sur un appareil partagé, les pronostics en cours sont sauvegardés localement, puis les réponses et pronostics terminés sont conservés dans la session. En ligne, un brouillon local permet de reprendre après rechargement et la validation est conservée par le serveur. Le chrono reste indicatif. Les nouveaux tests couvrent les deux modes de révélation, les pronostics incomplets, la confidentialité, les relances, les égalités et les anciens formats.

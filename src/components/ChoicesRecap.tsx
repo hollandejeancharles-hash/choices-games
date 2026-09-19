@@ -1,3 +1,4 @@
+import { PredictionLeaderboard } from "./PredictionLeaderboard";
 import { useState } from "react";
 import type { Locale } from "../core/types";
 import type { Session } from "../services/session";
@@ -133,6 +134,7 @@ export function ChoicesRecap({
           ))}
         </div>
       </div>
+      <PredictionLeaderboard session={session} locale={locale} />
       <div className="recap-stats">
         {[
           [same, fr ? "Tous d’accord" : "Unanimous"],

@@ -2,6 +2,7 @@ import { supabase } from "./supabase";
 import type { Question, GameLength } from "../core/types";
 import type { PackId } from "../data/packs";
 export interface RoomSettings {
+  predictions?: boolean;
   expectedPlayers?: number;
   context?: string;
   pack: PackId;
@@ -23,6 +24,12 @@ export interface RoomState {
   question: Question | null;
   deck: Question[] | null;
   players: { id: string; name: string; online: boolean; answered: boolean }[];
+  predictions?: {
+    player: string;
+    target: string;
+    round: number;
+    option: 0 | 1;
+  }[];
   answers: { player: string; round: number; option: 0 | 1; duration: number }[];
 }
 export interface RoomCredential {

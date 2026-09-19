@@ -75,6 +75,95 @@ for (const reveal of ["round", "end"]) {
   assert.ok(!JSON.stringify(r).includes(host));
   assert.ok(!JSON.stringify(r).includes(guest));
 }
+// Predictions remain secret and immutable, including after the room advances.
+for (const reveal of ["round", "end"]) {
+  const tokens = [
+    crypto.randomUUID(),
+    crypto.randomUUID(),
+    crypto.randomUUID(),
+  ];
+  let r = await call("create", tokens[0], "", {
+    name: "A",
+    settings: {
+      pack: "general",
+      length: 10,
+      timer: 0,
+      reveal,
+      predictions: true,
+    },
+    deck,
+  });
+  const code = r.code;
+  await call("join", tokens[1], code, { name: "B" });
+  await call("join", tokens[2], code, { name: "C" });
+  r = await call("start", tokens[0], code);
+  const ids = ["A", "B", "C"].map(
+    (name) => r.players.find((p) => p.name === name).id,
+  );
+  for (let round = 0; round < 10; round++) {
+    await assert.rejects(
+      call("answer", tokens[0], code, { round, option: 0 }),
+      /incomplete-predictions/,
+    );
+    await assert.rejects(
+      call("answer", tokens[0], code, {
+        round,
+        option: 0,
+        guesses: { [ids[1]]: 0 },
+      }),
+      /invalid-predictions/,
+    );
+    await assert.rejects(
+      call("answer", tokens[0], code, {
+        round,
+        option: 0,
+        guesses: { [ids[0]]: 0, [ids[1]]: 1 },
+      }),
+      /invalid-predictions/,
+    );
+    await assert.rejects(
+      call("answer", tokens[0], code, {
+        round,
+        option: 0,
+        guesses: { [ids[1]]: "0", [ids[2]]: 1 },
+      }),
+      /invalid-predictions/,
+    );
+    for (let player = 0; player < 3; player++) {
+      const payload = {
+        round,
+        option: player % 2,
+        guesses: Object.fromEntries(
+          ids.filter((id) => id !== ids[player]).map((id) => [id, 1]),
+        ),
+      };
+      r = await call("answer", tokens[player], code, payload);
+      if (player < 2) {
+        assert.deepEqual(r.answers, []);
+        assert.deepEqual(r.predictions, []);
+      }
+      await call("answer", tokens[player], code, payload);
+      await assert.rejects(
+        call("answer", tokens[player], code, {
+          ...payload,
+          guesses: Object.fromEntries(
+            ids.filter((id) => id !== ids[player]).map((id) => [id, 0]),
+          ),
+        }),
+        /answer-locked/,
+      );
+    }
+    if (reveal === "round") {
+      assert.equal(r.predictions.length, 6);
+      r = await call("next", tokens[0], code, { round });
+    } else if (round < 9) {
+      assert.deepEqual(r.predictions, []);
+    }
+  }
+  assert.equal(r.phase, "finished");
+  assert.equal(r.predictions.length, 60);
+  assert.equal(r.answers.length, 30);
+}
 for (const table of [
   "dilemma_rooms",
   "dilemma_room_players",

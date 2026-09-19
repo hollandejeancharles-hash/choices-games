@@ -1,3 +1,4 @@
+import { validGuesses, type Guesses, type Prediction } from "./predictions";
 import { balancedDeck } from "../core/balanced";
 import { PACKS, type PackId } from "../data/packs";
 import type {
@@ -37,7 +38,12 @@ export function initialLocale(): Locale {
 }
 export interface Session extends Game {
   seed: number;
-  groupOptions?: { reveal: "round" | "end"; timer: 0 | 20 | 30 };
+  groupOptions?: {
+    reveal: "round" | "end";
+    timer: 0 | 20 | 30;
+    predictions?: boolean;
+  };
+  predictions?: Prediction[];
   pendingReveal?: number;
   pendingRecap?: boolean;
   discussionStartedAt?: number;
@@ -106,7 +112,9 @@ export function parseSession(raw: string | null): Session | null {
         !record(data.groupOptions) ||
         !["round", "end"].includes(String(data.groupOptions.reveal)) ||
         ![0, 20, 30].includes(Number(data.groupOptions.timer)) ||
-        typeof data.groupOptions.timer !== "number")
+        typeof data.groupOptions.timer !== "number" ||
+        (data.groupOptions.predictions !== undefined &&
+          typeof data.groupOptions.predictions !== "boolean"))
     )
       return null;
     const players: Player[] = [];
@@ -171,7 +179,50 @@ export function parseSession(raw: string | null): Session | null {
         !complete)
     )
       return null;
+    let predictions: Prediction[] | undefined;
+    if (data.predictions !== undefined) {
+      if (!Array.isArray(data.predictions)) return null;
+      const seen = new Set<string>();
+      predictions = [];
+      for (const g of data.predictions) {
+        if (
+          !record(g) ||
+          typeof g.player !== "string" ||
+          typeof g.target !== "string" ||
+          typeof g.questionId !== "string" ||
+          ![0, 1].includes(Number(g.option)) ||
+          typeof g.option !== "number" ||
+          g.player === g.target ||
+          !players.some((p) => p.id === g.target) ||
+          !players.some(
+            (p) =>
+              p.id === g.player &&
+              p.answers.some((a) => a.questionId === g.questionId),
+          )
+        )
+          return null;
+        const key = JSON.stringify([g.player, g.target, g.questionId]);
+        if (seen.has(key)) return null;
+        seen.add(key);
+        predictions.push(g as unknown as Prediction);
+      }
+    }
+    if (
+      record(data.groupOptions) &&
+      data.groupOptions.predictions === true &&
+      players.some((p) =>
+        p.answers.some(
+          (a) =>
+            (predictions ?? []).filter(
+              (g) => g.player === p.id && g.questionId === a.questionId,
+            ).length !==
+            players.length - 1,
+        ),
+      )
+    )
+      return null;
     return {
+      ...(predictions ? { predictions } : {}),
       ...(data.groupOptions
         ? {
             groupOptions: data.groupOptions as NonNullable<
@@ -278,6 +329,7 @@ export function recordAnswer(
   session: Session,
   option: 0 | 1,
   durationMs: number,
+  guesses?: Guesses,
 ): Session {
   if (
     isComplete(session) ||
@@ -290,6 +342,22 @@ export function recordAnswer(
   if (current.answers.some((a) => a.questionId === id)) return session;
   if (!Number.isFinite(durationMs) || durationMs < 0)
     throw new Error("Invalid duration");
+  if (session.groupOptions?.predictions) {
+    if (!validGuesses(guesses, session.players, current.id))
+      throw new Error("Incomplete predictions");
+    session = {
+      ...session,
+      predictions: [
+        ...(session.predictions ?? []),
+        ...Object.entries(guesses).map(([target, option]) => ({
+          player: current.id,
+          target,
+          questionId: id,
+          option,
+        })),
+      ],
+    };
+  }
   const players = session.players.map((p, i) =>
     i === session.currentPlayer
       ? {

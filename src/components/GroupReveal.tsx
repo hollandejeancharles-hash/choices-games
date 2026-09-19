@@ -1,3 +1,4 @@
+import { PredictionLeaderboard } from "./PredictionLeaderboard";
 import { ChoicesRecap } from "./ChoicesRecap";
 import { useState, type CSSProperties } from "react";
 import type { Locale } from "../core/types";
@@ -65,6 +66,11 @@ export function GroupReveal({
           ? "Tout le monde a répondu. Découvrez vos choix et les raisons derrière."
           : "Everyone has answered. Discover your choices and the reasons behind them."}
       </p>
+      <PredictionLeaderboard
+        session={session}
+        locale={locale}
+        questionId={q.id}
+      />
       {recap && (
         <nav
           className="recap-navigation"

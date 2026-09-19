@@ -568,9 +568,13 @@ export function GameSetup({
       {step === "summary" && (
         <p className="summary-reassurance">
           <span aria-hidden="true">✧</span>
-          {fr
-            ? "Pas de bonne réponse. Juste la tienne."
-            : "No right answer. Just yours."}
+          {c.mode === "group"
+            ? fr
+              ? "Réponds pour toi, devine les autres. Une bonne prédiction = un point. Le meilleur score gagne !"
+              : "Answer for yourself, then guess everyone else. One correct prediction = one point. Highest score wins!"
+            : fr
+              ? "Pas de bonne réponse. Juste la tienne."
+              : "No right answer. Just yours."}
         </p>
       )}
       <div className="wizard-footer">
