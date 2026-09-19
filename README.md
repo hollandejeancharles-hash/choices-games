@@ -35,6 +35,7 @@ Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé, Supabas
 - Clavier ←/→, clic, glissement horizontal sur les cartes tactiles, focus visible, lien d'évitement, réduction des animations.
 - Thèmes clair et sombre ; responsive pour téléphone et ordinateur.
 - Compte joueur facultatif : inscription par e-mail, confirmation d’adresse, connexion persistante, déconnexion et récupération sécurisée du mot de passe. Le pseudo est stocké dans les métadonnées du compte ; les salons restent accessibles sans compte.
+- Sauvegarde cloud privée de la partie en cours pour les joueurs connectés. Les portraits solo terminés alimentent une chronologie affichant les 20 résultats les plus récents avec comparaison de l’évolution entre deux parties.
 - Pause explicite et pause quand l'onglet est masqué. Le chronomètre commence quand le dilemme est révélé.
 - Reprise de la dernière partie, langue et thème conservés avec `localStorage`, accès protégés par `try/catch`. Une sauvegarde invalide est ignorée ; un échec d'écriture est signalé.
 - Profils avec 10 archétypes, second archétype, radar, trois tendances, contradictions et décisions longues.
@@ -190,3 +191,11 @@ Conserver les URL de développement utilisées par l’équipe (par exemple
 confirmation e-mail dans les réglages d’authentification pour que la création
 d’un compte exige la validation de l’adresse. Les modèles d’e-mail de
 confirmation et de récupération doivent conserver `{{ .ConfirmationURL }}`.
+
+Exécuter ensuite `supabase/player-accounts.sql` dans l’éditeur SQL. La migration
+crée la sauvegarde active et l’historique privé, active RLS et limite chaque
+lecture ou écriture au propriétaire authentifié. Les résultats historiques ne
+contiennent pas les réponses détaillées : uniquement la date, le format,
+l’archétype et le vecteur des six dimensions. Les réponses restent présentes
+dans la sauvegarde active le temps de terminer la partie, puis celle-ci est
+supprimée.

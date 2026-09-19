@@ -38,6 +38,13 @@ import { ProfileView } from "./components/Profile";
 import { QuestionScreen } from "./components/QuestionScreen";
 import { AuroraBackground } from "./components/ui/aurora-background";
 import { Testimonials } from "./components/ui/3d-testimonials";
+import { playerAuth } from "./services/supabase";
+import {
+  archiveSoloResult,
+  clearCloudSession,
+  loadCloudSession,
+  saveCloudSession,
+} from "./services/player-cloud";
 type Screen =
   | "recovery"
   | "account"
@@ -67,11 +74,11 @@ export default function App() {
       ? "recovery"
       : new URLSearchParams(location.search).get("account") === "1"
         ? "account"
-      : location.hash.startsWith("#room=")
-        ? "online"
-        : shared
-          ? "result"
-          : "home",
+        : location.hash.startsWith("#room=")
+          ? "online"
+          : shared
+            ? "result"
+            : "home",
   );
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(loadSession);
@@ -88,6 +95,36 @@ export default function App() {
   }, [dark]);
   useEffect(() => {
     if (session) setStorageError(!saveSession(session));
+  }, [session]);
+  useEffect(() => {
+    const restore = async () => {
+      if (loadSession()) return;
+      const cloud = await loadCloudSession();
+      if (cloud && !isComplete(cloud)) setSession(cloud);
+    };
+    void restore().catch(() => {});
+    const { data } = playerAuth.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN") return;
+      const local = loadSession();
+      if (!local) {
+        void restore().catch(() => {});
+      } else if (isComplete(local)) {
+        void archiveSoloResult(local).catch(() => {});
+        void clearCloudSession().catch(() => {});
+      } else {
+        void saveCloudSession(local).catch(() => {});
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+  useEffect(() => {
+    if (!session) return;
+    if (isComplete(session)) {
+      void archiveSoloResult(session).catch(() => {});
+      void clearCloudSession().catch(() => {});
+    } else {
+      void saveCloudSession(session).catch(() => {});
+    }
   }, [session]);
   useEffect(() => {
     if (screen !== "analysis") return;
@@ -239,7 +276,10 @@ export default function App() {
             </button>
           </nav>
           <div className="header-tools">
-            <button className="account-button" onClick={() => setScreen("account")}>
+            <button
+              className="account-button"
+              onClick={() => setScreen("account")}
+            >
               {locale === "fr" ? "Mon compte" : "My account"}
             </button>
             <div className="locale-switch" aria-label={t.language}>
