@@ -3,6 +3,7 @@ import type { Guesses } from "./services/predictions";
 import { GameSetup, type GameConfig } from "./components/GameSetup";
 import { recoveryLanding } from "./services/recovery";
 import { PasswordRecovery } from "./components/PasswordRecovery";
+import { PlayerAccount } from "./components/PlayerAccount";
 import { GroupReveal } from "./components/GroupReveal";
 
 import { ProposeDilemma, AdminDilemmas } from "./components/Community";
@@ -39,6 +40,7 @@ import { AuroraBackground } from "./components/ui/aurora-background";
 import { Testimonials } from "./components/ui/3d-testimonials";
 type Screen =
   | "recovery"
+  | "account"
   | "online"
   | "propose"
   | "admin"
@@ -63,6 +65,8 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>(
     recoveryLanding
       ? "recovery"
+      : new URLSearchParams(location.search).get("account") === "1"
+        ? "account"
       : location.hash.startsWith("#room=")
         ? "online"
         : shared
@@ -235,6 +239,9 @@ export default function App() {
             </button>
           </nav>
           <div className="header-tools">
+            <button className="account-button" onClick={() => setScreen("account")}>
+              {locale === "fr" ? "Mon compte" : "My account"}
+            </button>
             <div className="locale-switch" aria-label={t.language}>
               {(["fr", "en"] as const).map((l) => (
                 <button
@@ -349,6 +356,9 @@ export default function App() {
               locale={locale}
               onLogin={() => setScreen("admin")}
             />
+          )}
+          {screen === "account" && (
+            <PlayerAccount locale={locale} onBack={() => setScreen("home")} />
           )}
           {screen === "admin" && (
             <AdminDilemmas

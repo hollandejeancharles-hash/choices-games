@@ -26,7 +26,7 @@ npm run preview
 
 `npm run format` met en forme le code ; `npm run format:check` le vérifie.
 
-Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé et Vitest. Aucun backend, compte utilisateur, police distante ou service d'analyse. Le radar est un SVG accessible ; la carte téléchargeable est dessinée en Canvas et exportée en PNG.
+Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé, Supabase Auth et Vitest. Les comptes joueurs utilisent Supabase Auth ; aucune réponse détaillée de partie n’y est envoyée. Le radar est un SVG accessible ; la carte téléchargeable est dessinée en Canvas et exportée en PNG.
 
 ## Fonctionnalités
 
@@ -34,6 +34,7 @@ Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé et Vites
 - Parties équilibrées de 10, 15 ou 25 questions, avec un pack présélectionné. Ordre des options alterné pour limiter le biais de position.
 - Clavier ←/→, clic, glissement horizontal sur les cartes tactiles, focus visible, lien d'évitement, réduction des animations.
 - Thèmes clair et sombre ; responsive pour téléphone et ordinateur.
+- Compte joueur facultatif : inscription par e-mail, confirmation d’adresse, connexion persistante, déconnexion et récupération sécurisée du mot de passe. Le pseudo est stocké dans les métadonnées du compte ; les salons restent accessibles sans compte.
 - Pause explicite et pause quand l'onglet est masqué. Le chronomètre commence quand le dilemme est révélé.
 - Reprise de la dernière partie, langue et thème conservés avec `localStorage`, accès protégés par `try/catch`. Une sauvegarde invalide est ignorée ; un échec d'écriture est signalé.
 - Profils avec 10 archétypes, second archétype, radar, trois tendances, contradictions et décisions longues.
@@ -176,3 +177,16 @@ Voir [le guide de mise en service](docs/COMMUNITY_SETUP.md) et la migration
 `.env.example`. Les propositions ne rejoignent le catalogue qu’après validation
 admin avec traductions et axe de score. Les contrôles SQL doivent être exécutés
 sur le projet réel avant ouverture des propositions.
+
+### Comptes joueurs
+
+Dans **Supabase > Authentication > URL Configuration**, ajouter l’URL de
+redirection de production :
+
+`https://hollandejeancharles-hash.github.io/choices-games/?account=1`
+
+Conserver les URL de développement utilisées par l’équipe (par exemple
+`http://localhost:5173/?account=1`) uniquement si nécessaire. Activer la
+confirmation e-mail dans les réglages d’authentification pour que la création
+d’un compte exige la validation de l’adresse. Les modèles d’e-mail de
+confirmation et de récupération doivent conserver `{{ .ConfirmationURL }}`.
