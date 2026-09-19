@@ -40,6 +40,8 @@ export interface Session extends Game {
   groupOptions?: { reveal: "round" | "end"; timer: 0 | 20 | 30 };
   pendingReveal?: number;
   pendingRecap?: boolean;
+  discussionStartedAt?: number;
+  discussionDurations?: Record<string, number>;
   pack?: PackId;
   deck?: string[];
 }
@@ -181,6 +183,25 @@ export function parseSession(raw: string | null): Session | null {
         ? { pendingReveal: data.pendingReveal }
         : {}),
       ...(data.pendingRecap === true ? { pendingRecap: true } : {}),
+      ...(typeof data.discussionStartedAt === "number" &&
+      Number.isFinite(data.discussionStartedAt) &&
+      data.discussionStartedAt > 0
+        ? { discussionStartedAt: data.discussionStartedAt }
+        : {}),
+      ...(record(data.discussionDurations)
+        ? {
+            discussionDurations: Object.fromEntries(
+              Object.entries(data.discussionDurations).filter(
+                ([id, ms]) =>
+                  (data.questionIds as string[]).includes(id) &&
+                  typeof ms === "number" &&
+                  Number.isFinite(ms) &&
+                  ms >= 0 &&
+                  ms <= 7200000,
+              ),
+            ) as Record<string, number>,
+          }
+        : {}),
       version: 1,
       mode: data.mode as Game["mode"],
       length: data.length as GameLength,
@@ -284,7 +305,10 @@ export function recordAnswer(
     players,
     currentPlayer: 0,
     ...(session.groupOptions?.reveal === "round"
-      ? { pendingReveal: session.questionIds.length - 1 }
+      ? {
+          pendingReveal: session.questionIds.length - 1,
+          discussionStartedAt: Date.now(),
+        }
       : {}),
     ...(session.groupOptions?.reveal === "end" &&
     players.every((p) => p.answers.length === session.length)
@@ -306,8 +330,20 @@ export function recordAnswer(
   return { ...updated, questionIds: [...session.questionIds, next.id] };
 }
 
-export function acknowledgeReveal(session: Session): Session {
+export function acknowledgeReveal(session: Session, now = Date.now()): Session {
   const next = { ...session };
+  if (
+    session.pendingReveal !== undefined &&
+    session.discussionStartedAt !== undefined
+  ) {
+    const id = session.questionIds[session.pendingReveal];
+    if (id)
+      next.discussionDurations = {
+        ...session.discussionDurations,
+        [id]: Math.min(7200000, Math.max(0, now - session.discussionStartedAt)),
+      };
+  }
+  delete next.discussionStartedAt;
   delete next.pendingReveal;
   delete next.pendingRecap;
   if (

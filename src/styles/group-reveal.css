@@ -1654,3 +1654,222 @@ body:has(.choices-recap) {
     margin-bottom: 26px;
   }
 }
+
+/* A warm, prose-led story of the group's decisions. */
+.group-story {
+  max-width: 1180px;
+  margin: 48px auto 70px;
+}
+.story-hero {
+  display: flex;
+  gap: 32px;
+  justify-content: space-between;
+  align-items: center;
+}
+.group-story .story-hero h1 {
+  font-size: clamp(34px, 4.5vw, 62px);
+  line-height: 1.07;
+  letter-spacing: -0.055em;
+  margin: 18px 0;
+  font-weight: 850;
+}
+.group-story .story-hero h1 em {
+  color: #d94b40;
+}
+.story-hero .eyebrow {
+  color: #ab392f;
+}
+.story-hero .lead {
+  font-size: 20px;
+  letter-spacing: 0.02em;
+}
+.story-avatars {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 280px;
+}
+.story-avatars .recap-avatar {
+  width: 68px;
+  height: 68px;
+  font-size: 28px;
+  margin-left: -6px;
+  border: 3px solid var(--bg);
+}
+.story-opening {
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--muted);
+  max-width: 830px;
+  margin: 16px 0 32px;
+}
+.story-paragraphs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.story-paragraphs article {
+  padding: 30px 34px;
+  border-radius: 26px;
+  background: #edf8f0;
+  color: #173d2a;
+  border: 1px solid #d6eadd;
+}
+.story-paragraphs article:nth-child(2) {
+  background: #fff0eb;
+  color: #663129;
+  border-color: #f6ddd4;
+}
+.story-symbol {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ffffff80;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+.group-story .story-paragraphs h2 {
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+  font-weight: 750;
+  margin: 0 0 16px;
+}
+.story-paragraphs p {
+  font-size: 16px;
+  line-height: 1.85;
+  margin: 0;
+}
+.group-story .division-panel {
+  background: #fff6d9;
+  color: #513c17;
+  border: 1px solid #f5e3a7;
+  border-radius: 26px;
+  padding: 30px 34px;
+  margin: 26px 0 42px;
+}
+.group-story .division-panel .eyebrow {
+  color: #79530f;
+}
+.group-story .story-discussion-title {
+  font-size: 30px;
+  letter-spacing: -0.045em;
+  line-height: 1.2;
+  margin: 15px 0;
+}
+.group-story .division-panel h3 {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  max-width: 920px;
+}
+.story-duration {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #765b26;
+}
+.group-story .division-options {
+  gap: 16px;
+  margin-top: 24px;
+}
+.group-story .division-options > div {
+  padding: 20px;
+  border-radius: 18px;
+  background: #ffffff80;
+  border: 0;
+}
+.group-story .division-options p {
+  font-size: 15px;
+  line-height: 1.6;
+}
+.story-profile-intro {
+  color: var(--muted);
+  margin-top: -8px;
+  margin-bottom: 24px;
+}
+.group-story .player-profile {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--soft);
+  padding: 24px;
+  transition: transform 0.18s;
+}
+.group-story .player-profile:hover {
+  transform: translateY(-3px);
+}
+.group-story > .primary {
+  margin-top: 28px;
+  border-radius: 40px;
+}
+.group-story .section-heading {
+  font-size: 30px;
+  letter-spacing: -0.04em;
+}
+:root[data-theme="dark"] .story-paragraphs article {
+  background: #193629;
+  color: #d7eee0;
+  border-color: #345842;
+}
+:root[data-theme="dark"] .story-paragraphs article:nth-child(2) {
+  background: #402923;
+  color: #f6d9d0;
+  border-color: #65443b;
+}
+:root[data-theme="dark"] .group-story .division-panel {
+  background: #3b311d;
+  color: #f8e7bd;
+  border-color: #695a36;
+}
+:root[data-theme="dark"] .group-story .division-panel .eyebrow,
+:root[data-theme="dark"] .story-duration {
+  color: #eed292;
+}
+:root[data-theme="dark"] .group-story .division-options > div,
+:root[data-theme="dark"] .story-symbol {
+  background: #ffffff0b;
+}
+@media (max-width: 700px) {
+  .group-story {
+    margin-top: 30px;
+  }
+  .story-hero {
+    display: block;
+  }
+  .story-avatars {
+    justify-content: flex-start;
+    max-width: 100%;
+    margin: 20px 0;
+  }
+  .story-avatars .recap-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 23px;
+  }
+  .story-paragraphs {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .story-paragraphs article,
+  .group-story .division-panel {
+    padding: 24px;
+  }
+  .story-opening {
+    font-size: 16px;
+  }
+  .story-paragraphs p {
+    font-size: 15px;
+  }
+  .group-story .story-discussion-title {
+    font-size: 26px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .group-story .player-profile {
+    transition: none;
+  }
+  .group-story .player-profile:hover {
+    transform: none;
+  }
+}

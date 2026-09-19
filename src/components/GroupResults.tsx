@@ -1,7 +1,7 @@
 import type { Locale } from "../core/types";
 import { compareGroup, rankArchetypes } from "../core/engine";
-import { duoSummary } from "../core/duo";
-import { archetypes, axisCopy } from "../data/archetypes";
+import { groupStory, longestDiscussion } from "../core/group-story";
+import { archetypes } from "../data/archetypes";
 import { questions } from "../data/questions";
 import { copy } from "../i18n";
 import type { Session } from "../services/session";
@@ -18,20 +18,20 @@ export function GroupResults({
 }) {
   const t = copy[locale],
     group = compareGroup(questions, session.players);
-  const isDuo = session.players.length === 2;
-  const duo = isDuo
-    ? duoSummary(
-        session.players[0]!,
-        session.players[1]!,
-        group.profiles[0]!.profile,
-        group.profiles[1]!.profile,
-      )
-    : null;
-  const axisLabel = (axis: keyof typeof axisCopy) =>
-    `${axisCopy[axis].negative[locale]} / ${axisCopy[axis].positive[locale]}`;
-  const divided = questions.find(
-    (q) => q.id === group.mostDivisive?.questionId,
+  const fr = locale === "fr";
+  const story = groupStory(group.profiles, locale);
+  const discussed = longestDiscussion(
+    session.discussionDurations,
+    session.questionIds,
   );
+  const divided = questions.find((q) => q.id === discussed?.id);
+  const agreed = session.questionIds.filter((id) =>
+    session.players.every(
+      (p) =>
+        p.answers.find((a) => a.questionId === id)?.option ===
+        session.players[0]?.answers.find((a) => a.questionId === id)?.option,
+    ),
+  ).length;
   const dividedOrder =
     divided &&
     (session.seed + session.questionIds.indexOf(divided.id) + 1) % 2 === 0
@@ -39,116 +39,76 @@ export function GroupResults({
       : ([0, 1] as const);
   const names = (ids: readonly string[]) =>
     ids.map((id) => session.players.find((p) => p.id === id)?.name).join(" × ");
-  const allEqual = group.pairs.every(
-    (pair) => pair.similarity === group.pairs[0]?.similarity,
-  );
   return (
-    <section className="group-results page-in">
-      <span className="eyebrow">
-        {t.brand} / {t.group}
-      </span>
-      <h1>{t.groupTitle}</h1>
-      <p className="lead">{t.groupIntro}</p>
-      {duo ? (
-        <section className="duo-card">
-          <div className="duo-card-heading">
-            <div>
-              <span className="eyebrow">
-                {locale === "fr" ? "VOTRE DUO" : "YOUR DUO"}
-              </span>
-              <h2>{names(session.players.map((p) => p.id))}</h2>
-            </div>
-            <span className="duo-symbol" aria-hidden="true">
-              ◎
+    <section className="group-results group-story page-in">
+      <div className="story-hero">
+        <div>
+          <span className="eyebrow">
+            {fr ? "LE PORTRAIT DE VOTRE PARTIE" : "THE STORY OF YOUR GAME"}
+          </span>
+          <h1>
+            {fr ? (
+              <>
+                Ce qui vous rapproche.
+                <br />
+                <em>Ce qui vous surprend.</em>
+              </>
+            ) : (
+              <>
+                What brings you together.
+                <br />
+                <em>What surprises you.</em>
+              </>
+            )}
+          </h1>
+          <p className="lead">{names(session.players.map((p) => p.id))}</p>
+        </div>
+        <div className="story-avatars" aria-hidden="true">
+          {session.players.map((p, i) => (
+            <span className={`recap-avatar avatar-${i % 4}`} key={p.id}>
+              {p.name.slice(0, 1).toUpperCase()}
             </span>
-          </div>
-          <div className="duo-common-count">
-            <strong>
-              {duo.same}
-              <small> / {duo.total}</small>
-            </strong>
-            <p>
-              {locale === "fr"
-                ? "dilemmes où vous avez choisi la même réponse"
-                : "dilemmas where you chose the same answer"}
-            </p>
-          </div>
-          <div className="duo-insights">
-            <article>
-              <h3>
-                {locale === "fr" ? "Vos points communs" : "Your common ground"}
-              </h3>
-              <p>
-                {duo.common.length
-                  ? duo.common.map(axisLabel).join(" · ")
-                  : locale === "fr"
-                    ? "Vos scores dessinent des tendances différentes sur les dimensions explorées."
-                    : "Your scores show different tendencies across the dimensions explored."}
-              </p>
-              {duo.common.length > 0 && (
-                <small>
-                  {locale === "fr"
-                    ? "Vos scores se rapprochent sur ces dimensions, sans forcément les mêmes raisons."
-                    : "Your scores are close on these dimensions, though your reasons may differ."}
-                </small>
-              )}
-            </article>
-            <article>
-              <h3>
-                {locale === "fr" ? "Ce qui vous distingue" : "Where you differ"}
-              </h3>
-              <p>
-                {duo.different.length
-                  ? duo.different.map(axisLabel).join(" · ")
-                  : locale === "fr"
-                    ? "Vos scores sont identiques sur les dimensions explorées."
-                    : "Your scores match on the dimensions explored."}
-              </p>
-              {duo.different.length > 0 && (
-                <small>
-                  {locale === "fr"
-                    ? "L’écart le plus marqué entre vos portraits dans cette partie."
-                    : "The largest gap between your portraits in this round."}
-                </small>
-              )}
-            </article>
-          </div>
-        </section>
-      ) : (
-        <div className="compatibility-cards">
-          {[group.closest, group.furthest].map((pair, i) => (
-            <article className="profile-panel" key={i}>
-              <span className="eyebrow">
-                {i === 0 ? t.closest : t.furthest}
-              </span>
-              <strong className="compatibility-number">
-                {pair.similarity}
-                <small>%</small>
-              </strong>
-              <p>{t.similarity}</p>
-              <h2>{names(pair.players)}</h2>
-            </article>
           ))}
         </div>
-      )}
-      {!isDuo && allEqual && (
-        <p className="fine-print">
-          {locale === "fr"
-            ? "Tous les duos ont le même score : les deux catégories sont ex æquo."
-            : "Every pair has the same score: both categories are tied."}
-        </p>
-      )}
+      </div>
+      <p className="story-opening">
+        {fr
+          ? `Vous avez fait le même choix sur ${agreed} des ${session.questionIds.length} dilemmes. Voici ce que vos réponses racontent de cette partie, et quelques pistes pour poursuivre la conversation.`
+          : `You made the same choice on ${agreed} of ${session.questionIds.length} dilemmas. Here is what your answers suggest about this game, and a few ways to keep the conversation going.`}
+      </p>
+      <div className="story-paragraphs">
+        <article>
+          <span className="story-symbol" aria-hidden="true">
+            ◎
+          </span>
+          <h2>{fr ? "Votre terrain commun" : "Your common ground"}</h2>
+          <p>{story.common}</p>
+        </article>
+        <article>
+          <span className="story-symbol" aria-hidden="true">
+            ↗
+          </span>
+          <h2>{fr ? "Vos façons de voir" : "Your different perspectives"}</h2>
+          <p>{story.different}</p>
+        </article>
+      </div>
       <section className="profile-panel division-panel">
         <span className="eyebrow">
-          {isDuo
-            ? locale === "fr"
-              ? "LE DILEMME QUI VOUS DIVISE"
-              : "THE DILEMMA THAT DIVIDES YOU"
-            : t.divided}
+          {fr ? "LA CONVERSATION QUI A DURÉ" : "THE CONVERSATION THAT LASTED"}
         </span>
+        <h2 className="story-discussion-title">
+          {fr
+            ? "Vous aviez encore des choses à vous dire."
+            : "You still had more to say."}
+        </h2>
         {divided ? (
           <>
-            <h2>{divided.prompt[locale]}</h2>
+            <p className="story-duration">
+              {fr
+                ? `Environ ${Math.max(1, Math.round((discussed?.ms ?? 0) / 1000))} secondes sur cette révélation : votre plus long temps enregistré.`
+                : `About ${Math.max(1, Math.round((discussed?.ms ?? 0) / 1000))} seconds on this reveal: your longest recorded time.`}
+            </p>
+            <h3>{divided.prompt[locale]}</h3>
             <div className="division-options">
               {dividedOrder.map((option, index) => {
                 const o = divided.options[option];
@@ -171,10 +131,21 @@ export function GroupResults({
             </div>
           </>
         ) : (
-          <p>{t.united}</p>
+          <p>
+            {fr
+              ? "Aucun temps de discussion n’a été enregistré pour cette partie. Il sera mesuré entre la révélation des réponses et le passage au dilemme suivant lorsque les réponses sont révélées après chaque question."
+              : "No discussion time was recorded for this game. It is measured between revealing the answers and moving to the next dilemma when answers are revealed after each question."}
+          </p>
         )}
       </section>
-      <h2 className="section-heading">{t.profiles}</h2>
+      <h2 className="section-heading">
+        {fr ? "Et chacun dans tout ça ?" : "And each of you?"}
+      </h2>
+      <p className="story-profile-intro">
+        {fr
+          ? "Ouvre un portrait pour retrouver les nuances de ses choix."
+          : "Open a portrait to explore the nuances behind their choices."}
+      </p>
       <div className="player-profiles">
         {group.profiles.map(({ player, profile }) => (
           <button
@@ -202,21 +173,6 @@ export function GroupResults({
           </button>
         ))}
       </div>
-      {!isDuo && (
-        <details className="pair-details">
-          <summary>
-            {locale === "fr" ? "Comparer tous les duos" : "Compare every pair"}
-          </summary>
-          <ul>
-            {group.pairs.map((pair) => (
-              <li key={pair.players.join("-")}>
-                <span>{names(pair.players)}</span>
-                <strong>{pair.similarity} %</strong>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
       <button className="primary" onClick={onReplay}>
         {t.replay}
         <span>↻</span>

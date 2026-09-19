@@ -1,3 +1,4 @@
+import { observeDiscussion } from "../services/discussion";
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import type { Locale } from "../core/types";
@@ -63,8 +64,10 @@ export function OnlineRoom({
     mounted = useRef(true),
     offset = useRef(0);
   const [now, setNow] = useState(Date.now());
+  const discussionDurations = useRef<Record<string, number>>({});
   const finishedInitialized = useRef(false);
   const accept = (data: RoomState) => {
+    discussionDurations.current = observeDiscussion(data);
     offset.current = Date.parse(data.serverNow) - Date.now();
     setRoom(data);
     if (data.phase === "finished" && data.deck) {
@@ -669,6 +672,7 @@ export function OnlineRoom({
       length: room.settings.length,
       currentPlayer: 0,
       questionIds: room.deck.map((q) => q.id),
+      discussionDurations: discussionDurations.current,
       players: room.players.map((p) => ({
         id: p.id,
         name: p.name,
