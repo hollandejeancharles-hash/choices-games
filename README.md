@@ -36,6 +36,10 @@ Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé, Supabas
 - Thèmes clair et sombre ; responsive pour téléphone et ordinateur.
 - Compte joueur facultatif : inscription par e-mail, confirmation d’adresse, connexion persistante, déconnexion et récupération sécurisée du mot de passe. Le pseudo est stocké dans les métadonnées du compte ; les salons restent accessibles sans compte.
 - Sauvegarde cloud privée de la partie en cours pour les joueurs connectés. Les portraits solo terminés alimentent une chronologie affichant les 20 résultats les plus récents avec comparaison de l’évolution entre deux parties.
+- Espace joueur avec modification du pseudo et de l’e-mail, export JSON, suppression d’un portrait, effacement de l’historique et suppression définitive du compte.
+- Dilemme quotidien réservé aux joueurs connectés, avec résultat collectif agrégé après le vote.
+- Duels privés asynchrones de cinq questions par code à huit caractères, valables 14 jours. Les réponses ne sont révélées qu’après la participation du second joueur.
+- Cercles privés par code d’invitation avec compteur de membres et historique des scores d’accord des duels associés.
 - Pause explicite et pause quand l'onglet est masqué. Le chronomètre commence quand le dilemme est révélé.
 - Reprise de la dernière partie, langue et thème conservés avec `localStorage`, accès protégés par `try/catch`. Une sauvegarde invalide est ignorée ; un échec d'écriture est signalé.
 - Profils avec 10 archétypes, second archétype, radar, trois tendances, contradictions et décisions longues.
@@ -199,3 +203,10 @@ contiennent pas les réponses détaillées : uniquement la date, le format,
 l’archétype et le vecteur des six dimensions. Les réponses restent présentes
 dans la sauvegarde active le temps de terminer la partie, puis celle-ci est
 supprimée.
+
+Exécuter enfin `supabase/player-social.sql` pour activer les réglages du compte,
+le dilemme du jour, les duels asynchrones et les cercles privés. Les tables
+sociales ne sont jamais accessibles directement depuis le client : toutes les
+opérations passent par des fonctions contrôlant `auth.uid()`. Un duel expire
+après 14 jours et ses réponses restent invisibles jusqu’à ce que les deux
+participants aient terminé.

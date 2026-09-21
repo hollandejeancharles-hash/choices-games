@@ -7,6 +7,14 @@ import {
   strongestEvolution,
   type CloudResult,
 } from "../services/player-cloud";
+import {
+  clearPlayerHistory,
+  deletePlayerAccount,
+  deleteResult,
+  exportPlayerData,
+  updateEmail,
+  updateNickname,
+} from "../services/player-features";
 import { playerAuth } from "../services/supabase";
 
 type Mode = "register" | "login" | "forgot" | "reset";
@@ -15,9 +23,11 @@ const redirectUrl = () => `${location.origin}${location.pathname}?account=1`;
 export function PlayerAccount({
   locale,
   onBack,
+  onOpen,
 }: {
   locale: Locale;
   onBack: () => void;
+  onOpen: (screen: "daily" | "duel" | "circles") => void;
 }) {
   const fr = locale === "fr";
   const [user, setUser] = useState<User | null>(null);
@@ -31,6 +41,7 @@ export function PlayerAccount({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   useEffect(() => {
     void playerAuth.auth.getUser().then(({ data }) => setUser(data.user));
@@ -198,6 +209,25 @@ export function PlayerAccount({
             {error}
           </p>
         )}
+        <div className="account-feature-grid">
+          <button onClick={() => onOpen("daily")}>
+            <span>01</span>
+            <strong>{fr ? "Dilemme du jour" : "Daily dilemma"}</strong>
+            <small>{fr ? "Choisir et se situer" : "Choose and compare"}</small>
+          </button>
+          <button onClick={() => onOpen("duel")}>
+            <span>02</span>
+            <strong>{fr ? "Duel privé" : "Private duel"}</strong>
+            <small>{fr ? "Cinq choix à deux" : "Five choices together"}</small>
+          </button>
+          <button onClick={() => onOpen("circles")}>
+            <span>03</span>
+            <strong>{fr ? "Mes cercles" : "My circles"}</strong>
+            <small>
+              {fr ? "Retrouver son groupe" : "Return to your group"}
+            </small>
+          </button>
+        </div>
         <div className="account-history">
           <div className="account-section-heading">
             <div>
@@ -248,6 +278,20 @@ export function PlayerAccount({
                         · {item.length} {fr ? "choix" : "choices"}
                       </span>
                     </div>
+                    <button
+                      aria-label={
+                        fr ? "Supprimer ce portrait" : "Delete this portrait"
+                      }
+                      onClick={() =>
+                        void deleteResult(item.id).then(() =>
+                          setResults((all) =>
+                            all.filter((entry) => entry.id !== item.id),
+                          ),
+                        )
+                      }
+                    >
+                      ×
+                    </button>
                   </article>
                 );
               })}
@@ -259,6 +303,106 @@ export function PlayerAccount({
             ? "Tes réponses détaillées ne figurent pas dans l’historique. La sauvegarde active reste privée grâce aux règles d’accès Supabase."
             : "Detailed answers are not kept in history. Your active save remains private through Supabase access rules."}
         </p>
+        <div className="account-settings">
+          <h2>{fr ? "Gérer mon compte" : "Manage my account"}</h2>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const value = String(
+                new FormData(event.currentTarget).get("nickname"),
+              );
+              void updateNickname(value).then(() =>
+                setMessage(fr ? "Pseudo mis à jour." : "Nickname updated."),
+              );
+            }}
+          >
+            <label>
+              {fr ? "Nouveau pseudo" : "New nickname"}
+              <input name="nickname" minLength={2} maxLength={30} required />
+            </label>
+            <button>{fr ? "Modifier" : "Update"}</button>
+          </form>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const value = String(
+                new FormData(event.currentTarget).get("newEmail"),
+              );
+              void updateEmail(value).then(() =>
+                setMessage(
+                  fr
+                    ? "Vérifie les e-mails de confirmation."
+                    : "Check your confirmation emails.",
+                ),
+              );
+            }}
+          >
+            <label>
+              {fr ? "Nouvelle adresse e-mail" : "New email address"}
+              <input name="newEmail" type="email" required />
+            </label>
+            <button>{fr ? "Modifier" : "Update"}</button>
+          </form>
+          {message && (
+            <p className="notice" role="status">
+              {message}
+            </p>
+          )}
+          <div className="account-data-actions">
+            <button
+              onClick={() =>
+                void exportPlayerData(results).then((data) => {
+                  const url = URL.createObjectURL(
+                    new Blob([JSON.stringify(data, null, 2)], {
+                      type: "application/json",
+                    }),
+                  );
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = "dilemme-mes-donnees.json";
+                  link.click();
+                  URL.revokeObjectURL(url);
+                })
+              }
+            >
+              {fr ? "Exporter mes données" : "Export my data"}
+            </button>
+            <button
+              onClick={() => {
+                if (
+                  confirm(
+                    fr
+                      ? "Supprimer tous les portraits de ton historique ?"
+                      : "Delete every portrait in your history?",
+                  )
+                )
+                  void clearPlayerHistory().then(() => setResults([]));
+              }}
+            >
+              {fr ? "Effacer mon historique" : "Clear my history"}
+            </button>
+          </div>
+          <div className="account-danger">
+            <p>
+              {fr
+                ? "La suppression du compte est définitive."
+                : "Account deletion is permanent."}
+            </p>
+            <label>
+              {fr ? "Écris SUPPRIMER pour confirmer" : "Type DELETE to confirm"}
+              <input
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+              />
+            </label>
+            <button
+              disabled={deleteConfirmation !== (fr ? "SUPPRIMER" : "DELETE")}
+              onClick={() => void deletePlayerAccount()}
+            >
+              {fr ? "Supprimer mon compte" : "Delete my account"}
+            </button>
+          </div>
+        </div>
         <button
           className="text-button account-signout"
           onClick={() => void playerAuth.auth.signOut()}

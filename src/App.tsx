@@ -4,6 +4,9 @@ import { GameSetup, type GameConfig } from "./components/GameSetup";
 import { recoveryLanding } from "./services/recovery";
 import { PasswordRecovery } from "./components/PasswordRecovery";
 import { PlayerAccount } from "./components/PlayerAccount";
+import { DailyDilemma } from "./components/DailyDilemma";
+import { AsyncDuel } from "./components/AsyncDuel";
+import { PrivateCircles } from "./components/PrivateCircles";
 import { GroupReveal } from "./components/GroupReveal";
 
 import { ProposeDilemma, AdminDilemmas } from "./components/Community";
@@ -45,9 +48,13 @@ import {
   loadCloudSession,
   saveCloudSession,
 } from "./services/player-cloud";
+import { listCircles, type Circle } from "./services/player-features";
 type Screen =
   | "recovery"
   | "account"
+  | "daily"
+  | "duel"
+  | "circles"
   | "online"
   | "propose"
   | "admin"
@@ -83,6 +90,7 @@ export default function App() {
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(loadSession);
   const [storageError, setStorageError] = useState(false);
+  const [circles, setCircles] = useState<Circle[]>([]);
   const t = copy[locale];
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -96,6 +104,18 @@ export default function App() {
   useEffect(() => {
     if (session) setStorageError(!saveSession(session));
   }, [session]);
+  useEffect(() => {
+    const refresh = () =>
+      void listCircles()
+        .then(setCircles)
+        .catch(() => setCircles([]));
+    refresh();
+    const { data } = playerAuth.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") refresh();
+      if (event === "SIGNED_OUT") setCircles([]);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
   useEffect(() => {
     const restore = async () => {
       if (loadSession()) return;
@@ -398,7 +418,28 @@ export default function App() {
             />
           )}
           {screen === "account" && (
-            <PlayerAccount locale={locale} onBack={() => setScreen("home")} />
+            <PlayerAccount
+              locale={locale}
+              onBack={() => setScreen("home")}
+              onOpen={setScreen}
+            />
+          )}
+          {screen === "daily" && (
+            <DailyDilemma locale={locale} onBack={() => setScreen("account")} />
+          )}
+          {screen === "duel" && (
+            <AsyncDuel
+              locale={locale}
+              circles={circles}
+              onBack={() => setScreen("account")}
+            />
+          )}
+          {screen === "circles" && (
+            <PrivateCircles
+              locale={locale}
+              onBack={() => setScreen("account")}
+              onChanged={setCircles}
+            />
           )}
           {screen === "admin" && (
             <AdminDilemmas
