@@ -121,6 +121,7 @@ function navigate(name: string) {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  window.scrollTo = vi.fn();
   localStorage.clear();
   api.list.mockReset().mockResolvedValue(results);
   api.deleteResult.mockReset().mockResolvedValue(undefined);
@@ -150,6 +151,40 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("account space with real service boundaries", () => {
+  it("keeps mobile navigation in sync with the current page and brings its content into view", async () => {
+    await mount();
+    const navigation = screen.getByRole("navigation", {
+      name: "Navigation mobile",
+    });
+    const portraitsButton = within(navigation).getByRole("button", {
+      name: "Mes portraits",
+    });
+    fireEvent.click(portraitsButton);
+    expect(portraitsButton.getAttribute("aria-current")).toBe("page");
+    expect(
+      within(navigation)
+        .getByRole("button", { name: "Vue d’ensemble" })
+        .getAttribute("aria-current"),
+    ).toBeNull();
+    expect(window.scrollTo).toHaveBeenLastCalledWith({
+      top: 0,
+      behavior: "instant",
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ouvrir le portrait L’Éclaireur" }),
+    );
+    expect(portraitsButton.getAttribute("aria-current")).toBe("page");
+    fireEvent.click(
+      within(navigation).getByRole("button", { name: "Dilemme du jour" }),
+    );
+    await waitFor(() => expect(api.vote).toHaveBeenCalled());
+    expect(
+      within(navigation)
+        .getByRole("button", { name: "Dilemme du jour" })
+        .getAttribute("aria-current"),
+    ).toBe("page");
+    expect(portraitsButton.getAttribute("aria-current")).toBeNull();
+  });
   it("opens the stored portrait with all six original scores and uses the negative evolution pole", async () => {
     await mount();
     capture("home");
