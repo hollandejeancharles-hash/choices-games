@@ -85,7 +85,7 @@ export function AccountDashboard({
   const heading = useRef<HTMLDivElement>(null);
   const initialPage = useRef(true);
   const [motion, setMotion] = useState(
-    () => readPreference("choices.account.motion") !== "off",
+    () => readPreference("dilemma.account.motion") !== "off",
   );
   const [day, setDay] = useState(() => new Date().toISOString().slice(0, 10));
   const name =
@@ -372,11 +372,11 @@ export function AccountDashboard({
           <button
             className="c-logo"
             onClick={onBack}
-            aria-label={text("Choices · accueil", "Choices · home")}
+            aria-label={text("Dilemme · accueil", "Dilemme · home")}
           >
             <AnimatedLogo />
             <span>
-              choices<em>.</em>
+              Dilemme<em>.</em>
             </span>
           </button>
           <div>
@@ -424,7 +424,7 @@ export function AccountDashboard({
             </div>
             <button className="c-logo c-mobilebrand" onClick={onBack}>
               <span>
-                choices<em>.</em>
+                Dilemme<em>.</em>
               </span>
             </button>
             <div className="c-topactions">
@@ -965,7 +965,7 @@ export function AccountDashboard({
                           setMotion(event.target.value === "on");
                           if (
                             !savePreference(
-                              "choices.account.motion",
+                              "dilemma.account.motion",
                               event.target.value,
                             )
                           )
@@ -1033,7 +1033,7 @@ export function AccountDashboard({
                             );
                             const link = document.createElement("a");
                             link.href = url;
-                            link.download = "choices-mes-donnees.json";
+                            link.download = "dilemme-mes-donnees.json";
                             link.click();
                             window.setTimeout(
                               () => URL.revokeObjectURL(url),
@@ -1171,7 +1171,7 @@ export function AccountDashboard({
         >
           <div className="c-dialogbox">
             <div className="c-sectionhead">
-              <span className="c-eyebrow">Choices</span>
+              <span className="c-eyebrow">Dilemme</span>
               <button
                 className="c-round"
                 onClick={() => setConfirmation(null)}

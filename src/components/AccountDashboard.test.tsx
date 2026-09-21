@@ -315,7 +315,7 @@ describe("account space with real service boundaries", () => {
     fireEvent.change(screen.getByLabelText("Animations"), {
       target: { value: "off" },
     });
-    expect(localStorage.getItem("choices.account.motion")).toBe("off");
+    expect(localStorage.getItem("dilemma.account.motion")).toBe("off");
     expect(document.getElementById("player-space")!.dataset.motion).toBe("off");
   });
   it("resumes the current game through the application callback", async () => {
