@@ -934,6 +934,61 @@ progress::-moz-progress-bar {
 .choice.chosen .choice-bottom {
   color: var(--on-accent);
 }
+.public-vote-reveal {
+  width: min(680px, 100%);
+  margin: 4px auto 0;
+  text-align: center;
+}
+.public-vote-reveal > .eyebrow {
+  color: var(--accent);
+}
+.public-vote-reveal > p {
+  color: var(--muted);
+  margin: 12px 0 18px;
+}
+.public-vote-bars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-top: 16px;
+}
+.public-vote-bars > div > span {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.public-vote-bars b {
+  color: var(--muted);
+  font-size: 13px;
+}
+.public-vote-bars strong {
+  font-size: 25px;
+}
+.public-vote-bars i {
+  display: block;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line);
+}
+.public-vote-bars em {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--muted);
+  transition: width 0.65s ease;
+}
+.public-vote-bars .is-mine strong,
+.public-vote-bars .is-mine b {
+  color: var(--accent);
+}
+.public-vote-bars .is-mine em {
+  background: var(--accent);
+}
+.public-vote-reveal .primary {
+  margin-top: 4px;
+}
 .or {
   position: absolute;
   left: 50%;
@@ -1150,6 +1205,9 @@ progress::-moz-progress-bar {
   .choices {
     grid-template-columns: 1fr;
     gap: 22px;
+  }
+  .public-vote-bars {
+    gap: 16px;
   }
   .choice {
     min-height: 170px;

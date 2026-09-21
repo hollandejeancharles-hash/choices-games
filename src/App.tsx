@@ -540,6 +540,7 @@ export default function App() {
                     ? (session.groupOptions?.timer ?? 0)
                     : 0
                 }
+                communityVotes={session.mode === "solo"}
                 onAnswer={answer}
                 onPause={() => setScreen("home")}
               />

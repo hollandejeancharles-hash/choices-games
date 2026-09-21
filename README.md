@@ -2,6 +2,8 @@
 
 **[Jouer à Dilemme](https://hollandejeancharles-hash.github.io/choices-games/)**
 
+Après chaque choix solo, les pourcentages A/B regroupent les votes des joueurs connectés et invités. Un identifiant aléatoire conservé dans le navigateur limite chaque appareil à un vote par dilemme, sans enregistrer de nom ni d’adresse e-mail.
+
 **Deux choix. Aucune réponse facile.** Un jeu bilingue de dilemmes moraux, en solo ou à 2–6 sur le même appareil. Ancien nom : Choices ; le dépôt GitHub conserve son nom `choices-games`.
 
 150 situations fictives (60 générales et 30 pour chacun des packs Amitié, Couple et Famille) opposent des valeurs et des conséquences coûteuses : justice contre protection, loyauté contre autonomie, présent contre avenir. Certaines évoquent la mort ou l'injustice, sans descriptions graphiques. Le scénario du centre commercial est inclus. Les issues imposées sont des conventions de jeu, pas des conseils pour une situation réelle.
@@ -210,3 +212,8 @@ sociales ne sont jamais accessibles directement depuis le client : toutes les
 opérations passent par des fonctions contrôlant `auth.uid()`. Un duel expire
 après 14 jours et ses réponses restent invisibles jusqu’à ce que les deux
 participants aient terminé.
+
+Exécuter aussi `supabase/public-votes.sql` pour afficher les résultats A/B de
+tous les dilemmes. La table n’est pas lisible directement : une fonction RPC
+publique valide le dilemme, limite un identifiant de navigateur à un vote et ne
+renvoie que les totaux agrégés.

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Locale, Question } from "../core/types";
 import { copy } from "../i18n";
+import { publicVote, type PublicVoteState } from "../services/public-votes";
 interface Props {
   question: Question;
   locale: Locale;
@@ -11,6 +12,7 @@ interface Props {
   onPause: () => void;
   name: string;
   timeLimit?: 0 | 20 | 30;
+  communityVotes?: boolean;
 }
 export function QuestionScreen({
   question,
@@ -22,16 +24,20 @@ export function QuestionScreen({
   onPause,
   name,
   timeLimit = 0,
+  communityVotes = false,
 }: Props) {
   const t = copy[locale];
   const [paused, setPaused] = useState(() => document.hidden),
-    [selected, setSelected] = useState<number | null>(null);
+    [selected, setSelected] = useState<0 | 1 | null>(null);
   const clock = useRef({
     start: performance.now(),
     elapsed: 0,
     running: !document.hidden,
   });
   const [remaining, setRemaining] = useState<number>(timeLimit);
+  const [voteState, setVoteState] = useState<PublicVoteState | null>(null);
+  const [voteLoading, setVoteLoading] = useState(false);
+  const [voteError, setVoteError] = useState(false);
   useEffect(() => {
     if (!timeLimit || paused || selected !== null) return;
     const update = () =>
@@ -79,6 +85,14 @@ export function QuestionScreen({
     stopClock();
     setSelected(displayIndex);
     const duration = clock.current.elapsed;
+    if (communityVotes) {
+      setVoteLoading(true);
+      void publicVote(question.id, order[displayIndex])
+        .then(setVoteState)
+        .catch(() => setVoteError(true))
+        .finally(() => setVoteLoading(false));
+      return;
+    }
     timer.current = setTimeout(
       () => onAnswer(order[displayIndex], duration),
       320,
@@ -240,10 +254,80 @@ export function QuestionScreen({
             </span>
           </div>
           <div className="question-footer">
-            <span>{t.keyboard}</span>
-            <button className="text-button" onClick={pause}>
-              {t.pause} Ⅱ
-            </button>
+            {selected !== null && communityVotes ? (
+              <div className="public-vote-reveal" aria-live="polite">
+                <span className="eyebrow">
+                  {locale === "fr" ? "LE CHOIX DES JOUEURS" : "PLAYERS’ CHOICE"}
+                </span>
+                {voteLoading && (
+                  <p>
+                    {locale === "fr"
+                      ? "Calcul des résultats…"
+                      : "Calculating results…"}
+                  </p>
+                )}
+                {voteState &&
+                  (() => {
+                    const total = voteState.a + voteState.b;
+                    return (
+                      <>
+                        <div className="public-vote-bars">
+                          {order.map((option, displayIndex) => {
+                            const count =
+                              option === 0 ? voteState.a : voteState.b;
+                            const percent = total
+                              ? Math.round((count * 100) / total)
+                              : 0;
+                            return (
+                              <div
+                                key={option}
+                                className={
+                                  selected === displayIndex ? "is-mine" : ""
+                                }
+                              >
+                                <span>
+                                  <b>{displayIndex === 0 ? "A" : "B"}</b>
+                                  <strong>{percent}%</strong>
+                                </span>
+                                <i>
+                                  <em style={{ width: `${percent}%` }} />
+                                </i>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <p>
+                          {locale === "fr"
+                            ? `${total} joueur${total > 1 ? "s" : ""} ont répondu.`
+                            : `${total} player${total === 1 ? "" : "s"} answered.`}
+                        </p>
+                      </>
+                    );
+                  })()}
+                {voteError && (
+                  <p>
+                    {locale === "fr"
+                      ? "Résultats indisponibles, ton choix reste enregistré dans ta partie."
+                      : "Results unavailable; your choice is still saved in your game."}
+                  </p>
+                )}
+                <button
+                  className="primary"
+                  onClick={() =>
+                    onAnswer(order[selected] as 0 | 1, clock.current.elapsed)
+                  }
+                >
+                  {t.next} <span>→</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <span>{t.keyboard}</span>
+                <button className="text-button" onClick={pause}>
+                  {t.pause} Ⅱ
+                </button>
+              </>
+            )}
           </div>
         </>
       )}

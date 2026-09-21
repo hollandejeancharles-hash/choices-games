@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Locale } from "../core/types";
 import { questions } from "../data/questions";
-import { dailyState, type DailyState } from "../services/player-features";
+import { publicVote, type PublicVoteState } from "../services/public-votes";
 
 export function DailyDilemma({
   locale,
@@ -20,17 +20,17 @@ export function DailyDilemma({
     );
     return bank[seed % bank.length]!;
   }, [day]);
-  const [state, setState] = useState<DailyState | null>(null);
+  const [state, setState] = useState<PublicVoteState | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    void dailyState(day, question.id)
+    void publicVote(question.id)
       .then(setState)
       .catch(() =>
         setError(
           fr
-            ? "Connecte-toi pour participer au dilemme du jour."
-            : "Sign in to join today's dilemma.",
+            ? "Les résultats sont temporairement indisponibles."
+            : "Results are temporarily unavailable.",
         ),
       );
   }, [day, question.id, fr]);
@@ -39,7 +39,7 @@ export function DailyDilemma({
     setBusy(true);
     setError("");
     try {
-      setState(await dailyState(day, question.id, option));
+      setState(await publicVote(question.id, option));
     } catch {
       setError(
         fr
