@@ -10,6 +10,7 @@ import "./styles/setup.css";
 import "./styles/portrait.css";
 import "./styles/group-reveal.css";
 import "./styles/online.css";
+import "./styles/account.css";
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing root");
 void loadCommunityQuestions().finally(() =>

@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import type { Locale } from "../core/types";
 import {
   circleHistory,
@@ -24,6 +24,8 @@ export function PrivateCircles({
   const [history, setHistory] = useState<CircleDuel[]>([]);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
   async function refresh() {
     const next = await listCircles();
     setCircles(next);
@@ -43,9 +45,13 @@ export function PrivateCircles({
     action: "create" | "join",
   ) {
     event.preventDefault();
+    if (submitting.current) return;
+    const form = event.currentTarget;
+    submitting.current = true;
+    setBusy(true);
     setError("");
     setMessage("");
-    const data = new FormData(event.currentTarget);
+    const data = new FormData(form);
     try {
       if (action === "create") {
         const code = await createCircle(String(data.get("name")));
@@ -54,7 +60,7 @@ export function PrivateCircles({
         await joinCircle(String(data.get("code")));
         setMessage(fr ? "Cercle rejoint." : "Circle joined.");
       }
-      event.currentTarget.reset();
+      form.reset();
       await refresh();
     } catch {
       setError(
@@ -62,6 +68,9 @@ export function PrivateCircles({
           ? "Impossible de modifier tes cercles."
           : "Could not update your circles.",
       );
+    } finally {
+      submitting.current = false;
+      setBusy(false);
     }
   }
   async function open(circle: Circle) {
@@ -94,14 +103,14 @@ export function PrivateCircles({
             {fr ? "Nom du cercle" : "Circle name"}
             <input name="name" minLength={2} maxLength={40} required />
           </label>
-          <button>{fr ? "Créer" : "Create"}</button>
+          <button disabled={busy}>{fr ? "Créer" : "Create"}</button>
         </form>
         <form onSubmit={(event) => void submit(event, "join")}>
           <label>
             {fr ? "Code d’invitation" : "Invite code"}
             <input name="code" minLength={8} maxLength={8} required />
           </label>
-          <button>{fr ? "Rejoindre" : "Join"}</button>
+          <button disabled={busy}>{fr ? "Rejoindre" : "Join"}</button>
         </form>
       </div>
       {message && <p className="notice">{message}</p>}
