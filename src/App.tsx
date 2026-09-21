@@ -421,7 +421,17 @@ export default function App() {
             <PlayerAccount
               locale={locale}
               onBack={() => setScreen("home")}
-              onOpen={setScreen}
+              dark={dark}
+              onThemeChange={setDark}
+              onLocaleChange={setLocale}
+              onPlay={replay}
+              onResume={
+                session && !isComplete(session)
+                  ? () => setScreen(sessionScreen(session))
+                  : undefined
+              }
+              circles={circles}
+              onCirclesChanged={setCircles}
             />
           )}
           {screen === "daily" && (

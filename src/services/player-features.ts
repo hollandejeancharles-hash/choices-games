@@ -93,11 +93,14 @@ export async function clearPlayerHistory() {
   if (error) throw error;
 }
 export async function exportPlayerData(results: CloudResult[]) {
-  const { data: save } = await playerAuth
+  const { data: save, error: saveError } = await playerAuth
     .from("dilemma_player_saves")
     .select("session,updated_at")
     .maybeSingle();
-  const { data: user } = await playerAuth.auth.getUser();
+  if (saveError) throw saveError;
+  const { data: user, error: userError } = await playerAuth.auth.getUser();
+  if (userError) throw userError;
+  if (!user.user) throw new Error("Sign in to export your data.");
   return {
     exportedAt: new Date().toISOString(),
     account: {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Locale } from "../core/types";
-import { questions } from "../data/questions";
+import { dailyQuestion } from "../services/account-view";
 import { publicVote, type PublicVoteState } from "../services/public-votes";
 
 export function DailyDilemma({
@@ -12,14 +12,7 @@ export function DailyDilemma({
 }) {
   const fr = locale === "fr";
   const day = new Date().toISOString().slice(0, 10);
-  const question = useMemo(() => {
-    const bank = questions.filter((item) => item.pack === "general");
-    const seed = [...day].reduce(
-      (sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0,
-      7,
-    );
-    return bank[seed % bank.length]!;
-  }, [day]);
+  const question = useMemo(() => dailyQuestion(day), [day]);
   const [state, setState] = useState<PublicVoteState | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
