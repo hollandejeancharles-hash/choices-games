@@ -151,6 +151,7 @@ export function AccountDashboard({
       return;
     }
     heading.current?.focus();
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [page]);
   useEffect(() => {
     const node = dialog.current;
@@ -454,7 +455,7 @@ export function AccountDashboard({
             aria-label={titles[page]}
           >
             {page === "home" && (
-              <section>
+              <section className="c-home">
                 <div className="c-pagehead">
                   <div>
                     <div className="c-eyebrow">
@@ -521,6 +522,7 @@ export function AccountDashboard({
                   <article className="c-daily">
                     <div className="c-dailyhead">
                       <AccountIcon name="ticket" size={30} />
+                      <span className="c-daily-label">{titles.daily}</span>
                       <span className="c-pill">
                         {text("1 jour · 1 choix", "1 day · 1 choice")}
                       </span>
@@ -1155,6 +1157,40 @@ export function AccountDashboard({
           </div>
         </div>
       </div>
+      <nav
+        className="c-mobile-nav"
+        aria-label={text("Navigation mobile", "Mobile navigation")}
+      >
+        {(
+          [
+            ["home", "dashboard", text("Accueil", "Home")],
+            ["portraits", "fingerprint", text("Portraits", "Portraits")],
+            ["daily", "ticket", text("Du jour", "Daily")],
+            ["duel", "swords", text("Duel", "Duel")],
+            ["circles", null, text("Cercles", "Circles")],
+          ] as const
+        ).map(([target, icon, label]) => (
+          <button
+            key={target}
+            onClick={() => navigate(target)}
+            aria-current={
+              page === target || (page === "detail" && target === "portraits")
+                ? "page"
+                : undefined
+            }
+            aria-label={titles[target]}
+          >
+            {icon ? (
+              <AccountIcon name={icon} />
+            ) : (
+              <span className="c-icon" aria-hidden="true">
+                ◎
+              </span>
+            )}
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
       {confirmation && (
         <dialog
           className="c-confirm-dialog"
