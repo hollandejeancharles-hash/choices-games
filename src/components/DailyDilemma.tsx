@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Locale } from "../core/types";
 import { dailyQuestion } from "../services/account-view";
 import { publicVote, type PublicVoteState } from "../services/public-votes";
+import { PushPreference } from "./PushPreference";
 
 export function DailyDilemma({
   locale,
@@ -76,11 +77,14 @@ export function DailyDilemma({
         ))}
       </div>
       {state?.mine !== null && state && (
-        <p className="notice" role="status">
-          {fr
-            ? `${total} joueur${total > 1 ? "s" : ""} ont répondu aujourd’hui. Tu peux encore changer ton choix.`
-            : `${total} player${total === 1 ? "" : "s"} answered today. You can still change your choice.`}
-        </p>
+        <>
+          <p className="notice" role="status">
+            {fr
+              ? `${total} joueur${total > 1 ? "s" : ""} ont répondu aujourd’hui. Tu peux encore changer ton choix.`
+              : `${total} player${total === 1 ? "" : "s"} answered today. You can still change your choice.`}
+          </p>
+          <PushPreference locale={locale} contextual />
+        </>
       )}
       {error && (
         <p className="form-error" role="alert">

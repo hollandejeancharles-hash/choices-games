@@ -31,6 +31,7 @@ import { AsyncDuel } from "./AsyncDuel";
 import { SocialSpace } from "./SocialSpace";
 import { invitationToken } from "../services/social";
 import { duoCodeFromLocation } from "../services/duel-links";
+import { PushPreference } from "./PushPreference";
 
 export interface AccountNavigationProps {
   locale: Locale;
@@ -72,7 +73,13 @@ export function AccountDashboard({
   const fr = locale === "fr";
   const text = (a: string, b: string) => (fr ? a : b);
   const [page, setPage] = useState<Page>(() =>
-    duoCodeFromLocation() ? "duel" : invitationToken() ? "circles" : "home",
+    duoCodeFromLocation()
+      ? "duel"
+      : invitationToken()
+        ? "circles"
+        : new URLSearchParams(location.search).get("activity") === "daily"
+          ? "daily"
+          : "home",
   );
   const [results, setResults] = useState<CloudResult[]>([]);
   const [historyBusy, setHistoryBusy] = useState(true);
@@ -1015,6 +1022,7 @@ export function AccountDashboard({
                       </select>
                     </label>
                   </div>
+                  <PushPreference locale={locale} />
                 </div>
               </section>
             )}

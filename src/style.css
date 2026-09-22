@@ -461,6 +461,31 @@ header {
   font-size: 18px;
   line-height: 1.5;
 }
+.push-prompt {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.push-prompt h3,
+.push-prompt p {
+  margin: 0;
+}
+.push-prompt p {
+  margin-top: 7px;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .push-prompt {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
 .duel-join {
   margin-top: 35px;
   display: grid;
