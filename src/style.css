@@ -338,6 +338,54 @@ header {
   max-width: 900px;
   margin: 55px auto;
 }
+
+.duel-destinations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.duel-destinations > button {
+  min-height: 9rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line, currentColor);
+  border-radius: 1rem;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.duel-destinations > button[aria-pressed="true"] {
+  border-color: var(--accent, currentColor);
+  box-shadow: 0 0 0 2px var(--accent, currentColor);
+}
+
+.duel-destinations > button:disabled {
+  opacity: 0.48;
+}
+
+.duel-destinations strong {
+  font-size: 1.05rem;
+}
+
+.duel-prediction-score {
+  font-weight: 700;
+}
+
+.duel-results article small {
+  display: block;
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 640px) {
+  .duel-destinations {
+    grid-template-columns: 1fr;
+  }
+}
 .daily-page > .eyebrow,
 .duel-page > .eyebrow,
 .circles-page > .eyebrow {

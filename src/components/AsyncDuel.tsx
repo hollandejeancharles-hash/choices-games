@@ -28,13 +28,16 @@ export function AsyncDuel({
   onBack: () => void;
 }) {
   const fr = locale === "fr";
-  const [mode, setMode] = useState<"home" | "answer" | "share" | "result">(
-    "home",
-  );
+  const [mode, setMode] = useState<
+    "home" | "setup" | "answer" | "share" | "result"
+  >("home");
+  const [destination, setDestination] = useState<"friend" | "circle">("friend");
   const [code, setCode] = useState("");
   const [circle, setCircle] = useState("");
   const [ids, setIds] = useState<string[]>([]);
   const [answers, setAnswers] = useState<(0 | 1)[]>([]);
+  const [guesses, setGuesses] = useState<(0 | 1)[]>([]);
+  const [selectedAnswer, setSelectedAnswer] = useState<0 | 1 | null>(null);
   const [duel, setDuel] = useState<DuelState | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -62,8 +65,16 @@ export function AsyncDuel({
 
   function beginCreate() {
     setError("");
+    setCircle("");
+    setDestination("friend");
+    setMode("setup");
+  }
+  function beginAnswer() {
+    setError("");
     setIds(duelQuestions().map((q) => q.id));
     setAnswers([]);
+    setGuesses([]);
+    setSelectedAnswer(null);
     setDuel(null);
     setMode("answer");
   }
@@ -77,6 +88,8 @@ export function AsyncDuel({
       setDuel(found);
       setIds(found.questions);
       setAnswers([]);
+      setGuesses([]);
+      setSelectedAnswer(null);
       setMode(found.complete ? "result" : found.owner ? "share" : "answer");
     } catch {
       setError(
@@ -88,20 +101,32 @@ export function AsyncDuel({
       setBusy(false);
     }
   }
-  async function choose(option: 0 | 1) {
+  function chooseAnswer(option: 0 | 1) {
+    setSelectedAnswer(option);
+  }
+  async function chooseGuess(option: 0 | 1) {
     if (busy) return;
+    if (selectedAnswer === null) return;
     setError("");
-    const next = [...answers, option] as (0 | 1)[];
-    setAnswers(next);
-    if (next.length < 5) return;
+    const nextAnswers = [...answers, selectedAnswer] as (0 | 1)[];
+    const nextGuesses = [...guesses, option] as (0 | 1)[];
+    setAnswers(nextAnswers);
+    setGuesses(nextGuesses);
+    setSelectedAnswer(null);
+    if (nextAnswers.length < 5) return;
     setBusy(true);
     try {
       if (duel) {
-        const result = await answerDuel(duel.code, next);
+        const result = await answerDuel(duel.code, nextAnswers, nextGuesses);
         setDuel(result);
         setMode("result");
       } else {
-        const created = await createDuel(ids, next, circle || undefined);
+        const created = await createDuel(
+          ids,
+          nextAnswers,
+          circle || undefined,
+          nextGuesses,
+        );
         setCode(created);
         setDuel({
           code: created,
@@ -110,12 +135,16 @@ export function AsyncDuel({
           owner: true,
           ownerAnswers: null,
           guestAnswers: null,
+          ownerGuesses: null,
+          guestGuesses: null,
         });
         setMode("share");
       }
       void refreshHistory();
     } catch {
       setAnswers(answers);
+      setGuesses(guesses);
+      setSelectedAnswer(selectedAnswer);
       setError(
         fr ? "Impossible de terminer ce duo." : "Could not complete this duo.",
       );
@@ -128,6 +157,12 @@ export function AsyncDuel({
       ? duel.ownerAnswers.filter(
           (answer, i) => answer === duel.guestAnswers![i],
         ).length
+      : 0;
+  const myGuesses = duel?.owner ? duel.ownerGuesses : duel?.guestGuesses;
+  const partnerAnswers = duel?.owner ? duel.guestAnswers : duel?.ownerAnswers;
+  const correctGuesses =
+    myGuesses && partnerAnswers
+      ? myGuesses.filter((guess, i) => guess === partnerAnswers[i]).length
       : 0;
   return (
     <section className="duel-page page-in">
@@ -162,27 +197,9 @@ export function AsyncDuel({
           </h1>
           <p>
             {fr
-              ? "Réponds à cinq choix, puis partage un code privé à une personne."
-              : "Answer five choices, then share a private code with one person."}
+              ? "Choisis avec qui jouer, réponds à cinq choix et devine les réponses de ton duo."
+              : "Choose who to play with, answer five choices, and predict your duo’s answers."}
           </p>
-          {circles.length > 0 && (
-            <label>
-              {fr
-                ? "Associer à un cercle (facultatif)"
-                : "Add to a circle (optional)"}
-              <select
-                value={circle}
-                onChange={(e) => setCircle(e.target.value)}
-              >
-                <option value="">—</option>
-                {circles.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
           <button className="primary" onClick={beginCreate}>
             {fr ? "Créer un duo" : "Create a duo"}
             <span>→</span>
@@ -277,16 +294,104 @@ export function AsyncDuel({
           </section>
         </>
       )}
+      {mode === "setup" && (
+        <>
+          <h1>{fr ? "Avec qui joues-tu ?" : "Who are you playing with?"}</h1>
+          <p>
+            {fr
+              ? "Choisis d’inviter un ami ou de lancer ce duo dans un cercle avant de découvrir les dilemmes."
+              : "Choose a friend or a circle before discovering the dilemmas."}
+          </p>
+          <div className="duel-destinations">
+            <button
+              aria-pressed={destination === "friend"}
+              onClick={() => {
+                setDestination("friend");
+                setCircle("");
+              }}
+            >
+              <strong>{fr ? "Envoyer à un ami" : "Send to a friend"}</strong>
+              <span>
+                {fr
+                  ? "Tu partageras un code privé."
+                  : "You’ll share a private code."}
+              </span>
+            </button>
+            <button
+              aria-pressed={destination === "circle"}
+              disabled={!circles.length}
+              onClick={() => setDestination("circle")}
+            >
+              <strong>
+                {fr ? "Le faire dans un cercle" : "Play in a circle"}
+              </strong>
+              <span>
+                {circles.length
+                  ? fr
+                    ? "Le résultat rejoindra l’historique du cercle."
+                    : "The result will be added to the circle history."
+                  : fr
+                    ? "Crée ou rejoins d’abord un cercle."
+                    : "Create or join a circle first."}
+              </span>
+            </button>
+          </div>
+          {destination === "circle" && (
+            <label>
+              {fr ? "Choisir le cercle" : "Choose a circle"}
+              <select
+                value={circle}
+                onChange={(e) => setCircle(e.target.value)}
+              >
+                <option value="">—</option>
+                {circles.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <button
+            className="primary"
+            disabled={destination === "circle" && !circle}
+            onClick={beginAnswer}
+          >
+            {fr ? "Continuer vers les dilemmes" : "Continue to dilemmas"}
+            <span>→</span>
+          </button>
+        </>
+      )}
       {mode === "answer" && current && (
         <>
           <div className="duel-progress">{answers.length + 1}/5</div>
-          <h1>{current.prompt[locale]}</h1>
+          <span className="eyebrow">
+            {selectedAnswer === null
+              ? fr
+                ? "Ton choix"
+                : "Your choice"
+              : fr
+                ? "Ta prédiction"
+                : "Your prediction"}
+          </span>
+          <h1>
+            {selectedAnswer === null
+              ? current.prompt[locale]
+              : fr
+                ? "Que va répondre ton duo ?"
+                : "What will your duo choose?"}
+          </h1>
+          {selectedAnswer !== null && <p>{current.prompt[locale]}</p>}
           <div className="daily-choices">
             {current.options.map((option, index) => (
               <button
                 key={index}
                 disabled={busy}
-                onClick={() => void choose(index as 0 | 1)}
+                onClick={() =>
+                  selectedAnswer === null
+                    ? chooseAnswer(index as 0 | 1)
+                    : void chooseGuess(index as 0 | 1)
+                }
               >
                 <strong>{index === 0 ? "A" : "B"}</strong>
                 <span>{option.text[locale]}</span>
@@ -306,6 +411,13 @@ export function AsyncDuel({
                 ? "Code prêt à partager."
                 : "Your code is ready."}
           </h1>
+          {myGuesses && partnerAnswers && (
+            <p className="duel-prediction-score">
+              {fr
+                ? `${correctGuesses} prédiction${correctGuesses > 1 ? "s" : ""} juste${correctGuesses > 1 ? "s" : ""} sur 5.`
+                : `${correctGuesses} of 5 predictions correct.`}
+            </p>
+          )}
           <div className="duel-code">{duel?.code ?? code}</div>
           <p>
             {fr
@@ -341,6 +453,17 @@ export function AsyncDuel({
                           ? "Choix différents"
                           : "Different choices"}
                     </span>
+                    {myGuesses && partnerAnswers && (
+                      <small>
+                        {myGuesses[i] === partnerAnswers[i]
+                          ? fr
+                            ? "Prédiction juste"
+                            : "Correct prediction"
+                          : fr
+                            ? "Prédiction manquée"
+                            : "Missed prediction"}
+                      </small>
+                    )}
                   </article>
                 ),
             )}

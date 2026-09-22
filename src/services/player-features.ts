@@ -21,6 +21,8 @@ export interface DuelState {
   owner: boolean;
   ownerAnswers: (0 | 1)[] | null;
   guestAnswers: (0 | 1)[] | null;
+  ownerGuesses?: (0 | 1)[] | null;
+  guestGuesses?: (0 | 1)[] | null;
 }
 export interface MyDuo {
   code: string;
@@ -63,16 +65,26 @@ export const createDuel = (
   questions: string[],
   answers: (0 | 1)[],
   circle?: string,
+  guesses?: (0 | 1)[],
 ) =>
-  rpc<string>("create_dilemma_duel", {
+  rpc<string>("create_dilemma_duel_v2", {
     p_questions: questions,
     p_answers: answers,
     p_circle: circle ?? null,
+    p_guesses: guesses ?? null,
   });
 export const readDuel = (code: string) =>
   rpc<DuelState>("read_dilemma_duel", { p_code: code });
-export const answerDuel = (code: string, answers: (0 | 1)[]) =>
-  rpc<DuelState>("answer_dilemma_duel", { p_code: code, p_answers: answers });
+export const answerDuel = (
+  code: string,
+  answers: (0 | 1)[],
+  guesses?: (0 | 1)[],
+) =>
+  rpc<DuelState>("answer_dilemma_duel_v2", {
+    p_code: code,
+    p_answers: answers,
+    p_guesses: guesses ?? null,
+  });
 
 export async function updateNickname(displayName: string) {
   const { error } = await playerAuth.auth.updateUser({
