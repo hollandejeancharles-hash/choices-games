@@ -292,6 +292,35 @@
   color: var(--c-ink);
   font-size: 20px;
 }
+#player-space .bell-ring-icon {
+  display: inline-flex;
+  transform-origin: top center;
+}
+#player-space .bell-ring-body {
+  transform-origin: 50% 8%;
+}
+#player-space .bell-ring-clapper,
+#player-space .bell-ring-wave {
+  transform-box: fill-box;
+}
+#player-space .bell-ring-wave-left {
+  transform-origin: 100% 100%;
+}
+#player-space .bell-ring-wave-right {
+  transform-origin: 0 100%;
+}
+#player-space .c-notification-button:is(:hover, :focus-visible) .bell-ring-body,
+#player-space .c-notification-button[aria-expanded="true"] .bell-ring-body {
+  animation: bell-ring-swing 1.3s ease-in-out;
+}
+#player-space .c-notification-button:is(:hover, :focus-visible) .bell-ring-clapper,
+#player-space .c-notification-button[aria-expanded="true"] .bell-ring-clapper {
+  animation: bell-ring-clapper 1.3s 0.08s ease-in-out;
+}
+#player-space .c-notification-button:is(:hover, :focus-visible) .bell-ring-wave,
+#player-space .c-notification-button[aria-expanded="true"] .bell-ring-wave {
+  animation: bell-ring-wave 1.3s 0.08s ease-out;
+}
 #player-space .c-notification-button b {
   position: absolute;
   right: -4px;
@@ -1085,6 +1114,37 @@
   background: var(--c-accent, #bd2b19);
   border-radius: 10px;
   padding: 0.7rem 1rem;
+}
+@keyframes bell-ring-swing {
+  0%, 100% { transform: rotate(0); }
+  9% { transform: rotate(7deg); }
+  26% { transform: rotate(-18deg); }
+  45% { transform: rotate(14deg); }
+  62% { transform: rotate(-9deg); }
+  78% { transform: rotate(5deg); }
+  90% { transform: rotate(-2deg); }
+}
+@keyframes bell-ring-clapper {
+  0%, 100% { transform: translateX(0); }
+  9% { transform: translateX(1.5px); }
+  26% { transform: translateX(-5px); }
+  45% { transform: translateX(4px); }
+  62% { transform: translateX(-2.5px); }
+  78% { transform: translateX(1.5px); }
+  90% { transform: translateX(-1px); }
+}
+@keyframes bell-ring-wave {
+  0% { opacity: 0; transform: scale(0.5); }
+  25%, 75% { opacity: 1; transform: scale(1.15); }
+  50% { opacity: 0.25; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #player-space .c-notification-button .bell-ring-body,
+  #player-space .c-notification-button .bell-ring-clapper,
+  #player-space .c-notification-button .bell-ring-wave {
+    animation: none !important;
+  }
 }
 .duo-history small {
   opacity: 0.75;

@@ -27,6 +27,7 @@ import { playerAuth } from "../services/supabase";
 import { readPreference, savePreference } from "../services/session";
 import { AccountIcon, type AccountIconName } from "./ui/AccountIcon";
 import { AnimatedLogo } from "./ui/animated-logo";
+import { BellRingIcon } from "./ui/BellRingIcon";
 import { DailyDilemma } from "./DailyDilemma";
 import { AsyncDuel } from "./AsyncDuel";
 import { SocialSpace } from "./SocialSpace";
@@ -491,7 +492,7 @@ export function AccountDashboard({
                   aria-expanded={notificationsOpen}
                   onClick={() => setNotificationsOpen((open) => !open)}
                 >
-                  <span aria-hidden="true">♢</span>
+                  <BellRingIcon />
                   {duoInvitations.length > 0 && (
                     <b aria-label={`${duoInvitations.length}`}>
                       {duoInvitations.length}
