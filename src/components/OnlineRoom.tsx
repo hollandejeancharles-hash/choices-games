@@ -23,6 +23,19 @@ import { GroupResults } from "./GroupResults";
 import { ProfileView } from "./Profile";
 import { ShareActions } from "./ShareActions";
 import { scoreAnswers } from "../core/engine";
+import { playerAuth } from "../services/supabase";
+
+function accountNickname(user: {
+  email?: string;
+  user_metadata?: { display_name?: unknown };
+}) {
+  const displayName = user.user_metadata?.display_name;
+  if (typeof displayName === "string" && displayName.trim())
+    return displayName.trim().slice(0, 40);
+  const emailName = user.email?.split("@")[0]?.trim();
+  return emailName ? emailName.slice(0, 40) : "Player";
+}
+
 export function OnlineRoom({
   locale,
   onBack,
@@ -44,6 +57,9 @@ export function OnlineRoom({
   const [room, setRoom] = useState<RoomState | null>(null),
     [name, setName] = useState(""),
     [code, setCode] = useState(() => roomCodeFromHash(location.hash));
+  const [authLoading, setAuthLoading] = useState(invited);
+  const [accountName, setAccountName] = useState<string | null>(null);
+  const autoJoinStarted = useRef(false);
   const [settings, setSettings] = useState<RoomSettings>(
     initialSettings ?? {
       pack: "general",
@@ -128,6 +144,35 @@ export function OnlineRoom({
     };
   }, []);
   useEffect(() => {
+    let active = true;
+    let authEventReceived = false;
+    void playerAuth.auth
+      .getUser()
+      .then(({ data, error }) => {
+        if (!active || authEventReceived) return;
+        const nickname =
+          !error && data.user ? accountNickname(data.user) : null;
+        setAccountName(nickname);
+        if (nickname) setName(nickname);
+        setAuthLoading(false);
+      })
+      .catch(() => {
+        if (active && !authEventReceived) setAuthLoading(false);
+      });
+    const { data } = playerAuth.auth.onAuthStateChange((_event, session) => {
+      authEventReceived = true;
+      if (!active) return;
+      const nickname = session?.user ? accountNickname(session.user) : null;
+      setAccountName(nickname);
+      if (nickname) setName(nickname);
+      setAuthLoading(false);
+    });
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+  useEffect(() => {
     if (!credential) return;
     void request(
       credential.code ? (credential.creation ? "join" : "state") : "create",
@@ -162,35 +207,46 @@ export function OnlineRoom({
     const id = setInterval(() => setNow(Date.now()), 500);
     return () => clearInterval(id);
   }, []);
-  function connect(join: boolean) {
-    if (!name.trim() || (!/^[A-Fa-f0-9]{8}$/.test(code) && join)) return;
+  function connect(join: boolean, suppliedName = name) {
+    const playerName = suppliedName.trim();
+    if (!playerName || (!/^[A-Fa-f0-9]{8}$/.test(code) && join)) return;
     const token = crypto.randomUUID();
-    const creation = {
-      name: name.trim(),
-      settings: { ...settings, predictions: true },
-      deck: createSession(
-        ["host"],
-        settings.length,
-        crypto.getRandomValues(new Uint32Array(1))[0]!,
-        settings.pack,
-      ).deck,
-    };
+    const creation = join
+      ? { name: playerName }
+      : {
+          name: playerName,
+          settings: { ...settings, predictions: true },
+          deck: createSession(
+            ["host"],
+            settings.length,
+            crypto.getRandomValues(new Uint32Array(1))[0]!,
+            settings.pack,
+          ).deck,
+        };
     const next: RoomCredential = join
-      ? { code: code.toUpperCase(), token, creation: { name: name.trim() } }
+      ? { code: code.toUpperCase(), token, creation }
       : { code: "", token, creation };
     try {
       storeRoom(next);
       setCredential(next);
       credentialRef.current = next;
-      void request(
-        join ? "join" : "create",
-        join ? { name: name.trim() } : creation,
-        next,
-      );
+      void request(join ? "join" : "create", creation, next);
     } catch {
       setError("storage-unavailable");
     }
   }
+  useEffect(() => {
+    if (
+      !invited ||
+      authLoading ||
+      !accountName ||
+      credential ||
+      autoJoinStarted.current
+    )
+      return;
+    autoJoinStarted.current = true;
+    connect(true, accountName);
+  }, [invited, authLoading, accountName, credential, code]);
   const exit = () => {
     try {
       if (!room || room.phase === "finished" || room.phase === "closed")
@@ -250,6 +306,16 @@ export function OnlineRoom({
       </button>
     </div>
   );
+  if (!credential && invited && (authLoading || accountName))
+    return (
+      <section className="online-entry page-in" aria-live="polite">
+        <p role="status">
+          {fr
+            ? "Connexion automatique à la partie…"
+            : "Joining the game automatically…"}
+        </p>
+      </section>
+    );
   if (!credential)
     return (
       <section className="online-entry page-in">
