@@ -31,16 +31,20 @@ Deno.serve(async (req: Request) => {
   const apiKey = Deno.env.get("RESEND_API_KEY"),
     from = Deno.env.get("INVITATION_FROM");
   if (!apiKey || !from) return reply(503, { error: "email-not-configured" });
-  let id: string;
+  let id: string, type: "social" | "duo";
   try {
-    ({ id } = await req.json());
+    const body = await req.json();
+    id = body.id;
+    type = body.type === "duo" ? "duo" : "social";
     if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id))
       throw new Error();
   } catch {
     return reply(400, { error: "invalid-request" });
   }
   const { data: invitation, error } = await admin.rpc(
-    "claim_dilemma_invitation_email",
+    type === "duo"
+      ? "claim_dilemma_duel_email"
+      : "claim_dilemma_invitation_email",
     { p_id: id, p_sender: user.id },
   );
   if (error)
@@ -49,10 +53,12 @@ Deno.serve(async (req: Request) => {
     });
   let sent = false;
   try {
-    const link =
-      appUrl + "?account=1&invite=" + encodeURIComponent(invitation.token);
-    const subject =
-      invitation.kind === "circle"
+    const link = type === "duo"
+      ? appUrl + "?account=1&duo=" + encodeURIComponent(invitation.code)
+      : appUrl + "?account=1&invite=" + encodeURIComponent(invitation.token);
+    const subject = type === "duo"
+      ? "Quelqu’un t’invite à un Duo sur Dilemme"
+      : invitation.kind === "circle"
         ? "Rejoins un cercle sur Dilemme"
         : "Une invitation à devenir amis sur Dilemme";
     const response = await fetch("https://api.resend.com/emails", {
@@ -79,7 +85,9 @@ Deno.serve(async (req: Request) => {
     /* Do not expose recipient or provider credentials in logs. */
   }
   const { error: saveError } = await admin.rpc(
-    "finish_dilemma_invitation_email",
+        type === "duo"
+          ? "finish_dilemma_duel_email"
+          : "finish_dilemma_invitation_email",
     { p_id: id, p_attempt: invitation.attempt, p_sent: sent },
   );
   if (saveError) return reply(503, { error: "delivery-status-unavailable" });

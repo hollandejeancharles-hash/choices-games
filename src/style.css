@@ -372,6 +372,37 @@ header {
   font-size: 1.05rem;
 }
 
+.duel-recipient {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+
+.duel-recipient h2 {
+  margin: 0 0 1rem;
+}
+
+.duel-friend-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.duel-friend-list button {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: inherit;
+}
+
+.duel-friend-list button[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
 .duel-prediction-score {
   font-weight: 700;
 }

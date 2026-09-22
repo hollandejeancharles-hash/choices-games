@@ -30,6 +30,7 @@ export interface MyDuo {
   complete: boolean;
   expired: boolean;
   owner: boolean;
+  invited?: boolean;
 }
 export const listDuos = () => rpc<MyDuo[]>("list_dilemma_duos");
 
@@ -85,6 +86,23 @@ export const answerDuel = (
     p_answers: answers,
     p_guesses: guesses ?? null,
   });
+
+export const createDuelInvitation = (
+  code: string,
+  friend: string | null,
+  email: string | null,
+) =>
+  rpc<{ id: string; recipientFound: boolean }>(
+    "create_dilemma_duel_invitation",
+    { p_code: code, p_friend: friend, p_email: email },
+  );
+
+export async function sendDuelInvitationEmail(id: string) {
+  const { data, error } = await playerAuth.functions.invoke("send-invitation", {
+    body: { id, type: "duo" },
+  });
+  if (error || !data?.sent) throw new Error("email-not-sent");
+}
 
 export async function updateNickname(displayName: string) {
   const { error } = await playerAuth.auth.updateUser({

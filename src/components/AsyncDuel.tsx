@@ -6,11 +6,14 @@ import {
   type MyDuo,
   answerDuel,
   createDuel,
+  createDuelInvitation,
   readDuel,
+  sendDuelInvitationEmail,
   type Circle,
   type DuelState,
 } from "../services/player-features";
 import { duoLink } from "../services/duel-links";
+import { socialState, type Friend } from "../services/social";
 
 function duelQuestions() {
   return questions
@@ -35,6 +38,10 @@ export function AsyncDuel({
     "home" | "setup" | "answer" | "share" | "result"
   >("home");
   const [destination, setDestination] = useState<"friend" | "circle">("friend");
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friendsLoading, setFriendsLoading] = useState(true);
+  const [friendTarget, setFriendTarget] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
   const [code, setCode] = useState("");
   const [circle, setCircle] = useState("");
   const [ids, setIds] = useState<string[]>([]);
@@ -60,6 +67,13 @@ export function AsyncDuel({
   }
   useEffect(() => {
     void refreshHistory();
+    void socialState()
+      .then((state) => {
+        setFriends(state.friends);
+        setFriendTarget(state.friends[0]?.id ?? "email");
+      })
+      .catch(() => setFriendTarget("email"))
+      .finally(() => setFriendsLoading(false));
   }, []);
   useEffect(() => {
     if (initialCode) void beginJoin(initialCode);
@@ -75,6 +89,8 @@ export function AsyncDuel({
     setMessage("");
     setCircle("");
     setDestination("friend");
+    setFriendTarget(friends[0]?.id ?? "email");
+    setInviteEmail("");
     setMode("setup");
   }
   function beginAnswer() {
@@ -178,6 +194,31 @@ export function AsyncDuel({
           guestGuesses: null,
         });
         setMode("share");
+        if (destination === "friend") {
+          try {
+            const invitation = await createDuelInvitation(
+              created,
+              friendTarget === "email" ? null : friendTarget,
+              friendTarget === "email" ? inviteEmail.trim() : null,
+            );
+            await sendDuelInvitationEmail(invitation.id);
+            setMessage(
+              invitation.recipientFound
+                ? fr
+                  ? "Invitation envoyée dans son compte et par e-mail."
+                  : "Invitation sent to their account and by email."
+                : fr
+                  ? "Invitation envoyée par e-mail."
+                  : "Invitation sent by email.",
+            );
+          } catch {
+            setError(
+              fr
+                ? "Le Duo est créé, mais l’invitation automatique n’a pas pu être envoyée. Partage le lien ci-dessous."
+                : "The Duo was created, but the automatic invitation could not be sent. Share the link below.",
+            );
+          }
+        }
       }
       void refreshHistory();
     } catch {
@@ -309,9 +350,13 @@ export function AsyncDuel({
                         ? fr
                           ? "Expiré"
                           : "Expired"
-                        : fr
-                          ? "En attente d’une réponse"
-                          : "Waiting for an answer"}
+                        : item.invited
+                          ? fr
+                            ? "Invitation reçue"
+                            : "Invitation received"
+                          : fr
+                            ? "En attente d’une réponse"
+                            : "Waiting for an answer"}
                   </span>
                 </div>
                 {(!item.expired || item.complete) && (
@@ -391,9 +436,66 @@ export function AsyncDuel({
               </select>
             </label>
           )}
+          {destination === "friend" && (
+            <div className="duel-recipient">
+              <h2>{fr ? "Choisis ton ami" : "Choose your friend"}</h2>
+              {friendsLoading ? (
+                <p role="status">
+                  {fr ? "Chargement de tes amis…" : "Loading your friends…"}
+                </p>
+              ) : friends.length ? (
+                <>
+                  <div className="duel-friend-list">
+                    {friends.map((friend) => (
+                      <button
+                        key={friend.id}
+                        type="button"
+                        aria-pressed={friendTarget === friend.id}
+                        onClick={() => setFriendTarget(friend.id)}
+                      >
+                        {friend.name}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      aria-pressed={friendTarget === "email"}
+                      onClick={() => setFriendTarget("email")}
+                    >
+                      {fr ? "Une autre personne" : "Someone else"}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p>
+                  {fr
+                    ? "Tu n’as pas encore d’ami dans Dilemme. Invite quelqu’un par e-mail."
+                    : "You don’t have friends on Dilemma yet. Invite someone by email."}
+                </p>
+              )}
+              {friendTarget === "email" && (
+                <label>
+                  {fr ? "Adresse e-mail de ton ami" : "Your friend’s email"}
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(event) => setInviteEmail(event.target.value)}
+                    placeholder="ami@exemple.fr"
+                    required
+                  />
+                </label>
+              )}
+            </div>
+          )}
           <button
             className="primary"
-            disabled={destination === "circle" && !circle}
+            disabled={
+              (destination === "friend" && friendsLoading) ||
+              (destination === "circle" && !circle) ||
+              (destination === "friend" &&
+                (friendTarget === "" ||
+                  (friendTarget === "email" &&
+                    !/^\S+@\S+\.\S+$/.test(inviteEmail.trim()))))
+            }
             onClick={beginAnswer}
           >
             {fr ? "Continuer vers les dilemmes" : "Continue to dilemmas"}

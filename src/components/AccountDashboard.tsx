@@ -12,6 +12,7 @@ import {
   deletePlayerAccount,
   deleteResult,
   exportPlayerData,
+  listDuos,
   updateEmail,
   updateNickname,
   type Circle,
@@ -77,6 +78,7 @@ export function AccountDashboard({
   const [historyBusy, setHistoryBusy] = useState(true);
   const [historyError, setHistoryError] = useState(false);
   const [historyVersion, setHistoryVersion] = useState(0);
+  const [duoInvitations, setDuoInvitations] = useState(0);
   const [selected, setSelected] = useState<CloudResult | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -140,6 +142,13 @@ export function AccountDashboard({
       current = false;
     };
   }, [user.id, historyVersion]);
+  useEffect(() => {
+    void listDuos()
+      .then((items) =>
+        setDuoInvitations(items.filter((item) => item.invited).length),
+      )
+      .catch(() => setDuoInvitations(0));
+  }, [user.id]);
   useEffect(() => {
     const refresh = () => setDay(new Date().toISOString().slice(0, 10));
     const timer = window.setInterval(refresh, 30_000);
@@ -485,6 +494,20 @@ export function AccountDashboard({
                     }).format(new Date(day))}
                   </span>
                 </div>
+                {duoInvitations > 0 && (
+                  <button
+                    className="c-notice c-duo-invite"
+                    onClick={() => navigate("duel")}
+                  >
+                    <strong>
+                      {text(
+                        `${duoInvitations} invitation${duoInvitations > 1 ? "s" : ""} Duo reçue${duoInvitations > 1 ? "s" : ""}`,
+                        `${duoInvitations} Duo invitation${duoInvitations > 1 ? "s" : ""} waiting`,
+                      )}
+                    </strong>
+                    <span>{text("Répondre maintenant →", "Answer now →")}</span>
+                  </button>
+                )}
                 <div className="c-herogrid">
                   <article className="c-hero">
                     <span className="c-eyebrow">
