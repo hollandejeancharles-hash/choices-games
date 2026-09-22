@@ -11,7 +11,7 @@ La fonction send-invitation est déployée. Elle vérifie le jeton utilisateur a
    - RESEND_API_KEY : la clé Resend.
    - INVITATION_FROM : Dilemme <invitations@votre-domaine>.
 4. Tester l’envoi avec une adresse de test que vous contrôlez, puis accepter l’invitation avec cette même adresse.
-5. Dans Authentication > URL Configuration, autoriser les redirections vers https://hollandejeancharles-hash.github.io/choices-games/** pour conserver le paramètre invite après confirmation d’inscription.
+5. Dans Authentication > URL Configuration, autoriser les redirections vers https://dilemme.app/** pour conserver le paramètre invite après confirmation d’inscription.
 
 Ne jamais mettre ces secrets dans Vite, Git ou le navigateur de l’application. Aucun e-mail n’est envoyé tant que les secrets ne sont pas configurés ; l’invitation reste partageable par lien et apparaît comme non envoyée. Le succès signifie que Resend a accepté l’e-mail, pas une garantie de réception.
 

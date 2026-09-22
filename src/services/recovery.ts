@@ -1,6 +1,6 @@
 import { supabaseUrl, supabaseKey } from "./supabase-config";
 export const recoveryRedirect =
-  "https://hollandejeancharles-hash.github.io/choices-games/?recovery=1";
+  "https://dilemme.app/?recovery=1";
 export function parseRecovery(hash: string) {
   const values = new URLSearchParams(hash.replace(/^#/, ""));
   return values.get("type") === "recovery" && !values.has("error")

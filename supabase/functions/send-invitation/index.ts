@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.116.0";
-const appUrl = "https://hollandejeancharles-hash.github.io/choices-games/";
+const appUrl = "https://dilemme.app/";
 const cors = {
   "Access-Control-Allow-Origin": new URL(appUrl).origin,
   "Access-Control-Allow-Headers":
