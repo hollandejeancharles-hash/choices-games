@@ -103,7 +103,7 @@ it("never changes a password when admin authorization is denied", async () => {
 it("leaves player recovery links for the player auth client", async () => {
   vi.resetModules();
   vi.stubGlobal("location", {
-    search: "?account=1",
+    search: "?account=1&player-recovery=1",
     hash: "#type=recovery&access_token=player-test-token",
     pathname: "/choices-games/",
   });

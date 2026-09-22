@@ -20,9 +20,9 @@ it("ignore les jetons malformés", () => {
 });
 
 it("distingue la récupération joueur des autres retours de compte", () => {
-  history.replaceState(null, "", "/?account=1&recovery=1");
+  history.replaceState(null, "", "/?account=1&player-recovery=1");
   expect(playerRecoveryRequested()).toBe(true);
   expect(playerRecoveryRedirect()).toBe(
-    `${location.origin}/?account=1&recovery=1`,
+    `${location.origin}/?account=1&player-recovery=1`,
   );
 });

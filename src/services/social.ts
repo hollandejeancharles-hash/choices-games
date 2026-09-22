@@ -90,9 +90,9 @@ export function accountRedirect() {
 }
 
 export function playerRecoveryRedirect() {
-  return location.origin + location.pathname + "?account=1&recovery=1";
+  return location.origin + location.pathname + "?account=1&player-recovery=1";
 }
 
 export function playerRecoveryRequested() {
-  return new URLSearchParams(location.search).get("recovery") === "1";
+  return new URLSearchParams(location.search).get("player-recovery") === "1";
 }
