@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { User } from "@supabase/supabase-js";
 import { AXES, type Locale } from "../core/types";
-import { axisCopy } from "../data/archetypes";
+import { archetypes, axisCopy } from "../data/archetypes";
 import {
   listCloudResults,
   strongestEvolution,
@@ -13,8 +13,13 @@ import {
   deleteResult,
   exportPlayerData,
   listDuos,
+  isProfileAvatarId,
+  profilePhotoUrl,
+  selectProfileAvatar,
+  uploadProfilePhoto,
   updateEmail,
   updateNickname,
+  type ProfileAvatarId,
   type Circle,
   type MyDuo,
 } from "../services/player-features";
@@ -114,12 +119,34 @@ export function AccountDashboard({
       : text("Joueur", "Player");
   const [nickname, setNickname] = useState(name);
   const [email, setEmail] = useState(user.email ?? "");
+  const selectedAvatar = isProfileAvatarId(user.user_metadata.avatar_id)
+    ? user.user_metadata.avatar_id
+    : null;
+  const uploadedPath =
+    user.user_metadata.avatar_kind === "upload" &&
+    typeof user.user_metadata.avatar_path === "string"
+      ? user.user_metadata.avatar_path
+      : null;
+  const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(
+    null,
+  );
+  const [avatarOverride, setAvatarOverride] = useState<ProfileAvatarId | null>(
+    selectedAvatar,
+  );
   const initials = name
     .split(/[\s-]+/)
     .slice(0, 2)
     .map((part: string) => part[0])
     .join("")
     .toUpperCase();
+  const avatarSource = avatarOverride
+    ? `./avatars/${avatarOverride}.png`
+    : uploadedAvatarUrl;
+  const playerAvatar = (className = "c-avatar") => (
+    <span className={className} aria-hidden="true">
+      {avatarSource ? <img src={avatarSource} alt="" /> : initials}
+    </span>
+  );
   const titles: Record<Page, string> = {
     home: text("Vue d’ensemble", "Overview"),
     portraits: text("Mes portraits", "My portraits"),
@@ -137,6 +164,24 @@ export function AccountDashboard({
   useEffect(() => {
     setEmail(user.email ?? "");
   }, [user.email]);
+  useEffect(() => {
+    setAvatarOverride(selectedAvatar);
+    if (!uploadedPath) {
+      setUploadedAvatarUrl(null);
+      return;
+    }
+    let active = true;
+    void profilePhotoUrl(uploadedPath)
+      .then((url) => {
+        if (active) setUploadedAvatarUrl(url);
+      })
+      .catch(() => {
+        if (active) setUploadedAvatarUrl(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedAvatar, uploadedPath]);
   useEffect(() => {
     let current = true;
     setHistoryBusy(true);
@@ -451,7 +496,7 @@ export function AccountDashboard({
               {navButton("preferences", "sliders")}
             </nav>
             <button className="c-user" onClick={() => navigate("account")}>
-              <span className="c-avatar">{initials}</span>
+              {playerAvatar()}
               <span>
                 <strong>{name}</strong>
                 <span className="c-small c-muted">
@@ -535,11 +580,11 @@ export function AccountDashboard({
                 )}
               </div>
               <button
-                className="c-avatar"
+                className="c-avatar c-avatar-button"
                 onClick={() => navigate("account")}
                 aria-label={titles.account}
               >
-                {initials}
+                {avatarSource ? <img src={avatarSource} alt="" /> : initials}
               </button>
             </div>
           </div>
@@ -865,6 +910,85 @@ export function AccountDashboard({
                 </div>
                 <div className="c-settings">
                   <div className="c-panel">
+                    <div className="c-avatar-editor">
+                      {playerAvatar("c-avatar c-avatar-large")}
+                      <div>
+                        <h2>{text("Photo de profil", "Profile picture")}</h2>
+                        <p>
+                          {text(
+                            "Choisis un personnage Dilemme ou importe ta propre photo.",
+                            "Choose a Dilemma character or upload your own photo.",
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className="c-avatar-grid"
+                      role="group"
+                      aria-label={text(
+                        "Avatars disponibles",
+                        "Available avatars",
+                      )}
+                    >
+                      {archetypes.map((archetype) => (
+                        <button
+                          key={archetype.id}
+                          type="button"
+                          className="c-avatar-choice"
+                          aria-pressed={avatarOverride === archetype.id}
+                          aria-label={archetype.name[locale]}
+                          disabled={busy}
+                          onClick={() =>
+                            void perform(
+                              async () => {
+                                await selectProfileAvatar(
+                                  archetype.id as ProfileAvatarId,
+                                  uploadedPath,
+                                );
+                                setAvatarOverride(
+                                  archetype.id as ProfileAvatarId,
+                                );
+                                setUploadedAvatarUrl(null);
+                              },
+                              text("Avatar mis à jour.", "Avatar updated."),
+                            )
+                          }
+                        >
+                          <img src={`./avatars/${archetype.id}.png`} alt="" />
+                        </button>
+                      ))}
+                    </div>
+                    <label className="c-photo-upload c-button">
+                      {text("Importer une photo", "Upload a photo")}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={busy}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (!file) return;
+                          void perform(
+                            async () => {
+                              const url = await uploadProfilePhoto(
+                                file,
+                                user.id,
+                              );
+                              setAvatarOverride(null);
+                              setUploadedAvatarUrl(url);
+                              event.target.value = "";
+                            },
+                            text("Photo mise à jour.", "Photo updated."),
+                          );
+                        }}
+                      />
+                    </label>
+                    <p className="c-small c-muted">
+                      {text(
+                        "JPEG, PNG ou WebP · 5 Mo maximum. Ta photo reste dans un espace privé.",
+                        "JPEG, PNG or WebP · 5 MB maximum. Your photo stays in private storage.",
+                      )}
+                    </p>
+                    <hr className="c-divider" />
                     <h2>
                       {text("Informations personnelles", "Personal details")}
                     </h2>
@@ -959,7 +1083,7 @@ export function AccountDashboard({
                     </form>
                   </div>
                   <aside className="c-panel c-profilecard">
-                    <span className="c-avatar">{initials}</span>
+                    {playerAvatar()}
                     <div>
                       <h3>{name}</h3>
                       <p>

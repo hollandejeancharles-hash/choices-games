@@ -24,6 +24,9 @@ const api = vi.hoisted(() => ({
   deleteAccount: vi.fn(),
   nickname: vi.fn(),
   email: vi.fn(),
+  selectAvatar: vi.fn(),
+  uploadPhoto: vi.fn(),
+  photoUrl: vi.fn(),
   signOut: vi.fn(),
   vote: vi.fn(),
 }));
@@ -37,6 +40,35 @@ vi.mock("../services/player-features", () => ({
   deletePlayerAccount: api.deleteAccount,
   updateNickname: api.nickname,
   updateEmail: api.email,
+  profileAvatarIds: [
+    "builder",
+    "compass",
+    "free",
+    "guardian",
+    "mediator",
+    "present",
+    "scout",
+    "sensitive",
+    "strategist",
+    "visionary",
+  ],
+  isProfileAvatarId: (value: unknown) =>
+    typeof value === "string" &&
+    [
+      "builder",
+      "compass",
+      "free",
+      "guardian",
+      "mediator",
+      "present",
+      "scout",
+      "sensitive",
+      "strategist",
+      "visionary",
+    ].includes(value),
+  selectProfileAvatar: api.selectAvatar,
+  uploadProfilePhoto: api.uploadPhoto,
+  profilePhotoUrl: api.photoUrl,
   exportPlayerData: vi.fn(),
   listDuos: vi.fn().mockResolvedValue([]),
   listCircles: vi.fn().mockResolvedValue([]),
@@ -130,6 +162,9 @@ beforeEach(() => {
   api.deleteAccount.mockReset().mockResolvedValue(undefined);
   api.nickname.mockReset().mockResolvedValue(undefined);
   api.email.mockReset().mockResolvedValue(undefined);
+  api.selectAvatar.mockReset().mockResolvedValue(undefined);
+  api.uploadPhoto.mockReset().mockResolvedValue("blob:profile-photo");
+  api.photoUrl.mockReset().mockResolvedValue("blob:stored-photo");
   api.signOut.mockReset().mockResolvedValue({ error: null });
   api.vote.mockReset().mockResolvedValue({ mine: null, a: 0, b: 0 });
   // jsdom has no top-layer layout; retain native open/close semantics for interaction tests.
@@ -312,6 +347,22 @@ describe("account space with real service boundaries", () => {
     );
     await screen.findByText(/Vérifie les e-mails de confirmation/);
     expect(api.email).toHaveBeenCalledWith("alex@example.test");
+  });
+  it("selects a bundled avatar or uploads a private profile photo", async () => {
+    await mount();
+    navigate("Mon compte");
+    fireEvent.click(screen.getByRole("button", { name: "Le Gardien" }));
+    await screen.findByText("Avatar mis à jour.");
+    expect(api.selectAvatar).toHaveBeenCalledWith("guardian", null);
+
+    const photo = new File(["photo"], "portrait.webp", {
+      type: "image/webp",
+    });
+    fireEvent.change(screen.getByLabelText("Importer une photo"), {
+      target: { files: [photo] },
+    });
+    await screen.findByText("Photo mise à jour.");
+    expect(api.uploadPhoto).toHaveBeenCalledWith(photo, "test-player");
   });
   it("surfaces profile errors without a success message", async () => {
     api.nickname.mockRejectedValueOnce(new Error("offline"));

@@ -107,6 +107,84 @@ export async function updateNickname(displayName: string) {
   });
   if (error) throw error;
 }
+
+const profileBucket = "profile-photos";
+export const profileAvatarIds = [
+  "builder",
+  "compass",
+  "free",
+  "guardian",
+  "mediator",
+  "present",
+  "scout",
+  "sensitive",
+  "strategist",
+  "visionary",
+] as const;
+export type ProfileAvatarId = (typeof profileAvatarIds)[number];
+
+export function isProfileAvatarId(value: unknown): value is ProfileAvatarId {
+  return (
+    typeof value === "string" &&
+    profileAvatarIds.includes(value as ProfileAvatarId)
+  );
+}
+
+export async function profilePhotoUrl(path: string) {
+  const { data, error } = await playerAuth.storage
+    .from(profileBucket)
+    .createSignedUrl(path, 60 * 60);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+async function removePreviousProfilePhoto(path: unknown) {
+  if (typeof path !== "string" || !path) return;
+  await playerAuth.storage.from(profileBucket).remove([path]);
+}
+
+export async function selectProfileAvatar(
+  avatar: ProfileAvatarId,
+  previousPath?: unknown,
+) {
+  if (!isProfileAvatarId(avatar)) throw new Error("invalid-avatar");
+  const { error } = await playerAuth.auth.updateUser({
+    data: { avatar_kind: "preset", avatar_id: avatar, avatar_path: null },
+  });
+  if (error) throw error;
+  await removePreviousProfilePhoto(previousPath).catch(() => {});
+}
+
+export async function uploadProfilePhoto(file: File, userId: string) {
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type))
+    throw new Error("invalid-photo-type");
+  if (file.size > 5 * 1024 * 1024) throw new Error("photo-too-large");
+  const extension =
+    file.type === "image/png"
+      ? "png"
+      : file.type === "image/webp"
+        ? "webp"
+        : "jpg";
+  const previous = (await playerAuth.auth.getUser()).data.user?.user_metadata
+    .avatar_path;
+  const path = `${userId}/profile-${crypto.randomUUID()}.${extension}`;
+  const { error: uploadError } = await playerAuth.storage
+    .from(profileBucket)
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) throw uploadError;
+  const { error: profileError } = await playerAuth.auth.updateUser({
+    data: { avatar_kind: "upload", avatar_id: null, avatar_path: path },
+  });
+  if (profileError) {
+    await playerAuth.storage
+      .from(profileBucket)
+      .remove([path])
+      .catch(() => {});
+    throw profileError;
+  }
+  await removePreviousProfilePhoto(previous).catch(() => {});
+  return profilePhotoUrl(path);
+}
 export async function updateEmail(email: string) {
   const { error } = await playerAuth.auth.updateUser(
     { email: email.trim() },
@@ -149,6 +227,10 @@ export async function exportPlayerData(results: CloudResult[]) {
   };
 }
 export async function deletePlayerAccount() {
+  const { data } = await playerAuth.auth.getUser();
+  await removePreviousProfilePhoto(data.user?.user_metadata.avatar_path).catch(
+    () => {},
+  );
   await rpc<void>("delete_dilemma_player_account");
   await playerAuth.auth.signOut({ scope: "local" });
 }
