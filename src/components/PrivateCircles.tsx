@@ -94,8 +94,8 @@ export function PrivateCircles({
       </h1>
       <p>
         {fr
-          ? "Un cercle conserve le nombre de membres et l’historique de vos duels, jamais vos réponses détaillées."
-          : "A circle keeps its member count and duel history, never your detailed answers."}
+          ? "Un cercle conserve le nombre de membres et l’historique de vos duos, jamais vos réponses détaillées."
+          : "A circle keeps its member count and duo history, never your detailed answers."}
       </p>
       <div className="circle-actions">
         <form onSubmit={(event) => void submit(event, "create")}>
@@ -121,7 +121,7 @@ export function PrivateCircles({
             <strong>{circle.name}</strong>
             <span>
               {circle.members} {fr ? "membres" : "members"} · {circle.duels}{" "}
-              duels
+              duos
             </span>
             <code>{circle.code}</code>
           </button>
@@ -143,8 +143,8 @@ export function PrivateCircles({
           ) : (
             <p>
               {fr
-                ? "Aucun duel terminé dans ce cercle."
-                : "No completed duel in this circle."}
+                ? "Aucun duo terminé dans ce cercle."
+                : "No completed duo in this circle."}
             </p>
           )}
         </div>

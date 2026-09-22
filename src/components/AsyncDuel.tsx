@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Locale } from "../core/types";
 import { questions } from "../data/questions";
 import {
+  listDuos,
+  type MyDuo,
   answerDuel,
   createDuel,
   readDuel,
@@ -36,6 +38,22 @@ export function AsyncDuel({
   const [duel, setDuel] = useState<DuelState | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [duos, setDuos] = useState<MyDuo[]>([]);
+  const [historyStatus, setHistoryStatus] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
+  async function refreshHistory() {
+    setHistoryStatus("loading");
+    try {
+      setDuos(await listDuos());
+      setHistoryStatus("ready");
+    } catch {
+      setHistoryStatus("error");
+    }
+  }
+  useEffect(() => {
+    void refreshHistory();
+  }, []);
   const current = questions.find((q) => q.id === ids[answers.length]);
   const resolved = useMemo(
     () => ids.map((id) => questions.find((q) => q.id === id)).filter(Boolean),
@@ -43,16 +61,19 @@ export function AsyncDuel({
   );
 
   function beginCreate() {
+    setError("");
     setIds(duelQuestions().map((q) => q.id));
     setAnswers([]);
     setDuel(null);
     setMode("answer");
   }
-  async function beginJoin() {
+  async function beginJoin(selectedCode = code) {
+    if (busy) return;
     setBusy(true);
     setError("");
     try {
-      const found = await readDuel(code);
+      const found = await readDuel(selectedCode);
+      setCode(found.code);
       setDuel(found);
       setIds(found.questions);
       setAnswers([]);
@@ -60,14 +81,16 @@ export function AsyncDuel({
     } catch {
       setError(
         fr
-          ? "Duel introuvable, expiré ou déjà rejoint."
-          : "Duel not found, expired, or already joined.",
+          ? "Duo introuvable, expiré ou déjà rejoint."
+          : "Duo not found, expired, or already joined.",
       );
     } finally {
       setBusy(false);
     }
   }
   async function choose(option: 0 | 1) {
+    if (busy) return;
+    setError("");
     const next = [...answers, option] as (0 | 1)[];
     setAnswers(next);
     if (next.length < 5) return;
@@ -80,13 +103,21 @@ export function AsyncDuel({
       } else {
         const created = await createDuel(ids, next, circle || undefined);
         setCode(created);
+        setDuel({
+          code: created,
+          questions: ids,
+          complete: false,
+          owner: true,
+          ownerAnswers: null,
+          guestAnswers: null,
+        });
         setMode("share");
       }
+      void refreshHistory();
     } catch {
+      setAnswers(answers);
       setError(
-        fr
-          ? "Impossible de terminer ce duel."
-          : "Could not complete this duel.",
+        fr ? "Impossible de terminer ce duo." : "Could not complete this duo.",
       );
     } finally {
       setBusy(false);
@@ -100,10 +131,28 @@ export function AsyncDuel({
       : 0;
   return (
     <section className="duel-page page-in">
-      <button className="text-button" onClick={onBack}>
-        ← {fr ? "Retour" : "Back"}
+      <button
+        className="text-button"
+        onClick={
+          mode === "home"
+            ? onBack
+            : () => {
+                setMode("home");
+                setError("");
+                void refreshHistory();
+              }
+        }
+      >
+        ←{" "}
+        {mode === "home"
+          ? fr
+            ? "Retour"
+            : "Back"
+          : fr
+            ? "Mes duos"
+            : "My duos"}
       </button>
-      <span className="eyebrow">{fr ? "Duel asynchrone" : "Async duel"}</span>
+      <span className="eyebrow">{fr ? "Duo" : "Duo"}</span>
       {mode === "home" && (
         <>
           <h1>
@@ -135,7 +184,7 @@ export function AsyncDuel({
             </label>
           )}
           <button className="primary" onClick={beginCreate}>
-            {fr ? "Créer un duel" : "Create a duel"}
+            {fr ? "Créer un duo" : "Create a duo"}
             <span>→</span>
           </button>
           <div className="duel-join">
@@ -154,6 +203,78 @@ export function AsyncDuel({
               {fr ? "Rejoindre" : "Join"}
             </button>
           </div>
+          <section className="duo-history" aria-labelledby="my-duos-title">
+            <header>
+              <h2 id="my-duos-title">{fr ? "Mes duos" : "My duos"}</h2>
+              <button
+                disabled={historyStatus === "loading"}
+                onClick={() => void refreshHistory()}
+              >
+                {fr ? "Actualiser" : "Refresh"}
+              </button>
+            </header>
+            {historyStatus === "loading" && (
+              <p role="status">{fr ? "Chargement…" : "Loading…"}</p>
+            )}
+            {historyStatus === "error" && (
+              <p role="alert">
+                {fr
+                  ? "Impossible de charger tes duos. Réessaie avec Actualiser."
+                  : "Could not load your duos. Try Refresh."}
+              </p>
+            )}
+            {historyStatus === "ready" && duos.length === 0 && (
+              <p>
+                {fr
+                  ? "Tes duos créés et rejoints apparaîtront ici."
+                  : "Duos you create and join will appear here."}
+              </p>
+            )}
+            {duos.map((item) => (
+              <article key={item.code}>
+                <div>
+                  <strong>Duo · {item.code}</strong>
+                  <small>
+                    {new Date(item.createdAt).toLocaleDateString(locale)} ·{" "}
+                    {item.owner
+                      ? fr
+                        ? "Créé par toi"
+                        : "Created by you"
+                      : fr
+                        ? "Rejoint"
+                        : "Joined"}
+                  </small>
+                  <span>
+                    {item.complete
+                      ? fr
+                        ? "Terminé"
+                        : "Completed"
+                      : item.expired
+                        ? fr
+                          ? "Expiré"
+                          : "Expired"
+                        : fr
+                          ? "En attente d’une réponse"
+                          : "Waiting for an answer"}
+                  </span>
+                </div>
+                {(!item.expired || item.complete) && (
+                  <button
+                    disabled={busy}
+                    onClick={() => void beginJoin(item.code)}
+                  >
+                    {item.complete
+                      ? fr
+                        ? "Voir les résultats"
+                        : "View results"
+                      : fr
+                        ? "Voir le code"
+                        : "View code"}
+                  </button>
+                )}
+              </article>
+            ))}
+          </section>
         </>
       )}
       {mode === "answer" && current && (
@@ -179,8 +300,8 @@ export function AsyncDuel({
           <h1>
             {duel?.owner
               ? fr
-                ? "Ton duel attend une réponse."
-                : "Your duel is waiting for an answer."
+                ? "Ton duo attend une réponse."
+                : "Your duo is waiting for an answer."
               : fr
                 ? "Code prêt à partager."
                 : "Your code is ready."}
