@@ -1,6 +1,6 @@
 # Dilemme / Dilemma
 
-**[Jouer à Dilemme](https://hollandejeancharles-hash.github.io/choices-games/)**
+**[Jouer à Dilemme](https://dilemme.app/)**
 
 Après chaque choix solo, les pourcentages A/B regroupent les votes des joueurs connectés et invités. Un identifiant aléatoire conservé dans le navigateur limite chaque appareil à un vote par dilemme, sans enregistrer de nom ni d’adresse e-mail.
 
@@ -190,7 +190,7 @@ sur le projet réel avant ouverture des propositions.
 Dans **Supabase > Authentication > URL Configuration**, ajouter l’URL de
 redirection de production :
 
-`https://hollandejeancharles-hash.github.io/choices-games/?account=1`
+`https://dilemme.app/?account=1`
 
 Conserver les URL de développement utilisées par l’équipe (par exemple
 `http://localhost:5173/?account=1`) uniquement si nécessaire. Activer la

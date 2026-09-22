@@ -65,7 +65,7 @@ Documentation officielle :
 
 Depuis Admin → « Mot de passe oublié ? », saisir l'adresse du compte. Supabase
 expédie son e-mail de récupération, avec retour autorisé vers
-`https://hollandejeancharles-hash.github.io/choices-games/?recovery=1`.
+`https://dilemme.app/?recovery=1`.
 La Site URL du projet pointe également vers le site public, et non localhost.
 Le lien ouvre le formulaire de nouveau mot de passe (12 caractères minimum,
 confirmation identique). Le jeton est conservé uniquement en mémoire et retiré

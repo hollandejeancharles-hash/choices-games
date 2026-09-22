@@ -3,13 +3,19 @@
 La migration social-invitations.sql est appliquée au projet xkutdvtqjtamjpjbwhme.
 La fonction send-invitation est déployée. Elle vérifie le jeton utilisateur avec auth.getUser ; la vérification JWT legacy doit rester désactivée.
 
-## Activation Resend
+## Configuration de production
+
+Le domaine `dilemme.app` est vérifié dans Resend (région eu-west-1). Les secrets `RESEND_API_KEY` et `INVITATION_FROM` sont enregistrés dans Supabase ; l’expéditeur est `Dilemme <invitations@dilemme.app>`. La clé est limitée à l’envoi sur ce domaine.
+
+Le 22 septembre 2026, un test depuis les secrets de la fonction Supabase a été reçu dans la boîte Gmail du propriétaire. Le diagnostic temporaire a été retiré après le test. Cela valide la connexion serveur au fournisseur ; les tests automatisés couvrent séparément les invitations, leurs permissions et les relances.
+
+## Reconfiguration Resend
 
 1. Créer un compte Resend et valider un domaine d’envoi avec ses enregistrements DNS.
 2. Créer une clé API limitée à l’envoi.
 3. Dans Supabase > Edge Functions > Secrets, définir :
    - RESEND_API_KEY : la clé Resend.
-   - INVITATION_FROM : Dilemme <invitations@votre-domaine>.
+   - INVITATION_FROM : Dilemme <invitations@dilemme.app>.
 4. Tester l’envoi avec une adresse de test que vous contrôlez, puis accepter l’invitation avec cette même adresse.
 5. Dans Authentication > URL Configuration, autoriser les redirections vers https://dilemme.app/** pour conserver le paramètre invite après confirmation d’inscription.
 
