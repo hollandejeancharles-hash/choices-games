@@ -98,11 +98,6 @@ export function Testimonials({ locale }: { locale: Locale }) {
             ? "Des décisions qui bousculent, des raisons qui surprennent. Et toi, comment défendrais-tu ton choix ?"
             : "Decisions that challenge you. Reasons you didn’t expect. How would you defend your choice?"}
         </p>
-        <p className="testimonials-disclosure">
-          {fr
-            ? "Avis illustratifs fictifs — ils ne proviennent pas de vrais joueurs."
-            : "Fictional example reviews — these are not testimonials from real players."}
-        </p>
         <button
           className="text-button testimonials-pause"
           aria-pressed={paused}
