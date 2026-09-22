@@ -88,3 +88,11 @@ export function accountRedirect() {
     (token ? "&invite=" + encodeURIComponent(token) : "")
   );
 }
+
+export function playerRecoveryRedirect() {
+  return location.origin + location.pathname + "?account=1&recovery=1";
+}
+
+export function playerRecoveryRequested() {
+  return new URLSearchParams(location.search).get("recovery") === "1";
+}

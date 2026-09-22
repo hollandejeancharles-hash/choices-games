@@ -7,7 +7,12 @@ import {
 import { playerAuth } from "../services/supabase";
 
 type Mode = "register" | "login" | "forgot" | "reset";
-import { accountRedirect, invitationToken } from "../services/social";
+import {
+  accountRedirect,
+  invitationToken,
+  playerRecoveryRedirect,
+  playerRecoveryRequested,
+} from "../services/social";
 const redirectUrl = accountRedirect;
 
 export function PlayerAccount(props: AccountNavigationProps) {
@@ -15,6 +20,7 @@ export function PlayerAccount(props: AccountNavigationProps) {
   const fr = locale === "fr";
   const [user, setUser] = useState<User | null>(null);
   const [mode, setMode] = useState<Mode>(() =>
+    playerRecoveryRequested() ||
     new URLSearchParams(location.hash.slice(1)).get("type") === "recovery"
       ? "reset"
       : "register",
@@ -37,9 +43,10 @@ export function PlayerAccount(props: AccountNavigationProps) {
       .catch(() => {
         if (active && !authEventReceived) setAuthLoading(false);
       });
-    const { data } = playerAuth.auth.onAuthStateChange((_event, session) => {
+    const { data } = playerAuth.auth.onAuthStateChange((event, session) => {
       authEventReceived = true;
       if (!active) return;
+      if (event === "PASSWORD_RECOVERY") setMode("reset");
       setUser(session?.user ?? null);
       setAuthLoading(false);
     });
@@ -130,7 +137,7 @@ export function PlayerAccount(props: AccountNavigationProps) {
         if (error) throw error;
       } else if (mode === "forgot") {
         const { error } = await playerAuth.auth.resetPasswordForEmail(email, {
-          redirectTo: redirectUrl(),
+          redirectTo: playerRecoveryRedirect(),
         });
         if (error) throw error;
         setMessage(
