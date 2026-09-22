@@ -959,6 +959,66 @@
   font-size: 10px;
   color: var(--c-muted);
 }
+@keyframes c-users-head {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+#player-space .c-users-head {
+  transform-origin: 10px 8px;
+}
+#player-space .c-icon[data-icon="users"] path:last-child {
+  opacity: 0.7;
+}
+#player-space button:is(:hover, :focus-visible) .c-users-head {
+  animation: c-users-head 0.6s ease-out both;
+}
+#player-space
+  button:is(:hover, :focus-visible)
+  .c-icon[data-icon="users"]
+  .c-draw {
+  animation-duration: 0.8s;
+}
+#player-space
+  button:is(:hover, :focus-visible)
+  .c-icon[data-icon="users"]
+  path:last-child {
+  animation-delay: 0.4s;
+}
+.duo-history {
+  margin-top: 2rem;
+  display: grid;
+  gap: 0.75rem;
+}
+.duo-history header,
+.duo-history article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.duo-history article {
+  padding: 1rem;
+  border: 1px solid var(--line, #dce1e8);
+  border-radius: 16px;
+}
+.duo-history article div {
+  display: grid;
+  gap: 0.35rem;
+}
+.duo-history small {
+  opacity: 0.75;
+}
 @keyframes c-draw {
   from {
     stroke-dashoffset: 1;

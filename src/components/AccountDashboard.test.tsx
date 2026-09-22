@@ -38,6 +38,7 @@ vi.mock("../services/player-features", () => ({
   updateNickname: api.nickname,
   updateEmail: api.email,
   exportPlayerData: vi.fn(),
+  listDuos: vi.fn().mockResolvedValue([]),
   listCircles: vi.fn().mockResolvedValue([]),
   circleHistory: vi.fn(),
   createCircle: vi.fn(),

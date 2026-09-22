@@ -5,7 +5,7 @@ export type AccountIconName = keyof typeof accountIconPaths;
 
 /** Supplied icon paths with native CSS motion, shared by hover and keyboard focus.
  * Fingerprint: dmytro (@pqoqubbw), MIT.
- * Dashboard01 / Swords / SlidersHorizontal / Ticket: Avijit Dey, MIT.
+ * Dashboard01 / Swords / SlidersHorizontal / Ticket / UsersRound: Avijit Dey, MIT.
  * Account: supplied by the project owner; corrected SVG nesting.
  * See docs/account-icons-LICENSE.txt. No additional animation runtime required.
  */
@@ -34,6 +34,9 @@ export function AccountIcon({
         strokeLinejoin="round"
         focusable="false"
       >
+        {name === "users" && (
+          <circle cx="10" cy="8" r="5" className="c-users-head" />
+        )}
         {accountIconPaths[name].map((d, i) => (
           <Fragment key={d}>
             {name === "fingerprint" && <path d={d} opacity=".25" />}

@@ -109,7 +109,7 @@ export function AccountDashboard({
     preferences: text("Préférences", "Preferences"),
     privacy: text("Mes données", "My data"),
     daily: text("Dilemme du jour", "Daily dilemma"),
-    duel: text("Duel privé", "Private duel"),
+    duel: text("Duo", "Duo"),
     circles: text("Mes cercles", "My circles"),
   };
   useEffect(() => {
@@ -396,7 +396,7 @@ export function AccountDashboard({
             <nav className="c-nav" aria-label={text("Activités", "Activities")}>
               {navButton("daily", "ticket")}
               {navButton("duel", "swords")}
-              {navButton("circles")}
+              {navButton("circles", "users")}
             </nav>
           </div>
           <div className="c-sidebarbottom">
@@ -566,7 +566,7 @@ export function AccountDashboard({
                     onClick={() => navigate("circles")}
                   >
                     <span className="c-icondisc" aria-hidden="true">
-                      ◎
+                      <AccountIcon name="users" />
                     </span>
                     <span>
                       <strong>
@@ -1166,8 +1166,8 @@ export function AccountDashboard({
             ["home", "dashboard", text("Accueil", "Home")],
             ["portraits", "fingerprint", text("Portraits", "Portraits")],
             ["daily", "ticket", text("Du jour", "Daily")],
-            ["duel", "swords", text("Duel", "Duel")],
-            ["circles", null, text("Cercles", "Circles")],
+            ["duel", "swords", text("Duo", "Duo")],
+            ["circles", "users", text("Cercles", "Circles")],
           ] as const
         ).map(([target, icon, label]) => (
           <button

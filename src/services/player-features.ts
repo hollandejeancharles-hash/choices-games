@@ -22,6 +22,15 @@ export interface DuelState {
   ownerAnswers: (0 | 1)[] | null;
   guestAnswers: (0 | 1)[] | null;
 }
+export interface MyDuo {
+  code: string;
+  createdAt: string;
+  complete: boolean;
+  expired: boolean;
+  owner: boolean;
+}
+export const listDuos = () => rpc<MyDuo[]>("list_dilemma_duos");
+
 export interface CircleDuel {
   code: string;
   completedAt: string;
