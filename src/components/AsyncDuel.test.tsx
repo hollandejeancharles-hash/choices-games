@@ -19,6 +19,14 @@ afterEach(cleanup);
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(listDuos).mockResolvedValue([]);
+  Object.defineProperty(navigator, "share", {
+    configurable: true,
+    value: undefined,
+  });
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: { writeText: vi.fn().mockResolvedValue(undefined) },
+  });
 });
 it("retrouve un Duo créé en revenant au même écran et après remontage", async () => {
   vi.mocked(createDuel).mockResolvedValue("ABCD1234");
@@ -115,4 +123,34 @@ it("propose ami ou cercle avant le premier dilemme", async () => {
     screen.getByRole("button", { name: /Continuer vers les dilemmes/ }),
   );
   expect(screen.getByText("Ton choix")).toBeTruthy();
+});
+
+it("ouvre un lien direct et permet de partager un Duo", async () => {
+  vi.mocked(readDuel).mockResolvedValue({
+    code: "ABCD1234",
+    questions: [],
+    complete: false,
+    owner: true,
+    ownerAnswers: null,
+    guestAnswers: null,
+  });
+  render(
+    <AsyncDuel
+      locale="fr"
+      circles={[]}
+      initialCode="ABCD1234"
+      onBack={vi.fn()}
+    />,
+  );
+  await screen.findByText("ABCD1234");
+  expect(readDuel).toHaveBeenCalledWith("ABCD1234");
+  fireEvent.click(
+    screen.getByRole("button", { name: /Partager l’invitation/ }),
+  );
+  await waitFor(() =>
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      expect.stringContaining("?account=1&duo=ABCD1234"),
+    ),
+  );
+  expect(await screen.findByText("Lien d’invitation copié.")).toBeTruthy();
 });

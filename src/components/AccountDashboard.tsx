@@ -29,6 +29,7 @@ import { DailyDilemma } from "./DailyDilemma";
 import { AsyncDuel } from "./AsyncDuel";
 import { SocialSpace } from "./SocialSpace";
 import { invitationToken } from "../services/social";
+import { duoCodeFromLocation } from "../services/duel-links";
 
 export interface AccountNavigationProps {
   locale: Locale;
@@ -70,7 +71,7 @@ export function AccountDashboard({
   const fr = locale === "fr";
   const text = (a: string, b: string) => (fr ? a : b);
   const [page, setPage] = useState<Page>(() =>
-    invitationToken() ? "circles" : "home",
+    duoCodeFromLocation() ? "duel" : invitationToken() ? "circles" : "home",
   );
   const [results, setResults] = useState<CloudResult[]>([]);
   const [historyBusy, setHistoryBusy] = useState(true);
@@ -1109,6 +1110,7 @@ export function AccountDashboard({
                 <AsyncDuel
                   locale={locale}
                   circles={circles}
+                  initialCode={duoCodeFromLocation() ?? undefined}
                   onBack={() => navigate("home")}
                 />
               )}

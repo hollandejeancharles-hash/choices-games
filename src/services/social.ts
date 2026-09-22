@@ -81,11 +81,13 @@ export function invitationLink(token: string) {
 }
 export function accountRedirect() {
   const token = invitationToken();
+  const duo = new URLSearchParams(location.search).get("duo");
   return (
     location.origin +
     location.pathname +
     "?account=1" +
-    (token ? "&invite=" + encodeURIComponent(token) : "")
+    (token ? "&invite=" + encodeURIComponent(token) : "") +
+    (duo ? "&duo=" + encodeURIComponent(duo) : "")
   );
 }
 

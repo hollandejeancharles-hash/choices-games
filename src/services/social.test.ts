@@ -14,6 +14,10 @@ it("conserve l’invitation lors de l’inscription et de la récupération", ()
   expect(invitationToken()).toBe(token);
   expect(accountRedirect()).toContain("?account=1&invite=" + token);
 });
+it("conserve le Duo lors de la confirmation du compte", () => {
+  history.replaceState(null, "", "/?account=1&duo=ABCD1234");
+  expect(accountRedirect()).toContain("?account=1&duo=ABCD1234");
+});
 it("ignore les jetons malformés", () => {
   history.replaceState(null, "", "/?invite=bad");
   expect(invitationToken()).toBeNull();

@@ -447,6 +447,19 @@ header {
   border-block: 1px solid var(--line);
   padding: 18px 0;
 }
+.duel-share-actions {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  max-width: 42rem;
+}
+.duel-share-actions label {
+  display: grid;
+  gap: 0.5rem;
+}
+.duel-share-actions input {
+  width: 100%;
+}
 .duel-progress {
   color: var(--accent);
   margin-top: 30px;

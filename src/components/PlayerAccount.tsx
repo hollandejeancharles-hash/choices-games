@@ -13,6 +13,7 @@ import {
   playerRecoveryRedirect,
   playerRecoveryRequested,
 } from "../services/social";
+import { duoCodeFromLocation } from "../services/duel-links";
 const redirectUrl = accountRedirect;
 
 export function PlayerAccount(props: AccountNavigationProps) {
@@ -210,6 +211,13 @@ export function PlayerAccount(props: AccountNavigationProps) {
           {fr
             ? "Une invitation t’attend. Connecte-toi ou crée ton compte avec l’adresse invitée ; tu pourras ensuite l’accepter."
             : "An invitation is waiting. Sign in or create your account using the invited email, then accept it."}
+        </p>
+      )}
+      {duoCodeFromLocation() && (
+        <p className="notice">
+          {fr
+            ? "Un Duo t’attend. Connecte-toi ou crée ton compte pour répondre aux cinq dilemmes."
+            : "A Duo is waiting. Sign in or create your account to answer the five dilemmas."}
         </p>
       )}
       <form className="account-form" onSubmit={(event) => void submit(event)}>

@@ -10,6 +10,7 @@ import {
   type Circle,
   type DuelState,
 } from "../services/player-features";
+import { duoLink } from "../services/duel-links";
 
 function duelQuestions() {
   return questions
@@ -22,10 +23,12 @@ export function AsyncDuel({
   locale,
   circles,
   onBack,
+  initialCode,
 }: {
   locale: Locale;
   circles: Circle[];
   onBack: () => void;
+  initialCode?: string | undefined;
 }) {
   const fr = locale === "fr";
   const [mode, setMode] = useState<
@@ -40,6 +43,7 @@ export function AsyncDuel({
   const [selectedAnswer, setSelectedAnswer] = useState<0 | 1 | null>(null);
   const [duel, setDuel] = useState<DuelState | null>(null);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [duos, setDuos] = useState<MyDuo[]>([]);
   const [historyStatus, setHistoryStatus] = useState<
@@ -57,6 +61,9 @@ export function AsyncDuel({
   useEffect(() => {
     void refreshHistory();
   }, []);
+  useEffect(() => {
+    if (initialCode) void beginJoin(initialCode);
+  }, [initialCode]);
   const current = questions.find((q) => q.id === ids[answers.length]);
   const resolved = useMemo(
     () => ids.map((id) => questions.find((q) => q.id === id)).filter(Boolean),
@@ -65,12 +72,14 @@ export function AsyncDuel({
 
   function beginCreate() {
     setError("");
+    setMessage("");
     setCircle("");
     setDestination("friend");
     setMode("setup");
   }
   function beginAnswer() {
     setError("");
+    setMessage("");
     setIds(duelQuestions().map((q) => q.id));
     setAnswers([]);
     setGuesses([]);
@@ -82,6 +91,7 @@ export function AsyncDuel({
     if (busy) return;
     setBusy(true);
     setError("");
+    setMessage("");
     try {
       const found = await readDuel(selectedCode);
       setCode(found.code);
@@ -99,6 +109,35 @@ export function AsyncDuel({
       );
     } finally {
       setBusy(false);
+    }
+  }
+  async function shareDuo() {
+    const activeCode = duel?.code ?? code;
+    if (!activeCode) return;
+    const url = duoLink(activeCode);
+    setError("");
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Dilemme · Duo",
+          text: fr
+            ? "Je t’invite à répondre à ce Duo sur Dilemme."
+            : "I’m inviting you to answer this Duo on Dilemma.",
+          url,
+        });
+        setMessage(fr ? "Invitation partagée." : "Invitation shared.");
+      } else {
+        await navigator.clipboard.writeText(url);
+        setMessage(fr ? "Lien d’invitation copié." : "Invitation link copied.");
+      }
+    } catch (reason) {
+      if ((reason as { name?: string })?.name !== "AbortError") {
+        setError(
+          fr
+            ? "Impossible de partager automatiquement. Copie le lien ci-dessous."
+            : "Could not share automatically. Copy the link below.",
+        );
+      }
     }
   }
   function chooseAnswer(option: 0 | 1) {
@@ -421,9 +460,19 @@ export function AsyncDuel({
           <div className="duel-code">{duel?.code ?? code}</div>
           <p>
             {fr
-              ? "Envoie uniquement ce code à la personne de ton choix. Il expire après 14 jours."
-              : "Share this code only with the person you choose. It expires after 14 days."}
+              ? "Envoie ce lien privé à la personne de ton choix. Le Duo expire après 14 jours."
+              : "Send this private link to the person you choose. The Duo expires after 14 days."}
           </p>
+          <div className="duel-share-actions">
+            <button className="primary" onClick={() => void shareDuo()}>
+              {fr ? "Partager l’invitation" : "Share invitation"}
+              <span>↗</span>
+            </button>
+            <label>
+              {fr ? "Lien direct" : "Direct link"}
+              <input readOnly value={duoLink(duel?.code ?? code)} />
+            </label>
+          </div>
           {duel?.owner && (
             <button onClick={() => void beginJoin()}>
               {fr ? "Actualiser" : "Refresh"}
@@ -468,7 +517,16 @@ export function AsyncDuel({
                 ),
             )}
           </div>
+          <button className="primary" onClick={beginCreate}>
+            {fr ? "Créer une revanche" : "Create a rematch"}
+            <span>→</span>
+          </button>
         </>
+      )}
+      {message && (
+        <p className="notice" role="status">
+          {message}
+        </p>
       )}
       {error && (
         <p className="form-error" role="alert">
