@@ -328,8 +328,20 @@ export function AsyncDuel({
               </p>
             )}
             {duos.map((item) => (
-              <article key={item.code}>
-                <div>
+              <article
+                key={item.code}
+                className={item.invited ? "duo-history-invited" : undefined}
+              >
+                <button
+                  className="duo-history-main"
+                  disabled={busy || (item.expired && !item.complete)}
+                  onClick={() => void beginJoin(item.code)}
+                  aria-label={
+                    item.invited
+                      ? `${fr ? "Lancer le Duo" : "Start Duo"} ${item.code}`
+                      : `${fr ? "Ouvrir le Duo" : "Open Duo"} ${item.code}`
+                  }
+                >
                   <strong>Duo · {item.code}</strong>
                   <small>
                     {new Date(item.createdAt).toLocaleDateString(locale)} ·{" "}
@@ -358,9 +370,10 @@ export function AsyncDuel({
                             ? "En attente d’une réponse"
                             : "Waiting for an answer"}
                   </span>
-                </div>
+                </button>
                 {(!item.expired || item.complete) && (
                   <button
+                    className="duo-history-action"
                     disabled={busy}
                     onClick={() => void beginJoin(item.code)}
                   >
@@ -368,6 +381,10 @@ export function AsyncDuel({
                       ? fr
                         ? "Voir les résultats"
                         : "View results"
+                      : item.invited
+                        ? fr
+                          ? "Commencer"
+                          : "Start"
                       : fr
                         ? "Voir le code"
                         : "View code"}

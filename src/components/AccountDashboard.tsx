@@ -16,6 +16,7 @@ import {
   updateEmail,
   updateNickname,
   type Circle,
+  type MyDuo,
 } from "../services/player-features";
 import {
   dailyQuestion,
@@ -85,7 +86,11 @@ export function AccountDashboard({
   const [historyBusy, setHistoryBusy] = useState(true);
   const [historyError, setHistoryError] = useState(false);
   const [historyVersion, setHistoryVersion] = useState(0);
-  const [duoInvitations, setDuoInvitations] = useState(0);
+  const [duoInvitations, setDuoInvitations] = useState<MyDuo[]>([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [duoToOpen, setDuoToOpen] = useState<string | undefined>(
+    duoCodeFromLocation() ?? undefined,
+  );
   const [selected, setSelected] = useState<CloudResult | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -150,12 +155,32 @@ export function AccountDashboard({
     };
   }, [user.id, historyVersion]);
   useEffect(() => {
-    void listDuos()
-      .then((items) =>
-        setDuoInvitations(items.filter((item) => item.invited).length),
-      )
-      .catch(() => setDuoInvitations(0));
+    let active = true;
+    const refreshInvitations = () =>
+      void listDuos()
+        .then((items) => {
+          if (active)
+            setDuoInvitations(
+              items.filter((item) => item.invited && !item.expired),
+            );
+        })
+        .catch(() => {
+          if (active) setDuoInvitations([]);
+        });
+    refreshInvitations();
+    const timer = window.setInterval(refreshInvitations, 30_000);
+    window.addEventListener("focus", refreshInvitations);
+    return () => {
+      active = false;
+      clearInterval(timer);
+      window.removeEventListener("focus", refreshInvitations);
+    };
   }, [user.id]);
+  function openDuo(code?: string) {
+    setDuoToOpen(code);
+    setNotificationsOpen(false);
+    navigate("duel");
+  }
   useEffect(() => {
     const refresh = () => setDay(new Date().toISOString().slice(0, 10));
     const timer = window.setInterval(refresh, 30_000);
@@ -459,6 +484,55 @@ export function AccountDashboard({
               >
                 {dark ? "☼" : "◐"}
               </button>
+              <div className="c-notifications">
+                <button
+                  className="c-notification-button"
+                  aria-label={text("Notifications", "Notifications")}
+                  aria-expanded={notificationsOpen}
+                  onClick={() => setNotificationsOpen((open) => !open)}
+                >
+                  <span aria-hidden="true">♢</span>
+                  {duoInvitations.length > 0 && (
+                    <b aria-label={`${duoInvitations.length}`}>
+                      {duoInvitations.length}
+                    </b>
+                  )}
+                </button>
+                {notificationsOpen && (
+                  <section
+                    className="c-notification-panel"
+                    aria-label={text(
+                      "Notifications reçues",
+                      "Received notifications",
+                    )}
+                  >
+                    <strong>{text("Notifications", "Notifications")}</strong>
+                    {duoInvitations.length === 0 ? (
+                      <p>
+                        {text(
+                          "Aucune nouvelle invitation.",
+                          "No new invitation.",
+                        )}
+                      </p>
+                    ) : (
+                      duoInvitations.map((invitation) => (
+                        <button
+                          key={invitation.code}
+                          onClick={() => openDuo(invitation.code)}
+                        >
+                          <span>
+                            {text(
+                              "Invitation Duo reçue",
+                              "Duo invitation received",
+                            )}
+                          </span>
+                          <small>Duo · {invitation.code}</small>
+                        </button>
+                      ))
+                    )}
+                  </section>
+                )}
+              </div>
               <button
                 className="c-avatar"
                 onClick={() => navigate("account")}
@@ -501,15 +575,15 @@ export function AccountDashboard({
                     }).format(new Date(day))}
                   </span>
                 </div>
-                {duoInvitations > 0 && (
+                {duoInvitations.length > 0 && (
                   <button
                     className="c-notice c-duo-invite"
-                    onClick={() => navigate("duel")}
+                    onClick={() => openDuo(duoInvitations[0]?.code)}
                   >
                     <strong>
                       {text(
-                        `${duoInvitations} invitation${duoInvitations > 1 ? "s" : ""} Duo reçue${duoInvitations > 1 ? "s" : ""}`,
-                        `${duoInvitations} Duo invitation${duoInvitations > 1 ? "s" : ""} waiting`,
+                        `${duoInvitations.length} invitation${duoInvitations.length > 1 ? "s" : ""} Duo reçue${duoInvitations.length > 1 ? "s" : ""}`,
+                        `${duoInvitations.length} Duo invitation${duoInvitations.length > 1 ? "s" : ""} waiting`,
                       )}
                     </strong>
                     <span>{text("Répondre maintenant →", "Answer now →")}</span>
@@ -1141,7 +1215,7 @@ export function AccountDashboard({
                 <AsyncDuel
                   locale={locale}
                   circles={circles}
-                  initialCode={duoCodeFromLocation() ?? undefined}
+                  initialCode={duoToOpen}
                   onBack={() => navigate("home")}
                 />
               )}

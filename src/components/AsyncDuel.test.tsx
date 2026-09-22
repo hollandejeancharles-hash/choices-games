@@ -92,6 +92,33 @@ it("retrouve un Duo créé en revenant au même écran et après remontage", asy
   await screen.findByText("ABCD1234");
   expect(readDuel).toHaveBeenCalledWith("ABCD1234");
 });
+it("lance directement un Duo reçu depuis Mes duos", async () => {
+  vi.mocked(listDuos).mockResolvedValue([
+    {
+      code: "RECU1234",
+      createdAt: new Date().toISOString(),
+      complete: false,
+      expired: false,
+      owner: false,
+      invited: true,
+    },
+  ]);
+  vi.mocked(readDuel).mockResolvedValue({
+    code: "RECU1234",
+    questions: ["balanced-a01"],
+    complete: false,
+    owner: false,
+    ownerAnswers: null,
+    guestAnswers: null,
+  });
+  render(<AsyncDuel locale="fr" circles={[]} onBack={vi.fn()} />);
+  const received = await screen.findByRole("button", {
+    name: "Lancer le Duo RECU1234",
+  });
+  fireEvent.click(received);
+  await waitFor(() => expect(readDuel).toHaveBeenCalledWith("RECU1234"));
+  expect(await screen.findByText("Ton choix")).toBeTruthy();
+});
 it("permet de réessayer la dernière réponse après une erreur", async () => {
   vi.mocked(createDuel)
     .mockRejectedValueOnce(new Error("offline"))

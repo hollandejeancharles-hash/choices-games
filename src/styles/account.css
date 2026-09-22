@@ -278,6 +278,62 @@
 #player-space .c-topactions .c-quiet {
   font-size: 12px;
 }
+#player-space .c-notifications {
+  position: relative;
+}
+#player-space .c-notification-button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--c-line);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  color: var(--c-ink);
+  font-size: 20px;
+}
+#player-space .c-notification-button b {
+  position: absolute;
+  right: -4px;
+  top: -5px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: var(--c-accent);
+  font-size: 10px;
+}
+#player-space .c-notification-panel {
+  position: absolute;
+  z-index: 20;
+  right: 0;
+  top: calc(100% + 12px);
+  width: min(320px, calc(100vw - 32px));
+  padding: 16px;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+  background: var(--c-surface);
+  box-shadow: 0 18px 50px rgb(23 32 45 / 16%);
+  display: grid;
+  gap: 10px;
+}
+#player-space .c-notification-panel > button {
+  text-align: left;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--c-peach);
+  display: grid;
+  gap: 4px;
+}
+#player-space .c-notification-panel small,
+#player-space .c-notification-panel p {
+  color: var(--c-muted);
+  font-size: 11px;
+  margin: 0;
+}
 #player-space .c-main {
   padding: 30px var(--c-space) 32px;
 }
@@ -1012,9 +1068,23 @@
   border: 1px solid var(--line, #dce1e8);
   border-radius: 16px;
 }
-.duo-history article div {
+.duo-history-main {
   display: grid;
   gap: 0.35rem;
+  text-align: left;
+  flex: 1;
+  min-width: min(100%, 240px);
+  padding: 0;
+}
+.duo-history-invited {
+  border-color: var(--c-accent, #bd2b19) !important;
+  background: color-mix(in srgb, var(--c-peach, #fff0eb) 72%, transparent);
+}
+.duo-history-action {
+  color: white;
+  background: var(--c-accent, #bd2b19);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
 }
 .duo-history small {
   opacity: 0.75;
