@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import type { Locale } from "../core/types";
 import { AXES } from "../core/types";
 import { axisCopy } from "../data/archetypes";
@@ -9,6 +9,234 @@ import {
   type Draft,
 } from "../services/community";
 import "../styles/community.css";
+import { playerAuth } from "../services/supabase";
+
+interface ProposalDraft {
+  locale: Locale;
+  prompt: string;
+  a: string;
+  b: string;
+}
+const PROPOSAL_DRAFT = "dilemma.proposal.pending.v1";
+
+function ProposalAuth({
+  locale,
+  onClose,
+}: {
+  locale: Locale;
+  onClose: () => void;
+}) {
+  const fr = locale === "fr";
+  const [login, setLogin] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  async function emailAuth(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const email = String(data.get("email") ?? "").trim();
+    const password = String(data.get("password") ?? "");
+    const confirmation = String(data.get("confirmation") ?? "");
+    const displayName = String(data.get("displayName") ?? "").trim();
+    setError("");
+    setMessage("");
+    if (password.length < 12) {
+      setError(
+        fr ? "Choisis au moins 12 caractères." : "Use at least 12 characters.",
+      );
+      return;
+    }
+    if (!login && password !== confirmation) {
+      setError(
+        fr
+          ? "Les mots de passe ne correspondent pas."
+          : "Passwords do not match.",
+      );
+      return;
+    }
+    setBusy(true);
+    try {
+      if (login) {
+        const { error: authError } = await playerAuth.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (authError) throw authError;
+      } else {
+        const { data: result, error: authError } = await playerAuth.auth.signUp(
+          {
+            email,
+            password,
+            options: {
+              data: { display_name: displayName },
+              emailRedirectTo: `${location.origin}${location.pathname}?propose=1`,
+            },
+          },
+        );
+        if (authError) throw authError;
+        if (!result.session) {
+          setMessage(
+            fr
+              ? "Confirme ton adresse depuis l’e-mail reçu. Ta proposition sera envoyée à ton retour."
+              : "Confirm your address from the email we sent. Your suggestion will be submitted when you return.",
+          );
+        }
+      }
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : fr
+            ? "Connexion impossible."
+            : "Could not sign in.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function googleAuth() {
+    setBusy(true);
+    setError("");
+    const { error: authError } = await playerAuth.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${location.origin}${location.pathname}?propose=1`,
+      },
+    });
+    if (authError) {
+      setError(authError.message);
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="proposal-auth-backdrop" role="presentation">
+      <section
+        className="proposal-auth"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="proposal-auth-title"
+      >
+        <button
+          className="proposal-auth-close"
+          onClick={onClose}
+          aria-label={fr ? "Fermer" : "Close"}
+        >
+          ×
+        </button>
+        <span className="eyebrow">
+          {fr ? "Dernière étape" : "One last step"}
+        </span>
+        <h2 id="proposal-auth-title">
+          {login
+            ? fr
+              ? "Connecte-toi pour envoyer."
+              : "Sign in to submit."
+            : fr
+              ? "Crée ton compte pour envoyer."
+              : "Create an account to submit."}
+        </h2>
+        <p>
+          {fr
+            ? "Ta proposition est conservée pendant cette étape."
+            : "Your suggestion is saved while you complete this step."}
+        </p>
+        <button
+          className="google-auth"
+          disabled={busy}
+          onClick={() => void googleAuth()}
+        >
+          <b aria-hidden="true">G</b>{" "}
+          {fr ? "Continuer avec Google" : "Continue with Google"}
+        </button>
+        <div className="auth-separator">
+          <span>{fr ? "ou par e-mail" : "or with email"}</span>
+        </div>
+        <form
+          className="community-form proposal-auth-form"
+          onSubmit={(event) => void emailAuth(event)}
+        >
+          {!login && (
+            <label>
+              {fr ? "Pseudo" : "Nickname"}
+              <input
+                name="displayName"
+                minLength={2}
+                maxLength={30}
+                autoComplete="nickname"
+                required
+              />
+            </label>
+          )}
+          <label>
+            E-mail
+            <input name="email" type="email" autoComplete="email" required />
+          </label>
+          <label>
+            {fr ? "Mot de passe" : "Password"}
+            <input
+              name="password"
+              type="password"
+              minLength={12}
+              autoComplete={login ? "current-password" : "new-password"}
+              required
+            />
+          </label>
+          {!login && (
+            <label>
+              {fr ? "Confirmer le mot de passe" : "Confirm password"}
+              <input
+                name="confirmation"
+                type="password"
+                minLength={12}
+                autoComplete="new-password"
+                required
+              />
+            </label>
+          )}
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
+          {message && (
+            <p className="notice" role="status">
+              {message}
+            </p>
+          )}
+          <button className="primary" disabled={busy}>
+            {busy
+              ? fr
+                ? "Un instant…"
+                : "Just a moment…"
+              : login
+                ? fr
+                  ? "Se connecter et envoyer"
+                  : "Sign in and submit"
+                : fr
+                  ? "Créer mon compte et envoyer"
+                  : "Create account and submit"}
+          </button>
+        </form>
+        <button
+          className="text-button auth-mode"
+          onClick={() => {
+            setLogin(!login);
+            setError("");
+            setMessage("");
+          }}
+        >
+          {login
+            ? fr
+              ? "Je n’ai pas encore de compte"
+              : "I don’t have an account yet"
+            : fr
+              ? "J’ai déjà un compte"
+              : "I already have an account"}
+        </button>
+      </section>
+    </div>
+  );
+}
 
 export function ProposeDilemma({
   locale,
@@ -20,7 +248,72 @@ export function ProposeDilemma({
   const fr = locale === "fr";
   const [busy, setBusy] = useState(false),
     [sent, setSent] = useState(false),
-    [error, setError] = useState(false);
+    [error, setError] = useState(false),
+    [showAuth, setShowAuth] = useState(false);
+  const sending = useRef(false);
+  const [draft, setDraft] = useState<ProposalDraft>(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(PROPOSAL_DRAFT) || "null",
+      ) as ProposalDraft | null;
+      if (saved?.prompt && saved.a && saved.b) return saved;
+    } catch {
+      /* Ignore unavailable or invalid storage. */
+    }
+    return { locale, prompt: "", a: "", b: "" };
+  });
+
+  async function send(proposal: ProposalDraft) {
+    if (sending.current) return false;
+    const { data } = await playerAuth.auth.getSession();
+    if (!data.session) return false;
+    sending.current = true;
+    try {
+      await communityRequest(
+        "/rest/v1/rpc/submit_dilemma",
+        {
+          p_locale: proposal.locale,
+          p_prompt: proposal.prompt,
+          p_a: proposal.a,
+          p_b: proposal.b,
+        },
+        data.session.access_token,
+      );
+      localStorage.removeItem(PROPOSAL_DRAFT);
+      setSent(true);
+      setDraft({ locale, prompt: "", a: "", b: "" });
+      setShowAuth(false);
+      return true;
+    } finally {
+      sending.current = false;
+    }
+  }
+
+  useEffect(() => {
+    const { data } = playerAuth.auth.onAuthStateChange((_event, session) => {
+      if (!session) return;
+      const saved = localStorage.getItem(PROPOSAL_DRAFT);
+      if (!saved) return;
+      try {
+        const pending = JSON.parse(saved) as ProposalDraft;
+        setBusy(true);
+        void send(pending)
+          .catch(() => setError(true))
+          .finally(() => setBusy(false));
+      } catch {
+        localStorage.removeItem(PROPOSAL_DRAFT);
+      }
+    });
+    void playerAuth.auth.getSession().then(({ data: auth }) => {
+      if (auth.session && localStorage.getItem(PROPOSAL_DRAFT)) {
+        setBusy(true);
+        void send(draft)
+          .catch(() => setError(true))
+          .finally(() => setBusy(false));
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
   return (
     <section className="community-page page-in">
       <button className="text-button" onClick={onBack}>
@@ -57,20 +350,22 @@ export function ProposeDilemma({
           className="community-form"
           onSubmit={async (e) => {
             e.preventDefault();
-            const form = e.currentTarget,
-              data = new FormData(form);
+            const data = new FormData(e.currentTarget);
             if (data.get("website")) return;
+            const proposal: ProposalDraft = {
+              locale: data.get("locale") as Locale,
+              prompt: String(data.get("prompt") ?? ""),
+              a: String(data.get("a") ?? ""),
+              b: String(data.get("b") ?? ""),
+            };
+            setDraft(proposal);
             setBusy(true);
             setError(false);
             try {
-              await communityRequest("/rest/v1/rpc/submit_dilemma", {
-                p_locale: data.get("locale"),
-                p_prompt: data.get("prompt"),
-                p_a: data.get("a"),
-                p_b: data.get("b"),
-              });
-              setSent(true);
-              form.reset();
+              if (!(await send(proposal))) {
+                localStorage.setItem(PROPOSAL_DRAFT, JSON.stringify(proposal));
+                setShowAuth(true);
+              }
             } catch {
               setError(true);
             } finally {
@@ -80,7 +375,13 @@ export function ProposeDilemma({
         >
           <label>
             {fr ? "Langue de la proposition" : "Suggestion language"}
-            <select name="locale" defaultValue={locale}>
+            <select
+              name="locale"
+              value={draft.locale}
+              onChange={(event) =>
+                setDraft({ ...draft, locale: event.target.value as Locale })
+              }
+            >
               <option value="fr">Français</option>
               <option value="en">English</option>
             </select>
@@ -93,6 +394,10 @@ export function ProposeDilemma({
               minLength={30}
               maxLength={1200}
               rows={5}
+              value={draft.prompt}
+              onChange={(event) =>
+                setDraft({ ...draft, prompt: event.target.value })
+              }
             />
           </label>
           <label>
@@ -103,6 +408,10 @@ export function ProposeDilemma({
               minLength={10}
               maxLength={500}
               rows={3}
+              value={draft.a}
+              onChange={(event) =>
+                setDraft({ ...draft, a: event.target.value })
+              }
             />
           </label>
           <label>
@@ -113,6 +422,10 @@ export function ProposeDilemma({
               minLength={10}
               maxLength={500}
               rows={3}
+              value={draft.b}
+              onChange={(event) =>
+                setDraft({ ...draft, b: event.target.value })
+              }
             />
           </label>
           <div className="form-trap" aria-hidden="true">
@@ -145,10 +458,13 @@ export function ProposeDilemma({
           </button>
           <p className="fine-print">
             {fr
-              ? "Texte stocké pour modération, sans nom ni adresse e-mail demandés. Ne ferme pas cette page avant confirmation de l’envoi."
-              : "Text is stored for moderation; no name or email is requested. Keep this page open until submission is confirmed."}
+              ? "La proposition sera associée à ton compte pour limiter les abus. Elle ne sera publiée qu’après modération."
+              : "The suggestion will be linked to your account to prevent abuse. It will only be published after review."}
           </p>
         </form>
+      )}
+      {showAuth && (
+        <ProposalAuth locale={locale} onClose={() => setShowAuth(false)} />
       )}
     </section>
   );

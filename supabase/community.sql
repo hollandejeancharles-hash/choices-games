@@ -15,6 +15,7 @@ create table public.dilemma_submissions (
  prompt text not null check(char_length(btrim(prompt)) between 30 and 1200),
  option_a text not null check(char_length(btrim(option_a)) between 10 and 500),
  option_b text not null check(char_length(btrim(option_b)) between 10 and 500),
+ submitter_id uuid references auth.users(id) on delete set null,
  status text not null default 'pending' check(status in ('pending','published','rejected')),
  created_at timestamptz not null default now(),
  reviewed_at timestamptz,
@@ -37,23 +38,24 @@ revoke all on public.published_dilemmas from anon, authenticated;
 grant select on public.published_dilemmas to anon, authenticated;
 create policy published_read on public.published_dilemmas for select to anon, authenticated using(true);
 
--- Public access is limited to this validated insert path: no queue read or status control.
+-- The form is public, but submission requires a verified player session.
 create function public.submit_dilemma(p_locale text, p_prompt text, p_a text, p_b text) returns uuid
 language plpgsql security definer set search_path = '' as $$
 declare result uuid;
 begin
- perform pg_advisory_xact_lock(739164);
- if (select count(*) from public.dilemma_submissions where created_at > now() - interval '1 minute') >= 30
+ if auth.uid() is null then raise exception 'Account required' using errcode='42501'; end if;
+ perform pg_advisory_xact_lock(hashtextextended(auth.uid()::text,0));
+ if (select count(*) from public.dilemma_submissions where submitter_id=auth.uid() and created_at > now() - interval '1 hour') >= 5
  or (select count(*) from public.dilemma_submissions where status = 'pending') >= 2000 then
    raise exception 'Submission capacity reached';
  end if;
- insert into public.dilemma_submissions(locale,prompt,option_a,option_b)
- values(p_locale,btrim(p_prompt),btrim(p_a),btrim(p_b)) returning id into result;
+ insert into public.dilemma_submissions(locale,prompt,option_a,option_b,submitter_id)
+ values(p_locale,btrim(p_prompt),btrim(p_a),btrim(p_b),auth.uid()) returning id into result;
  return result;
 end;
 $$;
 revoke all on function public.submit_dilemma(text,text,text,text) from public;
-grant execute on function public.submit_dilemma(text,text,text,text) to anon,authenticated;
+grant execute on function public.submit_dilemma(text,text,text,text) to authenticated;
 
 create function public.publish_dilemma(p_id uuid, p_draft jsonb) returns void
 language plpgsql security definer set search_path = '' as $$

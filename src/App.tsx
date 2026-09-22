@@ -81,11 +81,13 @@ export default function App() {
       ? "recovery"
       : new URLSearchParams(location.search).get("account") === "1"
         ? "account"
-        : location.hash.startsWith("#room=")
-          ? "online"
-          : shared
-            ? "result"
-            : "home",
+        : new URLSearchParams(location.search).get("propose") === "1"
+          ? "propose"
+          : location.hash.startsWith("#room=")
+            ? "online"
+            : shared
+              ? "result"
+              : "home",
   );
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(loadSession);

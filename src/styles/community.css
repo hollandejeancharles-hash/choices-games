@@ -157,6 +157,87 @@ footer nav {
   gap: 20px;
   min-width: 0;
 }
+.proposal-auth-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(12 20 31 / 0.66);
+  backdrop-filter: blur(5px);
+}
+.proposal-auth {
+  position: relative;
+  width: min(100%, 520px);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border-radius: 20px;
+  padding: 32px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.3);
+}
+.proposal-auth h2 {
+  margin: 10px 0;
+  font-size: 30px;
+  letter-spacing: -0.04em;
+}
+.proposal-auth > p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+.proposal-auth-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 28px;
+}
+.google-auth {
+  width: 100%;
+  padding: 13px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 700;
+}
+.google-auth b {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  border-radius: 50%;
+  color: #4285f4;
+}
+.auth-separator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.auth-separator::before,
+.auth-separator::after {
+  content: "";
+  height: 1px;
+  background: var(--line);
+  flex: 1;
+}
+.proposal-auth-form {
+  margin: 20px 0 14px;
+  gap: 15px;
+}
+.auth-mode {
+  width: 100%;
+}
+@media (max-width: 600px) {
+  .proposal-auth {
+    padding: 26px 20px;
+  }
+}
 .form-trap {
   position: absolute;
   width: 1px;
