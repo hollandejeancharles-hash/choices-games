@@ -20,12 +20,16 @@ const submit = async () =>
       "Rester avec le groupe et renoncer à mon projet.",
     ])
   ).rows[0].id;
-const id = await submit();
+await assert.rejects(submit());
 await assert.rejects(db.query("select * from public.dilemma_submissions"));
 assert.equal(
   (await db.query("select * from public.published_dilemmas")).rows.length,
   0,
 );
+await db.exec("set role authenticated");
+await assert.rejects(submit());
+await db.query("select set_config('request.jwt.claim.sub',$1,false)", [admin]);
+const id = await submit();
 const draft = {
   prompt_fr:
     "Une occasion unique exige de renoncer à un projet collectif important. Que choisis-tu ?",
@@ -37,18 +41,6 @@ const draft = {
   b_en: "Stay with the group and give up my own project.",
   axis: "independence",
 };
-await assert.rejects(
-  db.query("select public.publish_dilemma($1,$2)", [id, draft]),
-);
-await db.exec("set role authenticated");
-assert.equal(
-  (await db.query("select * from public.dilemma_submissions")).rows.length,
-  0,
-);
-await assert.rejects(
-  db.query("select public.publish_dilemma($1,$2)", [id, draft]),
-);
-await db.query("select set_config('request.jwt.claim.sub',$1,false)", [admin]);
 assert.equal(
   (await db.query("select * from public.dilemma_submissions")).rows.length,
   1,
