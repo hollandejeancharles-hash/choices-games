@@ -3,5 +3,5 @@
 verify_jwt = false
 
 [functions.send-push]
-# Daily delivery is authenticated with a dedicated scheduler secret.
+# Delivery is guarded by an atomic, rate-limited database claim.
 verify_jwt = false

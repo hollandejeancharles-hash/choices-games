@@ -5,7 +5,7 @@ const appUrl = "https://dilemme.app/";
 const cors = {
   "Access-Control-Allow-Origin": new URL(appUrl).origin,
   "Access-Control-Allow-Headers":
-    "authorization, apikey, content-type, x-client-info, x-cron-secret",
+    "authorization, apikey, content-type, x-client-info",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   Vary: "Origin",
 };
@@ -126,9 +126,12 @@ Deno.serve(async (req: Request) => {
     });
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   if (req.method !== "POST") return reply(405, { error: "method-not-allowed" });
-  if (req.headers.get("x-cron-secret") !== Deno.env.get("PUSH_CRON_SECRET"))
-    return reply(401, { error: "unauthorized" });
   try {
+    const { data: claimed, error: claimError } = await admin.rpc(
+      "claim_dilemma_push_dispatch",
+    );
+    if (claimError) throw claimError;
+    if (!claimed) return reply(202, { sent: 0, skipped: true });
     return reply(200, { sent: await sendDaily() });
   } catch {
     return reply(503, { error: "push-unavailable" });
