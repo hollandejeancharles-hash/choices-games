@@ -27,7 +27,8 @@ import { AccountIcon, type AccountIconName } from "./ui/AccountIcon";
 import { AnimatedLogo } from "./ui/animated-logo";
 import { DailyDilemma } from "./DailyDilemma";
 import { AsyncDuel } from "./AsyncDuel";
-import { PrivateCircles } from "./PrivateCircles";
+import { SocialSpace } from "./SocialSpace";
+import { invitationToken } from "../services/social";
 
 export interface AccountNavigationProps {
   locale: Locale;
@@ -68,7 +69,9 @@ export function AccountDashboard({
 }: AccountNavigationProps & { user: User }) {
   const fr = locale === "fr";
   const text = (a: string, b: string) => (fr ? a : b);
-  const [page, setPage] = useState<Page>("home");
+  const [page, setPage] = useState<Page>(() =>
+    invitationToken() ? "circles" : "home",
+  );
   const [results, setResults] = useState<CloudResult[]>([]);
   const [historyBusy, setHistoryBusy] = useState(true);
   const [historyError, setHistoryError] = useState(false);
@@ -1110,10 +1113,11 @@ export function AccountDashboard({
                 />
               )}
               {page === "circles" && (
-                <PrivateCircles
+                <SocialSpace
                   locale={locale}
                   onBack={() => navigate("home")}
                   onChanged={onCirclesChanged}
+                  onDuo={() => navigate("duel")}
                 />
               )}
             </div>

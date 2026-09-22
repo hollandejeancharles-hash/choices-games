@@ -1866,3 +1866,118 @@
     border-radius: 50%;
   }
 }
+
+/* Social space: shared mobile/desktop cards, no extra sidebar destination. */
+#player-space .social-tabs,
+#player-space .social-buttons,
+#player-space .social-section-head {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+#player-space .social-tabs {
+  border-bottom: 1px solid var(--c-line);
+  margin: 28px 0;
+}
+#player-space .social-tabs button {
+  border-radius: 10px 10px 0 0;
+}
+#player-space .social-tabs [aria-selected="true"],
+#player-space .social-buttons [aria-pressed="true"] {
+  background: var(--c-soft);
+  color: var(--c-accent);
+}
+#player-space .social-section-head {
+  justify-content: space-between;
+  margin: 20px 0;
+}
+#player-space .social-section-head h2 {
+  margin: 0;
+}
+#player-space .social-section-head button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+#player-space .social-panel {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  padding: 22px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#player-space .social-panel p {
+  margin: 10px 0;
+}
+#player-space .social-panel small,
+#player-space .social-delivery {
+  color: var(--c-muted);
+}
+#player-space .social-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+}
+#player-space .social-buttons {
+  margin-top: 14px;
+}
+#player-space .social-panel label {
+  display: grid;
+  gap: 8px;
+}
+#player-space .social-panel input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+#player-space .social-composer,
+#player-space .social-incoming {
+  margin: 24px 0;
+}
+#player-space .social-composer:focus {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 4px;
+}
+#player-space .social-invitations {
+  margin-top: 32px;
+}
+#player-space .circle-list .social-panel {
+  display: grid;
+  gap: 12px;
+}
+#player-space .circle-list .social-panel > button:first-child {
+  text-align: left;
+  display: grid;
+  gap: 8px;
+}
+@media (max-width: 767px) {
+  #player-space .social-panel {
+    padding: 16px;
+  }
+  #player-space .social-buttons button {
+    flex: 1 1 auto;
+    min-height: 44px;
+  }
+}
+#player-space .social-space button:not(.text-button) {
+  padding: 10px 14px;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  min-height: 44px;
+}
+#player-space .social-space .social-tabs button {
+  border-radius: 10px 10px 0 0;
+}
+#player-space .social-space input {
+  padding: 12px;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  background: var(--c-bg);
+  color: var(--c-ink);
+}
+#player-space .social-space .circle-list .social-panel > button:first-child {
+  border: 0;
+  padding: 0;
+}

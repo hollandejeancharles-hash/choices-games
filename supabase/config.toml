@@ -1,0 +1,3 @@
+[functions.send-invitation]
+# The handler verifies the JWT via auth.getUser before any side effect.
+verify_jwt = false

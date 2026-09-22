@@ -26,6 +26,7 @@ jobs:
       - run: npm run test:rooms
       - run: npm run test:community
       - run: npm run test:duos
+      - run: npm run test:social
       - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}

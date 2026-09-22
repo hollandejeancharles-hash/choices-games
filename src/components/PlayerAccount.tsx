@@ -7,7 +7,8 @@ import {
 import { playerAuth } from "../services/supabase";
 
 type Mode = "register" | "login" | "forgot" | "reset";
-const redirectUrl = () => `${location.origin}${location.pathname}?account=1`;
+import { accountRedirect, invitationToken } from "../services/social";
+const redirectUrl = accountRedirect;
 
 export function PlayerAccount(props: AccountNavigationProps) {
   const { locale, onBack } = props;
@@ -197,6 +198,13 @@ export function PlayerAccount(props: AccountNavigationProps) {
               ? "Nous t’enverrons un lien sécurisé par e-mail."
               : "We will email you a secure link."}
       </p>
+      {invitationToken() && (
+        <p className="notice">
+          {fr
+            ? "Une invitation t’attend. Connecte-toi ou crée ton compte avec l’adresse invitée ; tu pourras ensuite l’accepter."
+            : "An invitation is waiting. Sign in or create your account using the invited email, then accept it."}
+        </p>
+      )}
       <form className="account-form" onSubmit={(event) => void submit(event)}>
         {mode === "register" && (
           <label>

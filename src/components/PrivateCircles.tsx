@@ -13,10 +13,14 @@ export function PrivateCircles({
   locale,
   onBack,
   onChanged,
+  onInvite,
+  embedded = false,
 }: {
   locale: Locale;
   onBack: () => void;
-  onChanged?: (circles: Circle[]) => void;
+  onChanged?: ((circles: Circle[]) => void) | undefined;
+  onInvite?: (circle: Circle) => void;
+  embedded?: boolean;
 }) {
   const fr = locale === "fr";
   const [circles, setCircles] = useState<Circle[]>([]);
@@ -83,20 +87,26 @@ export function PrivateCircles({
   }
   return (
     <section className="circles-page page-in">
-      <button className="text-button" onClick={onBack}>
-        ← {fr ? "Retour" : "Back"}
-      </button>
-      <span className="eyebrow">
-        {fr ? "Cercles privés" : "Private circles"}
-      </span>
-      <h1>
-        {fr ? "Retrouve les mêmes personnes." : "Come back to the same people."}
-      </h1>
-      <p>
-        {fr
-          ? "Un cercle conserve le nombre de membres et l’historique de vos duos, jamais vos réponses détaillées."
-          : "A circle keeps its member count and duo history, never your detailed answers."}
-      </p>
+      {!embedded && (
+        <>
+          <button className="text-button" onClick={onBack}>
+            ← {fr ? "Retour" : "Back"}
+          </button>
+          <span className="eyebrow">
+            {fr ? "Cercles privés" : "Private circles"}
+          </span>
+          <h1>
+            {fr
+              ? "Retrouve les mêmes personnes."
+              : "Come back to the same people."}
+          </h1>
+          <p>
+            {fr
+              ? "Un cercle conserve le nombre de membres et l’historique de vos duos, jamais vos réponses détaillées."
+              : "A circle keeps its member count and duo history, never your detailed answers."}
+          </p>
+        </>
+      )}
       <div className="circle-actions">
         <form onSubmit={(event) => void submit(event, "create")}>
           <label>
@@ -117,14 +127,21 @@ export function PrivateCircles({
       {error && <p className="form-error">{error}</p>}
       <div className="circle-list">
         {circles.map((circle) => (
-          <button key={circle.id} onClick={() => void open(circle)}>
-            <strong>{circle.name}</strong>
-            <span>
-              {circle.members} {fr ? "membres" : "members"} · {circle.duels}{" "}
-              duos
-            </span>
-            <code>{circle.code}</code>
-          </button>
+          <div className="social-panel" key={circle.id}>
+            <button onClick={() => void open(circle)}>
+              <strong>{circle.name}</strong>
+              <span>
+                {circle.members} {fr ? "membres" : "members"} · {circle.duels}{" "}
+                duos
+              </span>
+              <code>{circle.code}</code>
+            </button>
+            {onInvite && (
+              <button onClick={() => onInvite(circle)}>
+                {fr ? "Inviter" : "Invite"}
+              </button>
+            )}
+          </div>
         ))}
       </div>
       {selected && (
