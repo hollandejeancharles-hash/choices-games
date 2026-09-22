@@ -2,22 +2,24 @@
 
 **[Jouer à Dilemme](https://dilemme.app/)**
 
-Après chaque choix solo, les pourcentages A/B regroupent les votes des joueurs connectés et invités. Un identifiant aléatoire conservé dans le navigateur limite chaque appareil à un vote par dilemme, sans enregistrer de nom ni d’adresse e-mail.
+**Deux choix. Aucune réponse facile.** Un jeu bilingue de dilemmes moraux, en solo ou à 2–6 sur un écran partagé ou chacun sur son téléphone. Ancien nom : Choices ; le dépôt GitHub conserve son nom `choices-games`.
 
-**Deux choix. Aucune réponse facile.** Un jeu bilingue de dilemmes moraux, en solo ou à 2–6 sur le même appareil. Ancien nom : Choices ; le dépôt GitHub conserve son nom `choices-games`.
-
-150 situations fictives (60 générales et 30 pour chacun des packs Amitié, Couple et Famille) opposent des valeurs et des conséquences coûteuses : justice contre protection, loyauté contre autonomie, présent contre avenir. Certaines évoquent la mort ou l'injustice, sans descriptions graphiques. Le scénario du centre commercial est inclus. Les issues imposées sont des conventions de jeu, pas des conseils pour une situation réelle.
+150 situations fictives intégrées (60 générales et 30 pour chacun des packs Amitié, Couple et Famille) opposent des valeurs et des conséquences coûteuses : justice contre protection, loyauté contre autonomie, présent contre avenir. Certaines évoquent la mort ou l'injustice, sans descriptions graphiques. Le scénario du centre commercial est inclus. Les issues imposées sont des conventions de jeu, pas des conseils pour une situation réelle.
 
 ## Lancer le projet
 
 Node.js 22.12+ ou 24, npm.
 
 ```sh
+git clone https://github.com/hollandejeancharles-hash/choices-games.git
+cd choices-games
 npm ci
 npm run dev
 ```
 
-Ouvrir l'adresse indiquée par Vite. Pour vérifier la version de production :
+Ouvrir l'adresse indiquée par Vite. Le client utilise par défaut la configuration publique du projet Supabase Dilemme : les actions en ligne peuvent donc toucher le service existant. Pour développer avec votre propre backend, copier `.env.example` vers `.env.local`, renseigner les deux variables publiques et suivre la section [Configuration Supabase](#configuration-supabase), puis redémarrer Vite.
+
+Pour vérifier la version de production :
 
 ```sh
 npm test
@@ -28,11 +30,12 @@ npm run preview
 
 `npm run format` met en forme le code ; `npm run format:check` le vérifie.
 
-Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé, Supabase Auth et Vitest. Les comptes joueurs utilisent Supabase Auth ; aucune réponse détaillée de partie n’y est envoyée. Le radar est un SVG accessible ; la carte téléchargeable est dessinée en Canvas et exportée en PNG.
+Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé, Supabase Auth et Vitest. Supabase gère l’authentification et les fonctions en ligne. La sauvegarde active cloud, les salons et les duels conservent les réponses nécessaires à leur fonctionnement ; les portraits solo archivés ne contiennent pas les réponses détaillées. Le radar est un SVG accessible ; la carte téléchargeable est dessinée en Canvas et exportée en PNG.
 
 ## Fonctionnalités
 
 - FR/EN détecté depuis le navigateur, modifiable pendant la partie ; nom Dilemme/Dilemma selon la langue.
+- Assistant de création de partie : solo ou groupe, écran partagé ou téléphones séparés, contexte, joueurs, pack, format et récapitulatif modifiable.
 - Parties équilibrées de 10, 15 ou 25 questions, avec un pack présélectionné. Ordre des options alterné pour limiter le biais de position.
 - Clavier ←/→, clic, glissement horizontal sur les cartes tactiles, focus visible, lien d'évitement, réduction des animations.
 - Thèmes clair et sombre ; responsive pour téléphone et ordinateur.
@@ -40,16 +43,20 @@ Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé, Supabas
 - Sauvegarde cloud privée de la partie en cours pour les joueurs connectés. Les portraits solo terminés alimentent une chronologie affichant les 20 résultats les plus récents avec comparaison de l’évolution entre deux parties.
 - Espace joueur avec modification du pseudo et de l’e-mail, export JSON, suppression d’un portrait, effacement de l’historique et suppression définitive du compte.
 - Dilemme quotidien réservé aux joueurs connectés, avec résultat collectif agrégé après le vote.
-- Duels privés asynchrones de cinq questions par code à huit caractères, valables 14 jours. Les réponses ne sont révélées qu’après la participation du second joueur.
-- Cercles privés par code d’invitation avec compteur de membres et historique des scores d’accord des duels associés.
+- Duos privés asynchrones de cinq questions par code à huit caractères, à rejoindre sous 14 jours. Les réponses ne sont révélées qu’après la participation du second joueur. L’historique reste privé aux participants ; les Duos terminés restent consultables après expiration.
+- Espace social « Entre vous » : cercles privés, liste d’amis et invitations par lien ou e-mail, avec acceptation explicite et suivi de leur état. Les invitations sont à usage unique et expirent après 14 jours. Les cercles affichent leurs membres et les scores d’accord des duels associés.
 - Pause explicite et pause quand l'onglet est masqué. Le chronomètre commence quand le dilemme est révélé.
 - Reprise de la dernière partie, langue et thème conservés avec `localStorage`, accès protégés par `try/catch`. Une sauvegarde invalide est ignorée ; un échec d'écriture est signalé.
 - Profils avec 10 archétypes, second archétype, radar, trois tendances, contradictions et décisions longues.
+- Salons en ligne sans compte : 2–6 joueurs rejoignent par QR code, lien ou code, chacun dans sa langue. L’hôte lance la partie et commande les révélations. Les salons expirent après deux heures ; le jeton conservé dans le navigateur permet de reprendre la session.
+- Pronostics dans les nouvelles parties de groupe, sur écran partagé et en ligne : chacun répond pour soi puis devine les réponses des autres. Une bonne prédiction rapporte un point ; les égalités partagent le rang. Le choix personnel et la rapidité ne rapportent aucun point.
 - Pass-and-play : une question commune, puis chaque joueur répond derrière un écran de passage. Le groupe choisit une révélation après chaque question (par défaut) ou un récapitulatif de toutes les réponses à la fin. Les portraits viennent ensuite.
 - Chrono groupe optionnel : 20 secondes (par défaut), 30 secondes ou sans limite. À zéro, la réponse reste possible et aucun choix automatique n’est effectué. Les pauses suspendent le chrono ; comme le temps de réponse, il redémarre si la question est rechargée.
 - Les révélations en attente sont sauvegardées ; le récapitulatif reste accessible depuis les résultats du groupe.
 - Comparaison de tous les duos et question la plus divisée. Les égalités sont départagées dans l'ordre du catalogue ou des joueurs. À deux, une carte « Votre duo » affiche les réponses communes, les dimensions proches (écart maximal de 20 points sur l’échelle −100 à +100) et toutes les dimensions ex æquo pour le plus grand écart.
 - PNG 1200 × 1400 et lien de portrait autonome.
+- Résultats collectifs A/B après chaque choix solo, regroupant joueurs connectés et invités. Un identifiant aléatoire de navigateur limite les votes par dilemme, sans nom ni e-mail dans cet appel. Cette limite ne garantit pas un vote unique par personne ou appareil si le stockage est effacé ou le navigateur changé.
+- Galerie bilingue des dix archétypes et propositions publiques de dilemmes, publiées dans « Tous les horizons » après modération.
 
 La confidentialité entre les tours est visuelle, pas une protection contre une personne qui inspecterait le stockage local de l'appareil. Le portrait est ludique, non clinique. La rareté affichée est explicitement fictive.
 
@@ -59,13 +66,16 @@ La confidentialité entre les tours est visuelle, pas une protection contre une 
 src/
   core/          Types et moteur pur : scores, confiance, sélection, archétypes, groupes
   data/          Questions, archétypes et textes des axes, FR/EN
-  components/    Questions, profils, radar, groupe, partage
-  services/      Sessions, validation du stockage, liens et export PNG
+  components/    Configuration, jeu, portraits, salons, comptes et espace social
+  services/      Sessions, stockage, Supabase, votes, pronostics, partage et PNG
   i18n.ts        Textes de l'interface
   App.tsx        Navigation et orchestration
-  style.css      Identité visuelle, responsive, thèmes, mouvement
-public/
-  dilemma-mark.png
+  style.css      Styles de base
+  styles/        Thèmes, identité visuelle et styles des fonctionnalités
+public/          Logos, avatars et licences des polices
+supabase/        Migrations SQL, guides et Edge Function d’invitation
+scripts/         Tests SQL PGlite et tests de l’envoi d’invitations
+docs/            Guide de modération et ressources visuelles
 ```
 
 ## Modèle de scoring
@@ -140,9 +150,22 @@ L'aurore est réservée à l'accueil et démontée pendant les autres écrans. L
 
 ## Validation
 
-22 tests unitaires couvrent pondération temporelle, bornes, confiance, contradictions, sélection, archétypes, compatibilité, contenu, reprise de session, groupe et sérialisation du partage. Vérification TypeScript stricte et build Vite.
+Les tests Vitest couvrent le moteur, les catalogues bilingues, les sessions, les pronostics, les partages, la récupération de compte et les composants des espaces joueur et social. Les scripts complémentaires vérifient les fonctions SQL avec PGlite et l’envoi d’invitations avec un fournisseur simulé.
 
-Vérifications navigateur : partie solo FR complète, reprise après rechargement, partie groupe EN (deux joueurs, dix questions communes), portraits individuels, téléchargement PNG, copie et ouverture d'un lien partagé, vues mobile et ordinateur. Les tests automatisés complètent ces parcours, notamment pour les formats 15/25 et les séries de réponses contradictoires.
+```sh
+npm test
+npm run test:rooms
+npm run test:community
+npm run test:duos
+npm run test:social
+npm run typecheck
+npm run build
+npm run format:check
+```
+
+Le workflow GitHub Pages exécute les tests Vitest, les quatre scripts complémentaires et le build (qui inclut TypeScript). Le contrôle de formatage est une commande séparée. Les tests d’invitations n’envoient aucun e-mail réel.
+
+Pour une recette navigateur, vérifier les parcours solo FR/EN, la reprise après rechargement, les deux modes de groupe et de révélation, les pronostics, le partage PNG/lien, ainsi que les comptes, Duos et invitations sur le backend de test. Les tests automatisés ne valident pas à eux seuls la délivrabilité des e-mails ni la configuration du projet Supabase déployé.
 
 ### Avis illustratifs et portraits bonus
 
@@ -177,13 +200,24 @@ et dans la carte PNG exportée. Les images sont hébergées avec le jeu.
 ### Galerie et propositions communautaires
 
 La galerie FR/EN présente les dix personnages depuis l’accueil et le pied de page.
-Le formulaire public et l’espace admin utilisent un projet Supabase séparé. Sans
-configuration, ils affichent un état indisponible explicite et n’envoient rien.
-Voir [le guide de mise en service](docs/COMMUNITY_SETUP.md) et la migration
-`supabase/community.sql`. Les variables publiques de build sont décrites dans
-`.env.example`. Les propositions ne rejoignent le catalogue qu’après validation
-admin avec traductions et axe de score. Les contrôles SQL doivent être exécutés
-sur le projet réel avant ouverture des propositions.
+Le formulaire public et l’espace admin utilisent le même projet Supabase que les salons. Les propositions validées avec leurs traductions et leur axe de score alimentent le pack « Tous les horizons » ; les 150 questions intégrées restent disponibles si le catalogue distant ne peut pas être chargé. Voir [le guide de modération](docs/COMMUNITY_SETUP.md).
+
+## Configuration Supabase
+
+La configuration commune se trouve dans `src/services/supabase-config.ts`, avec des valeurs publiques par défaut. Pour utiliser un autre projet, définir dans `.env.local` :
+
+```dotenv
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_public_key
+```
+
+Ces variables sont intégrées au build et sont publiques. Ne jamais y placer une clé `service_role` ou un secret d’envoi d’e-mails. Pour GitHub Pages, définir aussi les deux variables dans GitHub Actions avant de reconstruire.
+
+### Salons et communauté
+
+Suivre [le guide des salons](supabase/MULTIPLAYER_SETUP.md) : installer `supabase/multiplayer.sql`, puis `supabase/multiplayer-catalog.sql`. La migration des salons inclut les pronostics ; les anciens salons continuent sans eux.
+
+Pour les propositions, installer ensuite `supabase/community.sql` et suivre [le guide de modération](docs/COMMUNITY_SETUP.md) pour attribuer le rôle admin et effectuer les contrôles d’accès. Un compte joueur ordinaire ne donne pas accès à la modération.
 
 ### Comptes joueurs
 
@@ -217,3 +251,11 @@ Exécuter aussi `supabase/public-votes.sql` pour afficher les résultats A/B de
 tous les dilemmes. La table n’est pas lisible directement : une fonction RPC
 publique valide le dilemme, limite un identifiant de navigateur à un vote et ne
 renvoie que les totaux agrégés.
+
+### Historique des Duos et invitations
+
+Après `supabase/player-social.sql`, appliquer `supabase/duo-history.sql` pour l’historique privé des Duos, puis `supabase/social-invitations.sql` pour les amis et invitations aux cercles.
+
+Suivre [le guide des invitations](supabase/INVITATIONS_SETUP.md) pour déployer la fonction `supabase/functions/send-invitation`, configurer Resend et autoriser les redirections de confirmation qui conservent le paramètre `invite`. Les secrets `RESEND_API_KEY` et `INVITATION_FROM` restent dans Supabase. Sans service d’envoi configuré, le lien reste partageable mais l’e-mail est indiqué comme non envoyé.
+
+Depuis la liste d’amis, « Créer un Duo » ouvre le parcours existant : il faut ensuite partager le code du Duo avec l’ami.
