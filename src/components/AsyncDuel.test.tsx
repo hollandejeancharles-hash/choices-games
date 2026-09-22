@@ -37,6 +37,7 @@ beforeEach(() => {
     id: "invite-1",
     recipientFound: true,
   });
+  vi.mocked(createDuel).mockResolvedValue("ABCD1234");
   vi.mocked(sendDuelInvitationEmail).mockResolvedValue();
   Object.defineProperty(navigator, "share", {
     configurable: true,
@@ -47,25 +48,29 @@ beforeEach(() => {
     value: { writeText: vi.fn().mockResolvedValue(undefined) },
   });
 });
-it("retrouve un Duo créé en revenant au même écran et après remontage", async () => {
-  vi.mocked(createDuel).mockResolvedValue("ABCD1234");
+it("crée, notifie et conserve un Duo avant toute réponse", async () => {
   const view = render(<AsyncDuel locale="fr" circles={[]} onBack={vi.fn()} />);
   fireEvent.click(screen.getByRole("button", { name: /Créer un duo/ }));
   expect(
     screen.getByRole("heading", { name: "Avec qui joues-tu ?" }),
   ).toBeTruthy();
-  const continueButton = screen.getByRole("button", {
-    name: /Continuer vers les dilemmes/,
+  const createButton = screen.getByRole("button", {
+    name: /Créer et envoyer l’invitation/,
   });
   await waitFor(() =>
-    expect((continueButton as HTMLButtonElement).disabled).toBe(false),
+    expect((createButton as HTMLButtonElement).disabled).toBe(false),
   );
-  fireEvent.click(continueButton);
-  for (let i = 0; i < 5; i++) {
-    fireEvent.click(screen.getByRole("button", { name: /^A / }));
-    fireEvent.click(screen.getByRole("button", { name: /^A / }));
-  }
+  fireEvent.click(createButton);
   await screen.findByText("ABCD1234");
+  expect(createDuel).toHaveBeenCalledWith(expect.any(Array), undefined);
+  expect(createDuelInvitation).toHaveBeenCalledWith(
+    "ABCD1234",
+    "friend-1",
+    null,
+  );
+  expect(
+    screen.getByRole("button", { name: /Répondre maintenant/ }),
+  ).toBeTruthy();
   vi.mocked(listDuos).mockResolvedValue([
     {
       code: "ABCD1234",
@@ -73,6 +78,8 @@ it("retrouve un Duo créé en revenant au même écran et après remontage", asy
       complete: false,
       expired: false,
       owner: true,
+      mineAnswered: false,
+      partnerAnswered: false,
     },
   ]);
   fireEvent.click(screen.getByRole("button", { name: /Mes duos/ }));
@@ -82,14 +89,16 @@ it("retrouve un Duo créé en revenant au même écran et après remontage", asy
   await screen.findByText("Duo · ABCD1234");
   vi.mocked(readDuel).mockResolvedValue({
     code: "ABCD1234",
-    questions: [],
+    questions: ["balanced-a01"],
     complete: false,
     owner: true,
+    mineAnswered: false,
+    partnerAnswered: false,
     ownerAnswers: null,
     guestAnswers: null,
   });
-  fireEvent.click(screen.getByRole("button", { name: "Voir le code" }));
-  await screen.findByText("ABCD1234");
+  fireEvent.click(screen.getByRole("button", { name: "Répondre" }));
+  await screen.findByText("Ton choix");
   expect(readDuel).toHaveBeenCalledWith("ABCD1234");
 });
 it("lance directement un Duo reçu depuis Mes duos", async () => {
@@ -101,6 +110,8 @@ it("lance directement un Duo reçu depuis Mes duos", async () => {
       expired: false,
       owner: false,
       invited: true,
+      mineAnswered: false,
+      partnerAnswered: false,
     },
   ]);
   vi.mocked(readDuel).mockResolvedValue({
@@ -108,6 +119,8 @@ it("lance directement un Duo reçu depuis Mes duos", async () => {
     questions: ["balanced-a01"],
     complete: false,
     owner: false,
+    mineAnswered: false,
+    partnerAnswered: false,
     ownerAnswers: null,
     guestAnswers: null,
   });
@@ -119,29 +132,23 @@ it("lance directement un Duo reçu depuis Mes duos", async () => {
   await waitFor(() => expect(readDuel).toHaveBeenCalledWith("RECU1234"));
   expect(await screen.findByText("Ton choix")).toBeTruthy();
 });
-it("permet de réessayer la dernière réponse après une erreur", async () => {
+it("permet de réessayer la création après une erreur", async () => {
   vi.mocked(createDuel)
     .mockRejectedValueOnce(new Error("offline"))
     .mockResolvedValueOnce("ABCD1234");
   render(<AsyncDuel locale="fr" circles={[]} onBack={vi.fn()} />);
   fireEvent.click(screen.getByRole("button", { name: /Créer un duo/ }));
-  const continueButton = screen.getByRole("button", {
-    name: /Continuer vers les dilemmes/,
+  const createButton = screen.getByRole("button", {
+    name: /Créer et envoyer l’invitation/,
   });
   await waitFor(() =>
-    expect((continueButton as HTMLButtonElement).disabled).toBe(false),
+    expect((createButton as HTMLButtonElement).disabled).toBe(false),
   );
-  fireEvent.click(continueButton);
-  for (let i = 0; i < 5; i++) {
-    fireEvent.click(screen.getByRole("button", { name: /^A / }));
-    fireEvent.click(screen.getByRole("button", { name: /^A / }));
-  }
+  fireEvent.click(createButton);
   await screen.findByRole("alert");
-  fireEvent.click(screen.getByRole("button", { name: /^B / }));
+  fireEvent.click(createButton);
   await screen.findByText("ABCD1234");
   await waitFor(() => expect(createDuel).toHaveBeenCalledTimes(2));
-  expect(vi.mocked(createDuel).mock.calls[1]?.[1]).toHaveLength(5);
-  expect(vi.mocked(createDuel).mock.calls[1]?.[3]).toHaveLength(5);
   expect(createDuelInvitation).toHaveBeenCalledWith(
     "ABCD1234",
     "friend-1",
@@ -179,9 +186,10 @@ it("propose ami ou cercle avant le premier dilemme", async () => {
     target: { value: "circle-1" },
   });
   fireEvent.click(
-    screen.getByRole("button", { name: /Continuer vers les dilemmes/ }),
+    screen.getByRole("button", { name: /Créer et envoyer l’invitation/ }),
   );
-  expect(screen.getByText("Ton choix")).toBeTruthy();
+  await screen.findByText("ABCD1234");
+  expect(createDuel).toHaveBeenCalledWith(expect.any(Array), "circle-1");
 });
 
 it("demande une adresse e-mail quand la liste d’amis est vide", async () => {
@@ -192,7 +200,7 @@ it("demande une adresse e-mail quand la liste d’amis est vide", async () => {
     await screen.findByText(/Tu n’as pas encore d’ami dans Dilemme/),
   ).toBeTruthy();
   const continueButton = screen.getByRole("button", {
-    name: /Continuer vers les dilemmes/,
+    name: /Créer et envoyer l’invitation/,
   });
   expect((continueButton as HTMLButtonElement).disabled).toBe(true);
   fireEvent.change(screen.getByLabelText(/Adresse e-mail/), {
@@ -207,6 +215,8 @@ it("ouvre un lien direct et permet de partager un Duo", async () => {
     questions: [],
     complete: false,
     owner: true,
+    mineAnswered: true,
+    partnerAnswered: false,
     ownerAnswers: null,
     guestAnswers: null,
   });

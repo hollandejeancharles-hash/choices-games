@@ -19,6 +19,8 @@ export interface DuelState {
   questions: string[];
   complete: boolean;
   owner: boolean;
+  mineAnswered: boolean;
+  partnerAnswered: boolean;
   ownerAnswers: (0 | 1)[] | null;
   guestAnswers: (0 | 1)[] | null;
   ownerGuesses?: (0 | 1)[] | null;
@@ -31,6 +33,8 @@ export interface MyDuo {
   expired: boolean;
   owner: boolean;
   invited?: boolean;
+  mineAnswered: boolean;
+  partnerAnswered: boolean;
 }
 export const listDuos = () => rpc<MyDuo[]>("list_dilemma_duos");
 
@@ -62,17 +66,10 @@ export const joinCircle = (code: string) =>
 export const listCircles = () => rpc<Circle[]>("list_dilemma_circles");
 export const circleHistory = (id: string) =>
   rpc<CircleDuel[]>("circle_dilemma_history", { p_circle: id });
-export const createDuel = (
-  questions: string[],
-  answers: (0 | 1)[],
-  circle?: string,
-  guesses?: (0 | 1)[],
-) =>
-  rpc<string>("create_dilemma_duel_v2", {
+export const createDuel = (questions: string[], circle?: string) =>
+  rpc<string>("create_dilemma_duel_v3", {
     p_questions: questions,
-    p_answers: answers,
     p_circle: circle ?? null,
-    p_guesses: guesses ?? null,
   });
 export const readDuel = (code: string) =>
   rpc<DuelState>("read_dilemma_duel", { p_code: code });
@@ -81,7 +78,7 @@ export const answerDuel = (
   answers: (0 | 1)[],
   guesses?: (0 | 1)[],
 ) =>
-  rpc<DuelState>("answer_dilemma_duel_v2", {
+  rpc<DuelState>("answer_dilemma_duel_v3", {
     p_code: code,
     p_answers: answers,
     p_guesses: guesses ?? null,

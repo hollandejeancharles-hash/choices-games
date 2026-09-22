@@ -93,15 +93,82 @@ export function AsyncDuel({
     setInviteEmail("");
     setMode("setup");
   }
-  function beginAnswer() {
+  function beginAnswer(questionIds = ids) {
     setError("");
     setMessage("");
-    setIds(duelQuestions().map((q) => q.id));
+    setIds(questionIds);
     setAnswers([]);
     setGuesses([]);
     setSelectedAnswer(null);
     setDuel(null);
     setMode("answer");
+  }
+  async function createAndInvite() {
+    if (busy) return;
+    const questionIds = duelQuestions().map((q) => q.id);
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const created = await createDuel(questionIds, circle || undefined);
+      const createdDuel: DuelState = {
+        code: created,
+        questions: questionIds,
+        complete: false,
+        owner: true,
+        mineAnswered: false,
+        partnerAnswered: false,
+        ownerAnswers: null,
+        guestAnswers: null,
+        ownerGuesses: null,
+        guestGuesses: null,
+      };
+      setCode(created);
+      setIds(questionIds);
+      setDuel(createdDuel);
+      setMode("share");
+      if (destination === "friend") {
+        const invitation = await createDuelInvitation(
+          created,
+          friendTarget === "email" ? null : friendTarget,
+          friendTarget === "email" ? inviteEmail.trim() : null,
+        );
+        void refreshHistory();
+        try {
+          await sendDuelInvitationEmail(invitation.id);
+          setMessage(
+            invitation.recipientFound
+              ? fr
+                ? "Invitation envoyée : le Duo est déjà visible dans vos deux comptes."
+                : "Invitation sent: the Duo is already visible in both accounts."
+              : fr
+                ? "Invitation envoyée par e-mail."
+                : "Invitation sent by email.",
+          );
+        } catch {
+          setError(
+            fr
+              ? "Le Duo est visible dans les comptes, mais l’e-mail n’a pas pu être envoyé."
+              : "The Duo is visible in both accounts, but the email could not be sent.",
+          );
+        }
+      } else {
+        setMessage(
+          fr
+            ? "Duo créé. Tu peux répondre maintenant ou plus tard."
+            : "Duo created. You can answer now or later.",
+        );
+        void refreshHistory();
+      }
+    } catch {
+      setError(
+        fr
+          ? "Impossible de créer et d’envoyer ce Duo."
+          : "Could not create and send this Duo.",
+      );
+    } finally {
+      setBusy(false);
+    }
   }
   async function beginJoin(selectedCode = code) {
     if (busy) return;
@@ -116,7 +183,9 @@ export function AsyncDuel({
       setAnswers([]);
       setGuesses([]);
       setSelectedAnswer(null);
-      setMode(found.complete ? "result" : found.owner ? "share" : "answer");
+      setMode(
+        found.complete ? "result" : found.mineAnswered ? "share" : "answer",
+      );
     } catch {
       setError(
         fr
@@ -171,55 +240,16 @@ export function AsyncDuel({
     if (nextAnswers.length < 5) return;
     setBusy(true);
     try {
-      if (duel) {
-        const result = await answerDuel(duel.code, nextAnswers, nextGuesses);
-        setDuel(result);
-        setMode("result");
-      } else {
-        const created = await createDuel(
-          ids,
-          nextAnswers,
-          circle || undefined,
-          nextGuesses,
+      if (!duel) throw new Error("duel-not-created");
+      const result = await answerDuel(duel.code, nextAnswers, nextGuesses);
+      setDuel(result);
+      setMode(result.complete ? "result" : "share");
+      if (!result.complete)
+        setMessage(
+          fr
+            ? "Tes réponses sont enregistrées. Le résultat apparaîtra quand ton ami aura répondu."
+            : "Your answers are saved. Results will appear after your friend answers.",
         );
-        setCode(created);
-        setDuel({
-          code: created,
-          questions: ids,
-          complete: false,
-          owner: true,
-          ownerAnswers: null,
-          guestAnswers: null,
-          ownerGuesses: null,
-          guestGuesses: null,
-        });
-        setMode("share");
-        if (destination === "friend") {
-          try {
-            const invitation = await createDuelInvitation(
-              created,
-              friendTarget === "email" ? null : friendTarget,
-              friendTarget === "email" ? inviteEmail.trim() : null,
-            );
-            await sendDuelInvitationEmail(invitation.id);
-            setMessage(
-              invitation.recipientFound
-                ? fr
-                  ? "Invitation envoyée dans son compte et par e-mail."
-                  : "Invitation sent to their account and by email."
-                : fr
-                  ? "Invitation envoyée par e-mail."
-                  : "Invitation sent by email.",
-            );
-          } catch {
-            setError(
-              fr
-                ? "Le Duo est créé, mais l’invitation automatique n’a pas pu être envoyée. Partage le lien ci-dessous."
-                : "The Duo was created, but the automatic invitation could not be sent. Share the link below.",
-            );
-          }
-        }
-      }
       void refreshHistory();
     } catch {
       setAnswers(answers);
@@ -277,8 +307,8 @@ export function AsyncDuel({
           </h1>
           <p>
             {fr
-              ? "Choisis avec qui jouer, réponds à cinq choix et devine les réponses de ton duo."
-              : "Choose who to play with, answer five choices, and predict your duo’s answers."}
+              ? "Choisis avec qui jouer et envoie l’invitation immédiatement. Chacun pourra répondre quand il le souhaite."
+              : "Choose who to play with and send the invitation immediately. Each person can answer when ready."}
           </p>
           <button className="primary" onClick={beginCreate}>
             {fr ? "Créer un duo" : "Create a duo"}
@@ -362,13 +392,17 @@ export function AsyncDuel({
                         ? fr
                           ? "Expiré"
                           : "Expired"
-                        : item.invited
+                        : !item.mineAnswered
                           ? fr
-                            ? "Invitation reçue"
-                            : "Invitation received"
-                          : fr
-                            ? "En attente d’une réponse"
-                            : "Waiting for an answer"}
+                            ? "À toi de répondre"
+                            : "Your turn to answer"
+                          : item.invited
+                            ? fr
+                              ? "Invitation reçue"
+                              : "Invitation received"
+                            : fr
+                              ? "En attente d’une réponse"
+                              : "Waiting for an answer"}
                   </span>
                 </button>
                 {(!item.expired || item.complete) && (
@@ -381,13 +415,13 @@ export function AsyncDuel({
                       ? fr
                         ? "Voir les résultats"
                         : "View results"
-                      : item.invited
+                      : !item.mineAnswered
                         ? fr
-                          ? "Commencer"
-                          : "Start"
-                      : fr
-                        ? "Voir le code"
-                        : "View code"}
+                          ? "Répondre"
+                          : "Answer"
+                        : fr
+                          ? "Ouvrir"
+                          : "Open"}
                   </button>
                 )}
               </article>
@@ -506,6 +540,7 @@ export function AsyncDuel({
           <button
             className="primary"
             disabled={
+              busy ||
               (destination === "friend" && friendsLoading) ||
               (destination === "circle" && !circle) ||
               (destination === "friend" &&
@@ -513,9 +548,15 @@ export function AsyncDuel({
                   (friendTarget === "email" &&
                     !/^\S+@\S+\.\S+$/.test(inviteEmail.trim()))))
             }
-            onClick={beginAnswer}
+            onClick={() => void createAndInvite()}
           >
-            {fr ? "Continuer vers les dilemmes" : "Continue to dilemmas"}
+            {busy
+              ? fr
+                ? "Création…"
+                : "Creating…"
+              : fr
+                ? "Créer et envoyer l’invitation"
+                : "Create and send invitation"}
             <span>→</span>
           </button>
         </>
@@ -561,13 +602,13 @@ export function AsyncDuel({
       {mode === "share" && (
         <>
           <h1>
-            {duel?.owner
+            {duel?.mineAnswered
               ? fr
-                ? "Ton duo attend une réponse."
-                : "Your duo is waiting for an answer."
+                ? "Tes réponses sont enregistrées."
+                : "Your answers are saved."
               : fr
-                ? "Code prêt à partager."
-                : "Your code is ready."}
+                ? "L’invitation est partie."
+                : "The invitation is on its way."}
           </h1>
           {myGuesses && partnerAnswers && (
             <p className="duel-prediction-score">
@@ -578,9 +619,13 @@ export function AsyncDuel({
           )}
           <div className="duel-code">{duel?.code ?? code}</div>
           <p>
-            {fr
-              ? "Envoie ce lien privé à la personne de ton choix. Le Duo expire après 14 jours."
-              : "Send this private link to the person you choose. The Duo expires after 14 days."}
+            {duel?.mineAnswered
+              ? fr
+                ? "Tu retrouveras le résultat ici dès que ton ami aura répondu."
+                : "The result will appear here as soon as your friend answers."
+              : fr
+                ? "Le Duo est enregistré dans Mes duos. Tu peux répondre maintenant ou revenir plus tard."
+                : "The Duo is saved in My duos. You can answer now or come back later."}
           </p>
           <div className="duel-share-actions">
             <button className="primary" onClick={() => void shareDuo()}>
@@ -592,7 +637,15 @@ export function AsyncDuel({
               <input readOnly value={duoLink(duel?.code ?? code)} />
             </label>
           </div>
-          {duel?.owner && (
+          {!duel?.mineAnswered ? (
+            <button
+              className="primary"
+              onClick={() => beginAnswer(duel?.questions)}
+            >
+              {fr ? "Répondre maintenant" : "Answer now"}
+              <span>→</span>
+            </button>
+          ) : (
             <button onClick={() => void beginJoin()}>
               {fr ? "Actualiser" : "Refresh"}
             </button>

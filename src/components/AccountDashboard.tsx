@@ -169,7 +169,7 @@ export function AccountDashboard({
           if (active) setDuoInvitations([]);
         });
     refreshInvitations();
-    const timer = window.setInterval(refreshInvitations, 30_000);
+    const timer = window.setInterval(refreshInvitations, 5_000);
     window.addEventListener("focus", refreshInvitations);
     return () => {
       active = false;

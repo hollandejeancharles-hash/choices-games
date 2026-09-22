@@ -40,7 +40,7 @@ Stack : Vite, React, TypeScript strict, Tailwind CSS, CSS personnalisé, Supabas
 - Sauvegarde cloud privée de la partie en cours pour les joueurs connectés. Les portraits solo terminés alimentent une chronologie affichant les 20 résultats les plus récents avec comparaison de l’évolution entre deux parties.
 - Espace joueur avec modification du pseudo et de l’e-mail, export JSON, suppression d’un portrait, effacement de l’historique et suppression définitive du compte.
 - Dilemme quotidien réservé aux joueurs connectés, avec résultat collectif agrégé après le vote.
-- Duels privés asynchrones de cinq questions par code à huit caractères, valables 14 jours. Les réponses ne sont révélées qu’après la participation du second joueur.
+- Duels privés asynchrones de cinq questions par code à huit caractères, valables 14 jours. L’invitation et le Duo apparaissent immédiatement dans les deux comptes ; chacun peut répondre plus tard et dans l’ordre de son choix. Les réponses ne sont révélées qu’une fois les deux participations terminées.
 - Cercles privés par code d’invitation avec compteur de membres et historique des scores d’accord des duels associés.
 - Pause explicite et pause quand l'onglet est masqué. Le chronomètre commence quand le dilemme est révélé.
 - Reprise de la dernière partie, langue et thème conservés avec `localStorage`, accès protégés par `try/catch`. Une sauvegarde invalide est ignorée ; un échec d'écriture est signalé.
