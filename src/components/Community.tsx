@@ -31,6 +31,14 @@ function ProposalAuth({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [googleAvailable, setGoogleAvailable] = useState(false);
+  useEffect(() => {
+    void communityRequest("/auth/v1/settings")
+      .then((settings) =>
+        setGoogleAvailable(settings?.external?.google === true),
+      )
+      .catch(() => setGoogleAvailable(false));
+  }, []);
   async function emailAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -140,17 +148,21 @@ function ProposalAuth({
             ? "Ta proposition est conservée pendant cette étape."
             : "Your suggestion is saved while you complete this step."}
         </p>
-        <button
-          className="google-auth"
-          disabled={busy}
-          onClick={() => void googleAuth()}
-        >
-          <b aria-hidden="true">G</b>{" "}
-          {fr ? "Continuer avec Google" : "Continue with Google"}
-        </button>
-        <div className="auth-separator">
-          <span>{fr ? "ou par e-mail" : "or with email"}</span>
-        </div>
+        {googleAvailable && (
+          <>
+            <button
+              className="google-auth"
+              disabled={busy}
+              onClick={() => void googleAuth()}
+            >
+              <b aria-hidden="true">G</b>{" "}
+              {fr ? "Continuer avec Google" : "Continue with Google"}
+            </button>
+            <div className="auth-separator">
+              <span>{fr ? "ou par e-mail" : "or with email"}</span>
+            </div>
+          </>
+        )}
         <form
           className="community-form proposal-auth-form"
           onSubmit={(event) => void emailAuth(event)}
