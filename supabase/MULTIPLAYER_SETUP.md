@@ -18,6 +18,12 @@ Un jeton aléatoire propre au navigateur est conservé dans localStorage, et seu
 
 La synchronisation interroge le serveur toutes les deux secondes lorsque l'onglet est visible. Le chrono utilise l'heure serveur, mais n'impose aucune réponse à expiration. Les salons expirent deux heures après leur création. Les salons expirés sont supprimés lors de la création d'un nouveau salon; sans nouvelles créations, les données restent en base jusqu'à ce nettoyage. Pour une rétention strictement bornée, prévoir un nettoyage planifié côté Supabase.
 
+En production, exécuter aussi `maintenance.sql`. Il active `pg_cron` et programme
+`dilemma-clean-expired-rooms` à la minute 17 de chaque heure. La tâche supprime
+uniquement les salons arrivés à expiration ; joueurs et réponses associés sont
+supprimés par les contraintes `ON DELETE CASCADE`. Réexécuter le fichier remplace
+la tâche existante sans en créer de doublon.
+
 ## Confidentialité et validations
 
 Les quatre tables ont RLS activé et aucun accès direct pour `anon`/`authenticated`. La RPC vérifie le jeton et l'appartenance au salon. Avant la révélation, elle ne renvoie aucune réponse, seulement les compteurs et l'état « a répondu ». En mode récapitulatif final, les réponses restent cachées jusqu'à la fin. Les actions de l'hôte sont contrôlées côté serveur, les réponses sont verrouillées et les relances identiques sont idempotentes. Le serveur valide le pack, la taille et les quotas des six dimensions, puis conserve son propre instantané des questions.
