@@ -2,14 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import type { Locale } from "../core/types";
 import { dailyQuestion } from "../services/account-view";
 import { publicVote, type PublicVoteState } from "../services/public-votes";
+import { dailyState } from "../services/player-features";
 import { PushPreference } from "./PushPreference";
 
 export function DailyDilemma({
   locale,
   onBack,
+  onAnswered,
 }: {
   locale: Locale;
   onBack: () => void;
+  onAnswered?: () => void;
 }) {
   const fr = locale === "fr";
   const day = new Date().toISOString().slice(0, 10);
@@ -18,8 +21,10 @@ export function DailyDilemma({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    void publicVote(question.id)
-      .then(setState)
+    void Promise.all([publicVote(question.id), dailyState(day, question.id)])
+      .then(([publicState, accountState]) =>
+        setState({ ...publicState, mine: accountState.mine }),
+      )
       .catch(() =>
         setError(
           fr
@@ -33,7 +38,12 @@ export function DailyDilemma({
     setBusy(true);
     setError("");
     try {
-      setState(await publicVote(question.id, option));
+      const [publicState, accountState] = await Promise.all([
+        publicVote(question.id, option),
+        dailyState(day, question.id, option),
+      ]);
+      setState({ ...publicState, mine: accountState.mine });
+      onAnswered?.();
     } catch {
       setError(
         fr

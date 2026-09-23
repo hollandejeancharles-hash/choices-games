@@ -31,6 +31,7 @@ const api = vi.hoisted(() => ({
   photoUrl: vi.fn(),
   signOut: vi.fn(),
   vote: vi.fn(),
+  daily: vi.fn(),
 }));
 vi.mock("../services/player-cloud", async (original) => ({
   ...(await original<typeof import("../services/player-cloud")>()),
@@ -75,6 +76,7 @@ vi.mock("../services/player-features", () => ({
   listDuos: vi.fn().mockResolvedValue([]),
   listMyDilemmaProposals: api.proposals,
   updateMyDilemmaProposal: api.updateProposal,
+  dailyState: api.daily,
   listCircles: vi.fn().mockResolvedValue([]),
   circleHistory: vi.fn(),
   createCircle: vi.fn(),
@@ -173,6 +175,7 @@ beforeEach(() => {
   api.photoUrl.mockReset().mockResolvedValue("blob:stored-photo");
   api.signOut.mockReset().mockResolvedValue({ error: null });
   api.vote.mockReset().mockResolvedValue({ mine: null, a: 0, b: 0 });
+  api.daily.mockReset().mockResolvedValue({ mine: null, a: 0, b: 0 });
   // jsdom has no top-layer layout; retain native open/close semantics for interaction tests.
   HTMLDialogElement.prototype.showModal = function () {
     this.setAttribute("open", "");
@@ -193,6 +196,20 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("account space with real service boundaries", () => {
+  it("notifies the player when today's dilemma has not been answered", async () => {
+    await mount();
+    await waitFor(() => expect(api.daily).toHaveBeenCalled());
+    const notifications = screen.getByRole("button", { name: "Notifications" });
+    expect(notifications.querySelector("b")?.textContent).toBe("1");
+    fireEvent.click(notifications);
+    fireEvent.click(
+      screen.getByRole("button", { name: /Dilemme du jour en attente/ }),
+    );
+    await waitFor(() => expect(api.vote).toHaveBeenCalled());
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain(
+      dailyQuestion(new Date().toISOString().slice(0, 10)).prompt.fr,
+    );
+  });
   it("shows the signed-in player's dilemma suggestions and moderation status", async () => {
     api.proposals.mockResolvedValueOnce([
       {

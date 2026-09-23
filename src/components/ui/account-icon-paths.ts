@@ -1,5 +1,10 @@
 // User-supplied SVG geometries. Attribution and MIT terms: docs/account-icons-LICENSE.txt
 export const accountIconPaths = {
+  lightbulb: [
+    "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5",
+    "M9 18h6",
+    "M10 22h4",
+  ],
   users: ["M18 21a8 8 0 0 0-16 0", "M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"],
   fingerprint: [
     "M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4",

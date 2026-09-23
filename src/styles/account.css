@@ -420,6 +420,9 @@
   display: grid;
   gap: 4px;
 }
+#player-space .c-notification-panel > .c-daily-notification {
+  background: var(--c-lilac);
+}
 #player-space .c-notification-panel small,
 #player-space .c-notification-panel p {
   color: var(--c-muted);
@@ -1304,6 +1307,39 @@
     opacity: 1;
   }
 }
+@keyframes c-lightbulb-glow {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  18% {
+    opacity: 0.35;
+    transform: scale(0.94);
+  }
+  38% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  58% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  78% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+#player-space .c-lightbulb-glow {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+#player-space button:is(:hover, :focus-visible) .c-lightbulb-glow {
+  animation: c-lightbulb-glow 1s ease-in-out both;
+}
 #player-space .c-users-head {
   transform-origin: 10px 8px;
 }
@@ -1429,6 +1465,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  #player-space .c-lightbulb-glow,
   #player-space .c-notification-button .bell-ring-body,
   #player-space .c-notification-button .bell-ring-clapper,
   #player-space .c-notification-button .bell-ring-wave {

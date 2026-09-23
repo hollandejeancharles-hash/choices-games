@@ -11,6 +11,7 @@ import {
   clearPlayerHistory,
   deletePlayerAccount,
   deleteResult,
+  dailyState,
   exportPlayerData,
   listDuos,
   listMyDilemmaProposals,
@@ -101,6 +102,7 @@ export function AccountDashboard({
   const [historyError, setHistoryError] = useState(false);
   const [historyVersion, setHistoryVersion] = useState(0);
   const [duoInvitations, setDuoInvitations] = useState<MyDuo[]>([]);
+  const [dailyPending, setDailyPending] = useState(false);
   const [proposals, setProposals] = useState<MyDilemmaProposal[]>([]);
   const [proposalsBusy, setProposalsBusy] = useState(true);
   const [proposalsError, setProposalsError] = useState(false);
@@ -172,6 +174,23 @@ export function AccountDashboard({
     duel: text("Duo", "Duo"),
     circles: text("Mes cercles", "My circles"),
   };
+  useEffect(() => {
+    let active = true;
+    const refreshDaily = () =>
+      void dailyState(day, dailyQuestion(day).id)
+        .then((state) => {
+          if (active) setDailyPending(state.mine === null);
+        })
+        .catch(() => {
+          if (active) setDailyPending(false);
+        });
+    refreshDaily();
+    window.addEventListener("focus", refreshDaily);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshDaily);
+    };
+  }, [user.id, day]);
   useEffect(() => {
     let active = true;
     setProposalsBusy(true);
@@ -365,6 +384,7 @@ export function AccountDashboard({
       ? strongestEvolution(results[0]!.vector, results[1]!.vector)
       : null;
   const question = dailyQuestion(day);
+  const notificationCount = duoInvitations.length + (dailyPending ? 1 : 0);
   function navButton(target: Page, icon?: AccountIconName) {
     return (
       <button
@@ -510,7 +530,7 @@ export function AccountDashboard({
             <nav className="c-nav" aria-label={text("Mon espace", "My space")}>
               {navButton("home", "dashboard")}
               {navButton("portraits", "fingerprint")}
-              {navButton("proposals", "users")}
+              {navButton("proposals", "lightbulb")}
             </nav>
           </div>
           <div>
@@ -571,9 +591,9 @@ export function AccountDashboard({
                   onClick={() => setNotificationsOpen((open) => !open)}
                 >
                   <BellRingIcon />
-                  {duoInvitations.length > 0 && (
-                    <b aria-label={`${duoInvitations.length}`}>
-                      {duoInvitations.length}
+                  {notificationCount > 0 && (
+                    <b aria-label={`${notificationCount}`}>
+                      {notificationCount}
                     </b>
                   )}
                 </button>
@@ -586,7 +606,7 @@ export function AccountDashboard({
                     )}
                   >
                     <strong>{text("Notifications", "Notifications")}</strong>
-                    {duoInvitations.length === 0 ? (
+                    {!dailyPending && duoInvitations.length === 0 ? (
                       <p>
                         {text(
                           "Aucune nouvelle invitation.",
@@ -594,20 +614,44 @@ export function AccountDashboard({
                         )}
                       </p>
                     ) : (
-                      duoInvitations.map((invitation) => (
-                        <button
-                          key={invitation.code}
-                          onClick={() => openDuo(invitation.code)}
-                        >
-                          <span>
-                            {text(
-                              "Invitation Duo reçue",
-                              "Duo invitation received",
-                            )}
-                          </span>
-                          <small>Duo · {invitation.code}</small>
-                        </button>
-                      ))
+                      <>
+                        {dailyPending && (
+                          <button
+                            className="c-daily-notification"
+                            onClick={() => {
+                              setNotificationsOpen(false);
+                              navigate("daily");
+                            }}
+                          >
+                            <span>
+                              {text(
+                                "Dilemme du jour en attente",
+                                "Today's dilemma is waiting",
+                              )}
+                            </span>
+                            <small>
+                              {text(
+                                "Tu n’as pas encore fait ton choix aujourd’hui.",
+                                "You have not made today's choice yet.",
+                              )}
+                            </small>
+                          </button>
+                        )}
+                        {duoInvitations.map((invitation) => (
+                          <button
+                            key={invitation.code}
+                            onClick={() => openDuo(invitation.code)}
+                          >
+                            <span>
+                              {text(
+                                "Invitation Duo reçue",
+                                "Duo invitation received",
+                              )}
+                            </span>
+                            <small>Duo · {invitation.code}</small>
+                          </button>
+                        ))}
+                      </>
                     )}
                   </section>
                 )}
@@ -1635,6 +1679,7 @@ export function AccountDashboard({
                   key={day}
                   locale={locale}
                   onBack={() => navigate("home")}
+                  onAnswered={() => setDailyPending(false)}
                 />
               )}
               {page === "duel" && (

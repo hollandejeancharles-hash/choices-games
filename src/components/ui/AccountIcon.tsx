@@ -5,7 +5,7 @@ export type AccountIconName = keyof typeof accountIconPaths;
 
 /** Supplied icon paths with native CSS motion, shared by hover and keyboard focus.
  * Fingerprint: dmytro (@pqoqubbw), MIT.
- * Dashboard01 / Swords / SlidersHorizontal / Ticket / UsersRound: Avijit Dey, MIT.
+ * Dashboard01 / Swords / SlidersHorizontal / Ticket / UsersRound / Lightbulb: Avijit Dey, MIT.
  * Account: supplied by the project owner; corrected SVG nesting.
  * See docs/account-icons-LICENSE.txt. No additional animation runtime required.
  */
@@ -46,11 +46,13 @@ export function AccountIcon({
               className={
                 name === "dashboard"
                   ? undefined
-                  : name === "sliders" && i >= 6
-                    ? i === 7
-                      ? "c-knob-reverse"
-                      : "c-knob"
-                    : "c-draw"
+                  : name === "lightbulb" && i === 0
+                    ? "c-lightbulb-glow"
+                    : name === "sliders" && i >= 6
+                      ? i === 7
+                        ? "c-knob-reverse"
+                        : "c-knob"
+                      : "c-draw"
               }
               style={
                 {

@@ -2,7 +2,7 @@ Account-space icon attributions
 
 Fingerprint: dmytro (@pqoqubbw)
 Source: https://github.com/pqoqubbw/icons
-Dashboard01, Swords, SlidersHorizontal, Ticket: Avijit Dey (@avijit07x)
+Dashboard01, Swords, SlidersHorizontal, Ticket, UsersRound, Lightbulb: Avijit Dey (@avijit07x)
 Source: https://github.com/Avijit07x/animateicons
 Account: SVG supplied by the project owner.
 
@@ -30,6 +30,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-UsersRound: Avijit Dey (@avijit07x), AnimateIcons / Lucide, MIT.
-Source: https://github.com/Avijit07x/animateicons
