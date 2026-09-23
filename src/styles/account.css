@@ -1805,6 +1805,11 @@
 #player-space .c-activity-page:empty {
   display: none;
 }
+#player-space .c-activity-page {
+  container-name: account-activity;
+  container-type: inline-size;
+  min-width: 0;
+}
 #player-space .c-activity-page > section {
   max-width: none;
   margin: 0;
@@ -1848,6 +1853,16 @@
   --duo-teal: light-dark(#09677d, #75d5e8);
   --duo-teal-soft: light-dark(#d9f0f3, #183d47);
   max-width: 1120px;
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#player-space .duel-page input,
+#player-space .duel-page select,
+#player-space .duel-page label,
+#player-space .duel-page button {
+  min-width: 0;
+  max-width: 100%;
 }
 #player-space .duel-page > .text-button {
   color: var(--c-muted);
@@ -1894,6 +1909,8 @@
   grid-template-columns: 1fr 52px 1fr;
   align-items: center;
   min-height: 270px;
+  width: 100%;
+  min-width: 0;
 }
 #player-space .duel-person {
   min-height: 250px;
@@ -2235,7 +2252,7 @@
   white-space: nowrap;
   border: 0;
 }
-@media (max-width: 820px) {
+@container account-activity (max-width: 760px) {
   #player-space .duel-hero {
     grid-template-columns: 1fr;
     gap: 18px;
@@ -2254,7 +2271,7 @@
     grid-column: 1 / -1;
   }
 }
-@media (max-width: 580px) {
+@container account-activity (max-width: 520px) {
   #player-space .duel-hero {
     padding-top: 18px;
   }
@@ -2296,6 +2313,19 @@
   }
   #player-space .duel-results {
     grid-template-columns: 1fr;
+  }
+  #player-space .duel-destinations {
+    grid-template-columns: 1fr;
+  }
+  #player-space .duel-ticket {
+    padding: 20px;
+  }
+  #player-space .duel-code {
+    font-size: clamp(30px, 10cqi, 42px);
+    letter-spacing: 0.1em;
+  }
+  #player-space .duel-share-actions input {
+    font-size: 13px;
   }
 }
 
@@ -2904,4 +2934,77 @@
 #player-space .social-space .circle-list .social-panel > button:first-child {
   border: 0;
   padding: 0;
+}
+
+/* Final small-screen safeguards live last so generic account rules cannot
+   override activity-specific sizing. */
+@media (max-width: 767px) {
+  html:has(#player-space),
+  body:has(#player-space) {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+  #player-space,
+  #player-space .c-shell,
+  #player-space .c-workspace,
+  #player-space .c-main,
+  #player-space .c-activity-page,
+  #player-space .duel-page {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  #player-space .duel-hero-copy h1 {
+    font-size: clamp(38px, 12vw, 52px);
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+  }
+  #player-space .duel-page--setup > h1,
+  #player-space .duel-page--share > h1,
+  #player-space .duel-page--result > h1 {
+    font-size: clamp(32px, 9vw, 44px);
+    line-height: 1.05;
+  }
+  #player-space .duel-share-actions,
+  #player-space .duel-ticket,
+  #player-space .duel-recipient,
+  #player-space .duel-destinations,
+  #player-space .duo-history {
+    width: 100%;
+    min-width: 0;
+  }
+  #player-space .duel-friend-list button {
+    flex: 1 1 auto;
+  }
+  #player-space .c-mobile-nav button {
+    overflow: hidden;
+    font-size: 9px;
+  }
+  #player-space .c-mobile-nav button > span:last-child {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 380px) {
+  #player-space .c-main {
+    padding-inline: 12px;
+  }
+  #player-space .c-topbar {
+    padding-inline: 12px;
+  }
+  #player-space .duel-person {
+    padding: 14px;
+  }
+  #player-space .duel-person span {
+    font-size: 9px;
+  }
+  #player-space .duo-history-monogram {
+    width: 58px;
+  }
+  #player-space .duo-history-monogram span {
+    width: 34px;
+    height: 34px;
+  }
 }
