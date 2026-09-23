@@ -46,6 +46,16 @@ assert.equal(
   0,
 );
 await db.query("select set_config('request.jwt.claim.sub',$1,false)", [admin]);
+await db.query("select public.update_my_dilemma_submission($1,$2,$3,$4)", [
+  id,
+  "Une situation modifiée qui reste assez longue pour respecter toutes les contraintes.",
+  "Une première option suffisamment détaillée.",
+  "Une seconde option clairement différente.",
+]);
+assert.equal(
+  (await db.query("select prompt from public.dilemma_submissions where id=$1", [id])).rows[0].prompt,
+  "Une situation modifiée qui reste assez longue pour respecter toutes les contraintes.",
+);
 const draft = {
   prompt_fr:
     "Une occasion unique exige de renoncer à un projet collectif important. Que choisis-tu ?",
@@ -68,6 +78,14 @@ await assert.rejects(
   ]),
 );
 await db.query("select public.publish_dilemma($1,$2)", [id, draft]);
+await assert.rejects(
+  db.query("select public.update_my_dilemma_submission($1,$2,$3,$4)", [
+    id,
+    draft.prompt_fr,
+    draft.a_fr,
+    draft.b_fr,
+  ]),
+);
 await assert.rejects(
   db.query("select public.publish_dilemma($1,$2)", [id, draft]),
 );

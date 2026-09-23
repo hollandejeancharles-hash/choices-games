@@ -50,6 +50,18 @@ export interface MyDilemmaProposal {
 }
 export const listMyDilemmaProposals = () =>
   rpc<MyDilemmaProposal[]>("list_my_dilemma_submissions");
+export const updateMyDilemmaProposal = (
+  id: string,
+  prompt: string,
+  optionA: string,
+  optionB: string,
+) =>
+  rpc<void>("update_my_dilemma_submission", {
+    p_id: id,
+    p_prompt: prompt,
+    p_a: optionA,
+    p_b: optionB,
+  });
 
 export interface CircleDuel {
   code: string;

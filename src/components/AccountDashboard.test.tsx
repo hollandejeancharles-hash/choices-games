@@ -20,6 +20,7 @@ import { dailyQuestion } from "../services/account-view";
 const api = vi.hoisted(() => ({
   list: vi.fn(),
   proposals: vi.fn(),
+  updateProposal: vi.fn(),
   deleteResult: vi.fn(),
   clearHistory: vi.fn(),
   deleteAccount: vi.fn(),
@@ -73,6 +74,7 @@ vi.mock("../services/player-features", () => ({
   exportPlayerData: vi.fn(),
   listDuos: vi.fn().mockResolvedValue([]),
   listMyDilemmaProposals: api.proposals,
+  updateMyDilemmaProposal: api.updateProposal,
   listCircles: vi.fn().mockResolvedValue([]),
   circleHistory: vi.fn(),
   createCircle: vi.fn(),
@@ -160,6 +162,7 @@ beforeEach(() => {
   localStorage.clear();
   api.list.mockReset().mockResolvedValue(results);
   api.proposals.mockReset().mockResolvedValue([]);
+  api.updateProposal.mockReset().mockResolvedValue(undefined);
   api.deleteResult.mockReset().mockResolvedValue(undefined);
   api.clearHistory.mockReset().mockResolvedValue(undefined);
   api.deleteAccount.mockReset().mockResolvedValue(undefined);
@@ -195,7 +198,8 @@ describe("account space with real service boundaries", () => {
       {
         id: "proposal-one",
         locale: "fr",
-        prompt: "Choisir entre dire une vérité difficile ou préserver une relation fragile.",
+        prompt:
+          "Choisir entre dire une vérité difficile ou préserver une relation fragile.",
         optionA: "Dire toute la vérité immédiatement",
         optionB: "Garder le silence pour protéger la relation",
         status: "pending",
@@ -207,7 +211,24 @@ describe("account space with real service boundaries", () => {
     navigate("Mes propositions");
     expect(screen.getByText("En modération")).toBeTruthy();
     expect(screen.getByText("Dire toute la vérité immédiatement")).toBeTruthy();
-    expect(screen.getByText("Garder le silence pour protéger la relation")).toBeTruthy();
+    expect(
+      screen.getByText("Garder le silence pour protéger la relation"),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Modifier" }));
+    fireEvent.change(screen.getByLabelText("Situation"), {
+      target: {
+        value:
+          "Choisir entre dire toute la vérité maintenant ou attendre le bon moment.",
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+    await screen.findByText("Proposition mise à jour.");
+    expect(api.updateProposal).toHaveBeenCalledWith(
+      "proposal-one",
+      "Choisir entre dire toute la vérité maintenant ou attendre le bon moment.",
+      "Dire toute la vérité immédiatement",
+      "Garder le silence pour protéger la relation",
+    );
   });
   it("keeps mobile navigation in sync with the current page and brings its content into view", async () => {
     await mount();

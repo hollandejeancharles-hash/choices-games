@@ -19,6 +19,7 @@ import {
   selectProfileAvatar,
   uploadProfilePhoto,
   updateEmail,
+  updateMyDilemmaProposal,
   updateNickname,
   type ProfileAvatarId,
   type Circle,
@@ -104,6 +105,7 @@ export function AccountDashboard({
   const [proposalsBusy, setProposalsBusy] = useState(true);
   const [proposalsError, setProposalsError] = useState(false);
   const [proposalsVersion, setProposalsVersion] = useState(0);
+  const [editingProposal, setEditingProposal] = useState<string | null>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [duoToOpen, setDuoToOpen] = useState<string | undefined>(
     duoCodeFromLocation() ?? undefined,
@@ -955,34 +957,166 @@ export function AccountDashboard({
                             </time>
                             <span>{proposal.locale.toUpperCase()}</span>
                           </div>
-                          <h2>{proposal.prompt}</h2>
-                          <div className="c-proposal-choices">
-                            <div>
-                              <b>A</b>
-                              <p>{proposal.optionA}</p>
-                            </div>
-                            <span aria-hidden="true">ou</span>
-                            <div>
-                              <b>B</b>
-                              <p>{proposal.optionB}</p>
-                            </div>
-                          </div>
-                          <p className="c-proposal-help">
-                            {proposal.status === "pending"
-                              ? text(
-                                  "L’équipe la relit avant sa publication dans le jeu.",
-                                  "The team reviews it before it can appear in the game.",
-                                )
-                              : proposal.status === "published"
-                                ? text(
-                                    "Ta proposition fait maintenant partie du jeu.",
-                                    "Your suggestion is now part of the game.",
-                                  )
-                                : text(
-                                    "Cette proposition n’a pas été retenue pour le jeu.",
-                                    "This suggestion was not selected for the game.",
-                                  )}
-                          </p>
+                          {editingProposal === proposal.id ? (
+                            <form
+                              className="c-proposal-edit"
+                              onSubmit={(event) => {
+                                event.preventDefault();
+                                const form = new FormData(event.currentTarget);
+                                const prompt = String(
+                                  form.get("prompt") ?? "",
+                                ).trim();
+                                const optionA = String(
+                                  form.get("optionA") ?? "",
+                                ).trim();
+                                const optionB = String(
+                                  form.get("optionB") ?? "",
+                                ).trim();
+                                if (
+                                  prompt.length < 30 ||
+                                  optionA.length < 10 ||
+                                  optionB.length < 10 ||
+                                  optionA === optionB
+                                ) {
+                                  setError(
+                                    text(
+                                      "La situation doit faire au moins 30 caractères et chaque choix au moins 10 caractères. Les deux choix doivent être différents.",
+                                      "The situation must be at least 30 characters and each choice at least 10 characters. Choices must be different.",
+                                    ),
+                                  );
+                                  return;
+                                }
+                                void perform(
+                                  async () => {
+                                    await updateMyDilemmaProposal(
+                                      proposal.id,
+                                      prompt,
+                                      optionA,
+                                      optionB,
+                                    );
+                                    setProposals((items) =>
+                                      items.map((item) =>
+                                        item.id === proposal.id
+                                          ? {
+                                              ...item,
+                                              prompt,
+                                              optionA,
+                                              optionB,
+                                            }
+                                          : item,
+                                      ),
+                                    );
+                                    setEditingProposal(null);
+                                  },
+                                  text(
+                                    "Proposition mise à jour.",
+                                    "Suggestion updated.",
+                                  ),
+                                );
+                              }}
+                            >
+                              <label>
+                                {text("Situation", "Situation")}
+                                <textarea
+                                  name="prompt"
+                                  defaultValue={proposal.prompt}
+                                  minLength={30}
+                                  maxLength={1200}
+                                  required
+                                />
+                              </label>
+                              <div className="c-proposal-edit-choices">
+                                <label>
+                                  <span>
+                                    <b>A</b>
+                                    {text("Premier choix", "First choice")}
+                                  </span>
+                                  <textarea
+                                    name="optionA"
+                                    defaultValue={proposal.optionA}
+                                    minLength={10}
+                                    maxLength={500}
+                                    required
+                                  />
+                                </label>
+                                <label>
+                                  <span>
+                                    <b>B</b>
+                                    {text("Second choix", "Second choice")}
+                                  </span>
+                                  <textarea
+                                    name="optionB"
+                                    defaultValue={proposal.optionB}
+                                    minLength={10}
+                                    maxLength={500}
+                                    required
+                                  />
+                                </label>
+                              </div>
+                              <div className="c-proposal-edit-actions">
+                                <button
+                                  className="c-button c-primary"
+                                  disabled={busy}
+                                >
+                                  {text("Enregistrer", "Save")}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="c-quiet"
+                                  disabled={busy}
+                                  onClick={() => setEditingProposal(null)}
+                                >
+                                  {text("Annuler", "Cancel")}
+                                </button>
+                              </div>
+                            </form>
+                          ) : (
+                            <>
+                              <h2>{proposal.prompt}</h2>
+                              <div className="c-proposal-choices">
+                                <div>
+                                  <b>A</b>
+                                  <p>{proposal.optionA}</p>
+                                </div>
+                                <span aria-hidden="true">
+                                  {text("ou", "or")}
+                                </span>
+                                <div>
+                                  <b>B</b>
+                                  <p>{proposal.optionB}</p>
+                                </div>
+                              </div>
+                              <div className="c-proposal-footer">
+                                <p className="c-proposal-help">
+                                  {proposal.status === "pending"
+                                    ? text(
+                                        "L’équipe la relit avant sa publication dans le jeu.",
+                                        "The team reviews it before it can appear in the game.",
+                                      )
+                                    : proposal.status === "published"
+                                      ? text(
+                                          "Ta proposition fait maintenant partie du jeu.",
+                                          "Your suggestion is now part of the game.",
+                                        )
+                                      : text(
+                                          "Cette proposition n’a pas été retenue pour le jeu.",
+                                          "This suggestion was not selected for the game.",
+                                        )}
+                                </p>
+                                {proposal.status === "pending" && (
+                                  <button
+                                    className="c-button c-proposal-edit-button"
+                                    onClick={() => {
+                                      setError("");
+                                      setEditingProposal(proposal.id);
+                                    }}
+                                  >
+                                    {text("Modifier", "Edit")}
+                                  </button>
+                                )}
+                              </div>
+                            </>
+                          )}
                         </article>
                       );
                     })}
