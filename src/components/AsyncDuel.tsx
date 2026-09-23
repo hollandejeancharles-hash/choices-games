@@ -275,7 +275,7 @@ export function AsyncDuel({
       ? myGuesses.filter((guess, i) => guess === partnerAnswers[i]).length
       : 0;
   return (
-    <section className="duel-page page-in">
+    <section className={`duel-page duel-page--${mode} page-in`}>
       <button
         className="text-button"
         onClick={
@@ -300,26 +300,59 @@ export function AsyncDuel({
       <span className="eyebrow">{fr ? "Duo" : "Duo"}</span>
       {mode === "home" && (
         <>
-          <h1>
-            {fr
-              ? "Même dilemme. Deux regards."
-              : "Same dilemma. Two perspectives."}
-          </h1>
-          <p>
-            {fr
-              ? "Choisis avec qui jouer et envoie l’invitation immédiatement. Chacun pourra répondre quand il le souhaite."
-              : "Choose who to play with and send the invitation immediately. Each person can answer when ready."}
-          </p>
-          <button className="primary" onClick={beginCreate}>
-            {fr ? "Créer un duo" : "Create a duo"}
-            <span>→</span>
-          </button>
+          <div className="duel-hero">
+            <div className="duel-hero-copy">
+              <h1>
+                {fr
+                  ? "Même dilemme. Deux regards."
+                  : "Same dilemma. Two perspectives."}
+              </h1>
+              <p>
+                {fr
+                  ? "Choisis avec qui jouer et envoie l’invitation immédiatement. Chacun répond quand il le souhaite."
+                  : "Choose who to play with and send the invitation immediately. Each person answers when ready."}
+              </p>
+              <button className="primary duel-create" onClick={beginCreate}>
+                {fr ? "Créer un duo" : "Create a duo"}
+                <span>→</span>
+              </button>
+            </div>
+            <div className="duel-hero-art" aria-hidden="true">
+              <div className="duel-person duel-person--you">
+                <span>{fr ? "TOI" : "YOU"}</span>
+                <b>A</b>
+              </div>
+              <div className="duel-connection">
+                <i />
+                <span>OU</span>
+                <i />
+              </div>
+              <div className="duel-person duel-person--friend">
+                <b>B</b>
+                <span>{fr ? "TON DUO" : "YOUR DUO"}</span>
+              </div>
+            </div>
+          </div>
           <div className="duel-join">
+            <div>
+              <strong>
+                {fr ? "Tu as reçu une invitation ?" : "Got an invitation?"}
+              </strong>
+              <small>
+                {fr
+                  ? "Saisis le code à 8 caractères."
+                  : "Enter the 8-character code."}
+              </small>
+            </div>
             <label>
-              {fr ? "Code reçu" : "Invite code"}
+              <span className="sr-only">
+                {fr ? "Code reçu" : "Invite code"}
+              </span>
               <input
                 value={code}
                 maxLength={8}
+                placeholder="AB12CD34"
+                aria-label={fr ? "Code reçu" : "Invite code"}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
               />
             </label>
@@ -327,7 +360,7 @@ export function AsyncDuel({
               disabled={code.length !== 8 || busy}
               onClick={() => void beginJoin()}
             >
-              {fr ? "Rejoindre" : "Join"}
+              {fr ? "Rejoindre" : "Join"} <span>→</span>
             </button>
           </div>
           <section className="duo-history" aria-labelledby="my-duos-title">
@@ -362,6 +395,10 @@ export function AsyncDuel({
                 key={item.code}
                 className={item.invited ? "duo-history-invited" : undefined}
               >
+                <div className="duo-history-monogram" aria-hidden="true">
+                  <span>{item.owner ? "T" : "D"}</span>
+                  <span>{item.complete ? "✓" : "?"}</span>
+                </div>
                 <button
                   className="duo-history-main"
                   disabled={busy || (item.expired && !item.complete)}
@@ -431,6 +468,11 @@ export function AsyncDuel({
       )}
       {mode === "setup" && (
         <>
+          <div className="duel-step">
+            <span>01</span>
+            <i />
+            <small>{fr ? "Invitation" : "Invitation"}</small>
+          </div>
           <h1>{fr ? "Avec qui joues-tu ?" : "Who are you playing with?"}</h1>
           <p>
             {fr
@@ -445,6 +487,9 @@ export function AsyncDuel({
                 setCircle("");
               }}
             >
+              <span className="duel-destination-icon" aria-hidden="true">
+                ↗
+              </span>
               <strong>{fr ? "Envoyer à un ami" : "Send to a friend"}</strong>
               <span>
                 {fr
@@ -457,6 +502,9 @@ export function AsyncDuel({
               disabled={!circles.length}
               onClick={() => setDestination("circle")}
             >
+              <span className="duel-destination-icon" aria-hidden="true">
+                ○○
+              </span>
               <strong>
                 {fr ? "Le faire dans un cercle" : "Play in a circle"}
               </strong>
@@ -563,7 +611,10 @@ export function AsyncDuel({
       )}
       {mode === "answer" && current && (
         <>
-          <div className="duel-progress">{answers.length + 1}/5</div>
+          <div className="duel-progress">
+            <span>{answers.length + 1}/5</span>
+            <i style={{ width: `${((answers.length + 1) / 5) * 100}%` }} />
+          </div>
           <span className="eyebrow">
             {selectedAnswer === null
               ? fr
@@ -601,6 +652,9 @@ export function AsyncDuel({
       )}
       {mode === "share" && (
         <>
+          <div className="duel-state-mark" aria-hidden="true">
+            ✓
+          </div>
           <h1>
             {duel?.mineAnswered
               ? fr
@@ -617,7 +671,10 @@ export function AsyncDuel({
                 : `${correctGuesses} of 5 predictions correct.`}
             </p>
           )}
-          <div className="duel-code">{duel?.code ?? code}</div>
+          <div className="duel-ticket">
+            <small>{fr ? "CODE DE TON DUO" : "YOUR DUO CODE"}</small>
+            <div className="duel-code">{duel?.code ?? code}</div>
+          </div>
           <p>
             {duel?.mineAnswered
               ? fr
@@ -654,6 +711,10 @@ export function AsyncDuel({
       )}
       {mode === "result" && duel && (
         <>
+          <div className="duel-result-score">
+            <strong>{agreements}</strong>
+            <span>/ 5</span>
+          </div>
           <h1>
             {fr
               ? `${agreements} accord${agreements > 1 ? "s" : ""} sur 5.`
