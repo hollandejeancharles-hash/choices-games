@@ -255,9 +255,11 @@ function ProposalAuth({
 export function ProposeDilemma({
   locale,
   onBack,
+  onAccount,
 }: {
   locale: Locale;
   onBack: () => void;
+  onAccount: () => void;
 }) {
   const fr = locale === "fr";
   const [busy, setBusy] = useState(false),
@@ -387,14 +389,22 @@ export function ProposeDilemma({
             : "Submissions will open soon. The form is waiting for the moderation service to be activated."}
         </p>
       ) : sent ? (
-        <div role="status" className="notice">
+        <div role="status" className="notice proposal-success">
           <h2>{fr ? "Proposition reçue !" : "Suggestion received!"}</h2>
           <p>
             {fr
               ? "Elle est en attente de modération. Elle n’est pas encore visible dans le jeu."
               : "It is awaiting review and is not yet visible in the game."}
           </p>
-          <button className="text-button" onClick={() => setSent(false)}>
+          <button className="primary proposal-account-cta" onClick={onAccount}>
+            <span>
+              {fr
+                ? "Retrouve tes propositions dans ton espace"
+                : "Find your suggestions in your account"}
+            </span>
+            <span aria-hidden="true">→</span>
+          </button>
+          <button className="text-button proposal-again" onClick={() => setSent(false)}>
             {fr ? "En proposer une autre" : "Suggest another"}
           </button>
         </div>

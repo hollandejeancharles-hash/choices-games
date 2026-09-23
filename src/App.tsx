@@ -412,7 +412,11 @@ export default function App() {
             </Suspense>
           )}
           {screen === "propose" && (
-            <ProposeDilemma locale={locale} onBack={() => setScreen("home")} />
+            <ProposeDilemma
+              locale={locale}
+              onBack={() => setScreen("home")}
+              onAccount={() => setScreen("account")}
+            />
           )}
           {screen === "recovery" && (
             <PasswordRecovery
