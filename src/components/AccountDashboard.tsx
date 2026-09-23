@@ -510,7 +510,7 @@ export function AccountDashboard({
             <nav className="c-nav" aria-label={text("Mon espace", "My space")}>
               {navButton("home", "dashboard")}
               {navButton("portraits", "fingerprint")}
-              {navButton("proposals")}
+              {navButton("proposals", "users")}
             </nav>
           </div>
           <div>
