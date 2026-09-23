@@ -57,6 +57,18 @@ $$;
 revoke all on function public.submit_dilemma(text,text,text,text) from public;
 grant execute on function public.submit_dilemma(text,text,text,text) to authenticated;
 
+create function public.list_my_dilemma_submissions() returns jsonb
+language sql stable security definer set search_path = '' as $$
+ select coalesce(jsonb_agg(jsonb_build_object(
+  'id',submission.id,'locale',submission.locale,'prompt',submission.prompt,
+  'optionA',submission.option_a,'optionB',submission.option_b,'status',submission.status,
+  'createdAt',submission.created_at,'reviewedAt',submission.reviewed_at
+ ) order by submission.created_at desc),'[]'::jsonb)
+ from public.dilemma_submissions submission where submission.submitter_id=auth.uid();
+$$;
+revoke all on function public.list_my_dilemma_submissions() from public;
+grant execute on function public.list_my_dilemma_submissions() to authenticated;
+
 create function public.publish_dilemma(p_id uuid, p_draft jsonb) returns void
 language plpgsql security definer set search_path = '' as $$
 declare field text; content text; axis text; current_status text; q jsonb;

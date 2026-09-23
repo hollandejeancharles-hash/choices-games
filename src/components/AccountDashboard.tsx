@@ -13,6 +13,7 @@ import {
   deleteResult,
   exportPlayerData,
   listDuos,
+  listMyDilemmaProposals,
   isProfileAvatarId,
   profilePhotoUrl,
   selectProfileAvatar,
@@ -22,6 +23,7 @@ import {
   type ProfileAvatarId,
   type Circle,
   type MyDuo,
+  type MyDilemmaProposal,
 } from "../services/player-features";
 import {
   dailyQuestion,
@@ -46,6 +48,7 @@ export interface AccountNavigationProps {
   onThemeChange: (dark: boolean) => void;
   onLocaleChange: (locale: Locale) => void;
   onBack: () => void;
+  onPropose?: () => void;
   onPlay: () => void;
   onResume?: (() => void) | undefined;
   circles: Circle[];
@@ -54,6 +57,7 @@ export interface AccountNavigationProps {
 type Page =
   | "home"
   | "portraits"
+  | "proposals"
   | "detail"
   | "account"
   | "preferences"
@@ -72,6 +76,7 @@ export function AccountDashboard({
   onThemeChange,
   onLocaleChange,
   onBack,
+  onPropose,
   onPlay,
   onResume,
   circles,
@@ -84,15 +89,21 @@ export function AccountDashboard({
       ? "duel"
       : invitationToken()
         ? "circles"
-        : new URLSearchParams(location.search).get("activity") === "daily"
-          ? "daily"
-          : "home",
+        : new URLSearchParams(location.search).get("section") === "proposals"
+          ? "proposals"
+          : new URLSearchParams(location.search).get("activity") === "daily"
+            ? "daily"
+            : "home",
   );
   const [results, setResults] = useState<CloudResult[]>([]);
   const [historyBusy, setHistoryBusy] = useState(true);
   const [historyError, setHistoryError] = useState(false);
   const [historyVersion, setHistoryVersion] = useState(0);
   const [duoInvitations, setDuoInvitations] = useState<MyDuo[]>([]);
+  const [proposals, setProposals] = useState<MyDilemmaProposal[]>([]);
+  const [proposalsBusy, setProposalsBusy] = useState(true);
+  const [proposalsError, setProposalsError] = useState(false);
+  const [proposalsVersion, setProposalsVersion] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [duoToOpen, setDuoToOpen] = useState<string | undefined>(
     duoCodeFromLocation() ?? undefined,
@@ -150,6 +161,7 @@ export function AccountDashboard({
   const titles: Record<Page, string> = {
     home: text("Vue d’ensemble", "Overview"),
     portraits: text("Mes portraits", "My portraits"),
+    proposals: text("Mes propositions", "My suggestions"),
     detail: text("Mon portrait", "My portrait"),
     account: text("Mon compte", "My account"),
     preferences: text("Préférences", "Preferences"),
@@ -158,6 +170,24 @@ export function AccountDashboard({
     duel: text("Duo", "Duo"),
     circles: text("Mes cercles", "My circles"),
   };
+  useEffect(() => {
+    let active = true;
+    setProposalsBusy(true);
+    setProposalsError(false);
+    void listMyDilemmaProposals()
+      .then((items) => {
+        if (active) setProposals(items);
+      })
+      .catch(() => {
+        if (active) setProposalsError(true);
+      })
+      .finally(() => {
+        if (active) setProposalsBusy(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user.id, proposalsVersion]);
   useEffect(() => {
     setNickname(name);
   }, [name]);
@@ -478,6 +508,7 @@ export function AccountDashboard({
             <nav className="c-nav" aria-label={text("Mon espace", "My space")}>
               {navButton("home", "dashboard")}
               {navButton("portraits", "fingerprint")}
+              {navButton("proposals")}
             </nav>
           </div>
           <div>
@@ -829,6 +860,136 @@ export function AccountDashboard({
                 </p>
               </section>
             )}
+            {page === "proposals" && (
+              <section className="c-proposals-page">
+                <div className="c-pagehead">
+                  <div>
+                    <div className="c-eyebrow">
+                      {text(
+                        "Tes idées, leur parcours",
+                        "Your ideas, their journey",
+                      )}
+                    </div>
+                    <h1>{titles.proposals}.</h1>
+                    <p>
+                      {text(
+                        "Suis ici chaque dilemme envoyé à la communauté.",
+                        "Follow every dilemma you have sent to the community.",
+                      )}
+                    </p>
+                  </div>
+                  {!proposalsBusy && !proposalsError && (
+                    <span className="c-proposal-count">
+                      {proposals.length}{" "}
+                      {text(
+                        proposals.length > 1 ? "propositions" : "proposition",
+                        proposals.length === 1 ? "suggestion" : "suggestions",
+                      )}
+                    </span>
+                  )}
+                </div>
+                {proposalsBusy ? (
+                  <div className="c-history-loading" role="status">
+                    {text(
+                      "Chargement de tes propositions…",
+                      "Loading your suggestions…",
+                    )}
+                  </div>
+                ) : proposalsError ? (
+                  <div className="c-empty" role="alert">
+                    <h2>
+                      {text(
+                        "Tes propositions sont momentanément indisponibles.",
+                        "Your suggestions are temporarily unavailable.",
+                      )}
+                    </h2>
+                    <button
+                      className="c-button"
+                      onClick={() => setProposalsVersion((value) => value + 1)}
+                    >
+                      {text("Réessayer", "Try again")}
+                    </button>
+                  </div>
+                ) : proposals.length === 0 ? (
+                  <div className="c-empty">
+                    <span className="c-proposal-empty-icon" aria-hidden="true">
+                      A / B
+                    </span>
+                    <h2>
+                      {text(
+                        "Aucun dilemme proposé pour le moment.",
+                        "No dilemma suggested yet.",
+                      )}
+                    </h2>
+                    <p>
+                      {text(
+                        "Imagine un choix impossible et soumets-le à la communauté.",
+                        "Imagine an impossible choice and submit it to the community.",
+                      )}
+                    </p>
+                    <button
+                      className="c-button c-primary"
+                      onClick={onPropose ?? onBack}
+                    >
+                      {text("Proposer un dilemme", "Suggest a dilemma")} ↗
+                    </button>
+                  </div>
+                ) : (
+                  <div className="c-proposal-list">
+                    {proposals.map((proposal) => {
+                      const status = {
+                        pending: text("En modération", "In review"),
+                        published: text("Publié", "Published"),
+                        rejected: text("Non retenu", "Not selected"),
+                      }[proposal.status];
+                      return (
+                        <article className="c-proposal-card" key={proposal.id}>
+                          <div className="c-proposal-meta">
+                            <span
+                              className={`c-proposal-status is-${proposal.status}`}
+                            >
+                              {status}
+                            </span>
+                            <time dateTime={proposal.createdAt}>
+                              {date(proposal.createdAt)}
+                            </time>
+                            <span>{proposal.locale.toUpperCase()}</span>
+                          </div>
+                          <h2>{proposal.prompt}</h2>
+                          <div className="c-proposal-choices">
+                            <div>
+                              <b>A</b>
+                              <p>{proposal.optionA}</p>
+                            </div>
+                            <span aria-hidden="true">ou</span>
+                            <div>
+                              <b>B</b>
+                              <p>{proposal.optionB}</p>
+                            </div>
+                          </div>
+                          <p className="c-proposal-help">
+                            {proposal.status === "pending"
+                              ? text(
+                                  "L’équipe la relit avant sa publication dans le jeu.",
+                                  "The team reviews it before it can appear in the game.",
+                                )
+                              : proposal.status === "published"
+                                ? text(
+                                    "Ta proposition fait maintenant partie du jeu.",
+                                    "Your suggestion is now part of the game.",
+                                  )
+                                : text(
+                                    "Cette proposition n’a pas été retenue pour le jeu.",
+                                    "This suggestion was not selected for the game.",
+                                  )}
+                          </p>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            )}
             {page === "detail" && selected && currentPortrait && (
               <section>
                 <div className="c-pagehead">
@@ -1097,6 +1258,12 @@ export function AccountDashboard({
                     >
                       {titles.preferences}
                       <AccountIcon name="sliders" />
+                    </button>
+                    <button
+                      className="c-textlink"
+                      onClick={() => navigate("proposals")}
+                    >
+                      {titles.proposals} →
                     </button>
                     <button
                       className="c-textlink"

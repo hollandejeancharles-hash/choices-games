@@ -38,6 +38,19 @@ export interface MyDuo {
 }
 export const listDuos = () => rpc<MyDuo[]>("list_dilemma_duos");
 
+export interface MyDilemmaProposal {
+  id: string;
+  locale: "fr" | "en";
+  prompt: string;
+  optionA: string;
+  optionB: string;
+  status: "pending" | "published" | "rejected";
+  createdAt: string;
+  reviewedAt: string | null;
+}
+export const listMyDilemmaProposals = () =>
+  rpc<MyDilemmaProposal[]>("list_my_dilemma_submissions");
+
 export interface CircleDuel {
   code: string;
   completedAt: string;

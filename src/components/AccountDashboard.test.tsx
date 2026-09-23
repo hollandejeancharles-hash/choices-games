@@ -19,6 +19,7 @@ import { dailyQuestion } from "../services/account-view";
 
 const api = vi.hoisted(() => ({
   list: vi.fn(),
+  proposals: vi.fn(),
   deleteResult: vi.fn(),
   clearHistory: vi.fn(),
   deleteAccount: vi.fn(),
@@ -71,6 +72,7 @@ vi.mock("../services/player-features", () => ({
   profilePhotoUrl: api.photoUrl,
   exportPlayerData: vi.fn(),
   listDuos: vi.fn().mockResolvedValue([]),
+  listMyDilemmaProposals: api.proposals,
   listCircles: vi.fn().mockResolvedValue([]),
   circleHistory: vi.fn(),
   createCircle: vi.fn(),
@@ -157,6 +159,7 @@ beforeEach(() => {
   window.scrollTo = vi.fn();
   localStorage.clear();
   api.list.mockReset().mockResolvedValue(results);
+  api.proposals.mockReset().mockResolvedValue([]);
   api.deleteResult.mockReset().mockResolvedValue(undefined);
   api.clearHistory.mockReset().mockResolvedValue(undefined);
   api.deleteAccount.mockReset().mockResolvedValue(undefined);
@@ -187,6 +190,25 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("account space with real service boundaries", () => {
+  it("shows the signed-in player's dilemma suggestions and moderation status", async () => {
+    api.proposals.mockResolvedValueOnce([
+      {
+        id: "proposal-one",
+        locale: "fr",
+        prompt: "Choisir entre dire une vérité difficile ou préserver une relation fragile.",
+        optionA: "Dire toute la vérité immédiatement",
+        optionB: "Garder le silence pour protéger la relation",
+        status: "pending",
+        createdAt: "2026-09-23T09:00:00Z",
+        reviewedAt: null,
+      },
+    ]);
+    await mount();
+    navigate("Mes propositions");
+    expect(screen.getByText("En modération")).toBeTruthy();
+    expect(screen.getByText("Dire toute la vérité immédiatement")).toBeTruthy();
+    expect(screen.getByText("Garder le silence pour protéger la relation")).toBeTruthy();
+  });
   it("keeps mobile navigation in sync with the current page and brings its content into view", async () => {
     await mount();
     const navigation = screen.getByRole("navigation", {

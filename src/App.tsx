@@ -415,7 +415,14 @@ export default function App() {
             <ProposeDilemma
               locale={locale}
               onBack={() => setScreen("home")}
-              onAccount={() => setScreen("account")}
+              onAccount={() => {
+                history.replaceState(
+                  null,
+                  "",
+                  `${location.pathname}?account=1&section=proposals`,
+                );
+                setScreen("account");
+              }}
             />
           )}
           {screen === "recovery" && (
@@ -428,6 +435,7 @@ export default function App() {
             <PlayerAccount
               locale={locale}
               onBack={() => setScreen("home")}
+              onPropose={() => setScreen("propose")}
               dark={dark}
               onThemeChange={setDark}
               onLocaleChange={setLocale}

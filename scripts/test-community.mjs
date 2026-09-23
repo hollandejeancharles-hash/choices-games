@@ -30,6 +30,22 @@ await db.exec("set role authenticated");
 await assert.rejects(submit());
 await db.query("select set_config('request.jwt.claim.sub',$1,false)", [admin]);
 const id = await submit();
+const mine = (
+  await db.query("select public.list_my_dilemma_submissions() items")
+).rows[0].items;
+assert.equal(mine.length, 1);
+assert.equal(mine[0].id, id);
+const stranger = crypto.randomUUID();
+await db.exec("reset role");
+await db.query("insert into auth.users values($1)", [stranger]);
+await db.exec("set role authenticated");
+await db.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
+assert.equal(
+  (await db.query("select public.list_my_dilemma_submissions() items")).rows[0]
+    .items.length,
+  0,
+);
+await db.query("select set_config('request.jwt.claim.sub',$1,false)", [admin]);
 const draft = {
   prompt_fr:
     "Une occasion unique exige de renoncer à un projet collectif important. Que choisis-tu ?",
