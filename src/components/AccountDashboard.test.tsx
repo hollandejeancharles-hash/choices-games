@@ -501,8 +501,24 @@ describe("account space with real service boundaries", () => {
     render(<AccountDashboard user={user} {...props} />);
     await screen.findByRole("button", { name: /Entre vous/ });
     fireEvent.click(screen.getByRole("button", { name: /Entre vous/ }));
+    expect(
+      screen.getByRole("heading", { name: "Comment voulez-vous jouer ?" }),
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: /Reprendre la partie/ }),
+    );
     expect(props.onResume).toHaveBeenCalledOnce();
     expect(props.onPlay).toHaveBeenCalledOnce();
+  });
+  it("can start a new game from the Entre vous choice", async () => {
+    props.onResume = vi.fn();
+    await mount();
+    fireEvent.click(screen.getByRole("button", { name: /Entre vous/ }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Créer une nouvelle partie" }),
+    );
+    expect(props.onPlay).toHaveBeenCalledOnce();
+    expect(props.onResume).not.toHaveBeenCalled();
   });
   it("provides English copy and English account deletion confirmation", async () => {
     props.locale = "en";

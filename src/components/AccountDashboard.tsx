@@ -122,9 +122,11 @@ export function AccountDashboard({
   const [busy, setBusy] = useState(false);
   const mutationLock = useRef(false);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const [experienceChoice, setExperienceChoice] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
   const [dialogError, setDialogError] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
+  const experienceDialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLDivElement>(null);
   const initialPage = useRef(true);
   const [motion, setMotion] = useState(
@@ -322,6 +324,12 @@ export function AccountDashboard({
       node.close();
     };
   }, [confirmation]);
+  useEffect(() => {
+    const node = experienceDialog.current;
+    if (!experienceChoice || !node) return;
+    node.showModal();
+    return () => node.close();
+  }, [experienceChoice]);
   function navigate(next: Page) {
     setPage(next);
     setMessage("");
@@ -817,7 +825,13 @@ export function AccountDashboard({
                       ↗
                     </span>
                   </button>
-                  <button className="c-social" onClick={onResume ?? onPlay}>
+                  <button
+                    className="c-social"
+                    onClick={() => {
+                      if (onResume) setExperienceChoice(true);
+                      else onPlay();
+                    }}
+                  >
                     <span className="c-icondisc" aria-hidden="true">
                       <AccountIcon name="users" />
                     </span>
@@ -1898,6 +1912,64 @@ export function AccountDashboard({
                 </button>
               </div>
             </form>
+          </div>
+        </dialog>
+      )}
+      {experienceChoice && onResume && (
+        <dialog
+          className="c-confirm-dialog c-experience-dialog"
+          ref={experienceDialog}
+          aria-labelledby="experience-choice-title"
+          aria-describedby="experience-choice-description"
+          onCancel={() => setExperienceChoice(false)}
+          onClose={() => setExperienceChoice(false)}
+        >
+          <div className="c-dialogbox">
+            <div className="c-sectionhead">
+              <span className="c-eyebrow">
+                {text("Entre vous", "Together")}
+              </span>
+              <button
+                className="c-round"
+                onClick={() => setExperienceChoice(false)}
+                aria-label={text("Fermer", "Close")}
+              >
+                ×
+              </button>
+            </div>
+            <h2 id="experience-choice-title">
+              {text(
+                "Comment voulez-vous jouer ?",
+                "How would you like to play?",
+              )}
+            </h2>
+            <p id="experience-choice-description">
+              {text(
+                "Une partie est déjà en cours. Vous pouvez la reprendre là où vous l’avez laissée ou recommencer une nouvelle expérience.",
+                "A game is already in progress. Resume where you left off or start a new experience.",
+              )}
+            </p>
+            <div className="c-experience-actions">
+              <button
+                className="c-button c-primary"
+                autoFocus
+                onClick={() => {
+                  setExperienceChoice(false);
+                  onResume();
+                }}
+              >
+                {text("Reprendre la partie", "Resume game")} <span>→</span>
+              </button>
+              <button
+                className="c-button"
+                onClick={() => {
+                  setExperienceChoice(false);
+                  onPlay();
+                }}
+              >
+                {text("Créer une nouvelle partie", "Start a new game")}
+              </button>
+            </div>
           </div>
         </dialog>
       )}

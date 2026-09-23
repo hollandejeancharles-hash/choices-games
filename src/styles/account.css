@@ -1285,6 +1285,19 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+#player-space .c-experience-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+#player-space .c-experience-actions .c-button {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+}
 #player-space .c-formerror {
   color: var(--c-accent) !important;
   font-size: 12px !important;
