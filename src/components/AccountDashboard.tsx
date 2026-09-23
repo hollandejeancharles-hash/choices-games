@@ -817,10 +817,7 @@ export function AccountDashboard({
                       ↗
                     </span>
                   </button>
-                  <button
-                    className="c-social"
-                    onClick={() => navigate("circles")}
-                  >
+                  <button className="c-social" onClick={onResume ?? onPlay}>
                     <span className="c-icondisc" aria-hidden="true">
                       <AccountIcon name="users" />
                     </span>
@@ -830,8 +827,12 @@ export function AccountDashboard({
                       </strong>
                       <small>
                         {text(
-                          "Retrouve tes cercles privés.",
-                          "Reconnect with your private circles.",
+                          onResume
+                            ? "Reprends votre expérience principale."
+                            : "Lancez votre expérience principale.",
+                          onResume
+                            ? "Resume your main experience."
+                            : "Start your main experience.",
                         )}
                       </small>
                     </span>

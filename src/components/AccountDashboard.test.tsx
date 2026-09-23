@@ -491,6 +491,19 @@ describe("account space with real service boundaries", () => {
     expect(props.onResume).toHaveBeenCalledOnce();
     expect(props.onPlay).not.toHaveBeenCalled();
   });
+  it("opens the main experience from Entre vous", async () => {
+    await mount();
+    fireEvent.click(screen.getByRole("button", { name: /Entre vous/ }));
+    expect(props.onPlay).toHaveBeenCalledOnce();
+
+    cleanup();
+    props.onResume = vi.fn();
+    render(<AccountDashboard user={user} {...props} />);
+    await screen.findByRole("button", { name: /Entre vous/ });
+    fireEvent.click(screen.getByRole("button", { name: /Entre vous/ }));
+    expect(props.onResume).toHaveBeenCalledOnce();
+    expect(props.onPlay).toHaveBeenCalledOnce();
+  });
   it("provides English copy and English account deletion confirmation", async () => {
     props.locale = "en";
     render(<AccountDashboard user={user} {...props} />);
