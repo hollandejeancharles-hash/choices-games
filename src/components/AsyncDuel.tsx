@@ -100,7 +100,6 @@ export function AsyncDuel({
     setAnswers([]);
     setGuesses([]);
     setSelectedAnswer(null);
-    setDuel(null);
     setMode("answer");
   }
   async function createAndInvite() {

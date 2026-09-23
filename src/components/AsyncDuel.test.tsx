@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 import { AsyncDuel } from "./AsyncDuel";
 import {
+  answerDuel,
   listDuos,
   createDuel,
   createDuelInvitation,
@@ -100,6 +101,50 @@ it("crée, notifie et conserve un Duo avant toute réponse", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Répondre" }));
   await screen.findByText("Ton choix");
   expect(readDuel).toHaveBeenCalledWith("ABCD1234");
+});
+
+it("enregistre les réponses du créateur sans attendre son ami", async () => {
+  vi.mocked(answerDuel).mockResolvedValue({
+    code: "ABCD1234",
+    questions: [],
+    complete: false,
+    owner: true,
+    mineAnswered: true,
+    partnerAnswered: false,
+    ownerAnswers: null,
+    guestAnswers: null,
+  });
+  render(<AsyncDuel locale="fr" circles={[]} onBack={vi.fn()} />);
+  fireEvent.click(screen.getByRole("button", { name: /Créer un duo/ }));
+  const createButton = screen.getByRole("button", {
+    name: /Créer et envoyer l’invitation/,
+  });
+  await waitFor(() =>
+    expect((createButton as HTMLButtonElement).disabled).toBe(false),
+  );
+  fireEvent.click(createButton);
+  fireEvent.click(
+    await screen.findByRole("button", { name: /Répondre maintenant/ }),
+  );
+
+  for (let index = 0; index < 5; index += 1) {
+    fireEvent.click(screen.getByRole("button", { name: /^A / }));
+    fireEvent.click(screen.getByRole("button", { name: /^B / }));
+  }
+
+  await waitFor(() =>
+    expect(answerDuel).toHaveBeenCalledWith(
+      "ABCD1234",
+      [0, 0, 0, 0, 0],
+      [1, 1, 1, 1, 1],
+    ),
+  );
+  expect(
+    await screen.findByText("Tes réponses sont enregistrées."),
+  ).toBeTruthy();
+  expect(
+    screen.getByText(/Le résultat apparaîtra quand ton ami aura répondu/),
+  ).toBeTruthy();
 });
 it("lance directement un Duo reçu depuis Mes duos", async () => {
   vi.mocked(listDuos).mockResolvedValue([
