@@ -41,6 +41,7 @@ import { ProfileView } from "./components/Profile";
 import { QuestionScreen } from "./components/QuestionScreen";
 import { AuroraBackground } from "./components/ui/aurora-background";
 import { Testimonials } from "./components/ui/3d-testimonials";
+import { HomeGamePreview } from "./components/HomeGamePreview";
 import { playerAuth } from "./services/supabase";
 import {
   archiveSoloResult,
@@ -467,7 +468,15 @@ export default function App() {
               onPlay={replay}
             />
           )}
-          {screen === "home" && <Testimonials locale={locale} />}
+          {screen === "home" && (
+            <>
+              <HomeGamePreview
+                locale={locale}
+                onStart={() => setScreen("setup")}
+              />
+              <Testimonials locale={locale} />
+            </>
+          )}
           {screen === "setup" && (
             <GameSetup
               locale={locale}
