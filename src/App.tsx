@@ -436,6 +436,7 @@ export default function App() {
               locale={locale}
               onBack={() => setScreen("home")}
               onPropose={() => setScreen("propose")}
+              onAdmin={() => setScreen("admin")}
               dark={dark}
               onThemeChange={setDark}
               onLocaleChange={setLocale}
@@ -710,17 +711,6 @@ export default function App() {
           <span>
             {t.brand}. <span className="muted">FR / EN</span>
           </span>
-          <nav>
-            <button
-              className="text-button"
-              onClick={() => {
-                leaveShare();
-                setScreen("admin");
-              }}
-            >
-              Admin
-            </button>
-          </nav>
           <span>{t.tagline}</span>
         </footer>
       </div>

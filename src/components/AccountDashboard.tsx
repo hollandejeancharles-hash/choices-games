@@ -14,6 +14,7 @@ import {
   dailyState,
   exportPlayerData,
   listDuos,
+  isDilemmaAdmin,
   listMyDilemmaProposals,
   isProfileAvatarId,
   profilePhotoUrl,
@@ -51,6 +52,7 @@ export interface AccountNavigationProps {
   onLocaleChange: (locale: Locale) => void;
   onBack: () => void;
   onPropose?: () => void;
+  onAdmin?: () => void;
   onPlay: () => void;
   onResume?: (() => void) | undefined;
   circles: Circle[];
@@ -79,6 +81,7 @@ export function AccountDashboard({
   onLocaleChange,
   onBack,
   onPropose,
+  onAdmin,
   onPlay,
   onResume,
   circles,
@@ -103,6 +106,7 @@ export function AccountDashboard({
   const [historyVersion, setHistoryVersion] = useState(0);
   const [duoInvitations, setDuoInvitations] = useState<MyDuo[]>([]);
   const [dailyPending, setDailyPending] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const [proposals, setProposals] = useState<MyDilemmaProposal[]>([]);
   const [proposalsBusy, setProposalsBusy] = useState(true);
   const [proposalsError, setProposalsError] = useState(false);
@@ -174,6 +178,19 @@ export function AccountDashboard({
     duel: text("Duo", "Duo"),
     circles: text("Mes cercles", "My circles"),
   };
+  useEffect(() => {
+    let active = true;
+    void isDilemmaAdmin()
+      .then((allowed) => {
+        if (active) setAdmin(allowed === true);
+      })
+      .catch(() => {
+        if (active) setAdmin(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user.id]);
   useEffect(() => {
     let active = true;
     const refreshDaily = () =>
@@ -547,6 +564,14 @@ export function AccountDashboard({
             <nav className="c-nav" aria-label={text("Réglages", "Settings")}>
               {navButton("account", "account")}
               {navButton("preferences", "sliders")}
+              {admin && onAdmin && (
+                <button onClick={onAdmin}>
+                  <span className="c-icon" aria-hidden="true">
+                    ◇
+                  </span>
+                  {text("Administration", "Administration")}
+                </button>
+              )}
             </nav>
             <button className="c-user" onClick={() => navigate("account")}>
               {playerAvatar()}

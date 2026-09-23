@@ -37,6 +37,7 @@ export interface MyDuo {
   partnerAnswered: boolean;
 }
 export const listDuos = () => rpc<MyDuo[]>("list_dilemma_duos");
+export const isDilemmaAdmin = () => rpc<boolean>("is_dilemma_admin");
 
 export interface MyDilemmaProposal {
   id: string;

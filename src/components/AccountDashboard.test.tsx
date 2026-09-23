@@ -32,6 +32,7 @@ const api = vi.hoisted(() => ({
   signOut: vi.fn(),
   vote: vi.fn(),
   daily: vi.fn(),
+  admin: vi.fn(),
 }));
 vi.mock("../services/player-cloud", async (original) => ({
   ...(await original<typeof import("../services/player-cloud")>()),
@@ -77,6 +78,7 @@ vi.mock("../services/player-features", () => ({
   listMyDilemmaProposals: api.proposals,
   updateMyDilemmaProposal: api.updateProposal,
   dailyState: api.daily,
+  isDilemmaAdmin: api.admin,
   listCircles: vi.fn().mockResolvedValue([]),
   circleHistory: vi.fn(),
   createCircle: vi.fn(),
@@ -176,6 +178,7 @@ beforeEach(() => {
   api.signOut.mockReset().mockResolvedValue({ error: null });
   api.vote.mockReset().mockResolvedValue({ mine: null, a: 0, b: 0 });
   api.daily.mockReset().mockResolvedValue({ mine: null, a: 0, b: 0 });
+  api.admin.mockReset().mockResolvedValue(false);
   // jsdom has no top-layer layout; retain native open/close semantics for interaction tests.
   HTMLDialogElement.prototype.showModal = function () {
     this.setAttribute("open", "");
@@ -196,6 +199,20 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("account space with real service boundaries", () => {
+  it("only exposes administration after the server authorizes the account", async () => {
+    const onAdmin = vi.fn();
+    props.onAdmin = onAdmin;
+    await mount();
+    expect(screen.queryByRole("button", { name: "Administration" })).toBeNull();
+    cleanup();
+    api.admin.mockResolvedValue(true);
+    render(<AccountDashboard user={user} {...props} />);
+    const button = await screen.findByRole("button", {
+      name: "Administration",
+    });
+    fireEvent.click(button);
+    expect(onAdmin).toHaveBeenCalledOnce();
+  });
   it("notifies the player when today's dilemma has not been answered", async () => {
     await mount();
     await waitFor(() => expect(api.daily).toHaveBeenCalled());
