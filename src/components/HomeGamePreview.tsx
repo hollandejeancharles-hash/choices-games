@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type { Locale, Question } from "../core/types";
 import { questions } from "../data/questions";
 import { publicVote, type PublicVoteState } from "../services/public-votes";
@@ -104,23 +104,36 @@ export function HomeGamePreview({
                 const count = result ? (choice === 0 ? result.a : result.b) : 0;
                 const percent = total ? Math.round((count * 100) / total) : 0;
                 return (
-                  <button
-                    key={choice}
-                    className={selected === choice ? "is-selected" : ""}
-                    disabled={selected !== null}
-                    onClick={() => void choose(choice)}
-                  >
-                    <span className="preview-choice-label">
-                      <b>{choice === 0 ? "A" : "B"}</b>
-                      {result && <strong>{percent}%</strong>}
-                    </span>
-                    <span>{option.text[locale]}</span>
-                    {result && (
-                      <i className="preview-result-bar" aria-hidden="true">
-                        <em style={{ width: `${percent}%` }} />
-                      </i>
+                  <Fragment key={choice}>
+                    <button
+                      className={`preview-choice-${choice === 0 ? "a" : "b"}${selected === choice ? " is-selected" : ""}`}
+                      disabled={selected !== null}
+                      onClick={() => void choose(choice)}
+                    >
+                      <span className="preview-choice-label">
+                        <b>{choice === 0 ? "A" : "B"}</b>
+                        {result ? (
+                          <strong>{percent}%</strong>
+                        ) : (
+                          <strong aria-hidden="true">{choice === 0 ? "↙" : "↗"}</strong>
+                        )}
+                      </span>
+                      <span className="preview-choice-text">{option.text[locale]}</span>
+                      <span className="preview-choice-arrow" aria-hidden="true">
+                        {choice === 0 ? "←" : "→"}
+                      </span>
+                      {result && (
+                        <i className="preview-result-bar" aria-hidden="true">
+                          <em style={{ width: `${percent}%` }} />
+                        </i>
+                      )}
+                    </button>
+                    {choice === 0 && (
+                      <span className="preview-or" aria-hidden="true">
+                        {fr ? "ou" : "or"}
+                      </span>
                     )}
-                  </button>
+                  </Fragment>
                 );
               })}
             </div>
