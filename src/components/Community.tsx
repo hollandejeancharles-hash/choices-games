@@ -5,6 +5,8 @@ import { axisCopy } from "../data/archetypes";
 import {
   communityEnabled,
   communityRequest,
+  CommunityRequestError,
+  validateProposal,
   type Submission,
   type Draft,
 } from "../services/community";
@@ -260,7 +262,7 @@ export function ProposeDilemma({
   const fr = locale === "fr";
   const [busy, setBusy] = useState(false),
     [sent, setSent] = useState(false),
-    [error, setError] = useState(false),
+    [error, setError] = useState(""),
     [showAuth, setShowAuth] = useState(false);
   const sending = useRef(false);
   const [draft, setDraft] = useState<ProposalDraft>(() => {
@@ -274,6 +276,39 @@ export function ProposeDilemma({
     }
     return { locale, prompt: "", a: "", b: "" };
   });
+
+  function proposalError(reason: unknown, proposal: ProposalDraft) {
+    const validation = validateProposal(proposal);
+    if (validation === "prompt-length")
+      return fr
+        ? "La situation doit contenir entre 30 et 1 200 caractères, sans compter les espaces au début ou à la fin."
+        : "The situation must contain between 30 and 1,200 characters, excluding leading or trailing spaces.";
+    if (validation === "option-a-length" || validation === "option-b-length")
+      return fr
+        ? "Chaque choix doit contenir entre 10 et 500 caractères, sans compter les espaces au début ou à la fin."
+        : "Each choice must contain between 10 and 500 characters, excluding leading or trailing spaces.";
+    if (validation === "choices-identical")
+      return fr
+        ? "Les choix A et B doivent être différents."
+        : "Choices A and B must be different.";
+    if (
+      reason instanceof CommunityRequestError &&
+      (reason.code === "23514" || reason.code === "22001")
+    )
+      return fr
+        ? "Vérifie la longueur des textes et assure-toi que les deux choix sont différents."
+        : "Check the text lengths and make sure the two choices are different.";
+    if (
+      reason instanceof CommunityRequestError &&
+      reason.message.includes("Submission capacity reached")
+    )
+      return fr
+        ? "Tu as atteint la limite temporaire de propositions. Réessaie dans une heure."
+        : "You have reached the temporary submission limit. Try again in an hour.";
+    return fr
+      ? "Envoi impossible pour le moment. Ta proposition est conservée dans le formulaire ; réessaie dans un instant."
+      : "Could not send right now. Your text is still in the form; please try again shortly.";
+  }
 
   async function send(proposal: ProposalDraft) {
     if (sending.current) return false;
@@ -310,7 +345,7 @@ export function ProposeDilemma({
         const pending = JSON.parse(saved) as ProposalDraft;
         setBusy(true);
         void send(pending)
-          .catch(() => setError(true))
+          .catch((reason) => setError(proposalError(reason, pending)))
           .finally(() => setBusy(false));
       } catch {
         localStorage.removeItem(PROPOSAL_DRAFT);
@@ -320,7 +355,7 @@ export function ProposeDilemma({
       if (auth.session && localStorage.getItem(PROPOSAL_DRAFT)) {
         setBusy(true);
         void send(draft)
-          .catch(() => setError(true))
+          .catch((reason) => setError(proposalError(reason, draft)))
           .finally(() => setBusy(false));
       }
     });
@@ -372,14 +407,23 @@ export function ProposeDilemma({
             };
             setDraft(proposal);
             setBusy(true);
-            setError(false);
+            setError("");
+            const validation = validateProposal(proposal);
+            if (validation) {
+              setError(proposalError(null, proposal));
+              setBusy(false);
+              return;
+            }
+            proposal.prompt = proposal.prompt.trim();
+            proposal.a = proposal.a.trim();
+            proposal.b = proposal.b.trim();
             try {
               if (!(await send(proposal))) {
                 localStorage.setItem(PROPOSAL_DRAFT, JSON.stringify(proposal));
                 setShowAuth(true);
               }
-            } catch {
-              setError(true);
+            } catch (reason) {
+              setError(proposalError(reason, proposal));
             } finally {
               setBusy(false);
             }
@@ -454,9 +498,7 @@ export function ProposeDilemma({
           </label>
           {error && (
             <p role="alert">
-              {fr
-                ? "Envoi impossible pour le moment. Ta proposition est conservée dans le formulaire ; réessaie dans un instant."
-                : "Could not send right now. Your text is still in the form; please try again shortly."}
+              {error}
             </p>
           )}
           <button className="primary" disabled={busy}>

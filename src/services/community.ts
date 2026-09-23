@@ -25,6 +25,39 @@ export interface Draft {
   b_en: string;
   axis: Axis;
 }
+export interface ProposalInput {
+  prompt: string;
+  a: string;
+  b: string;
+}
+export type ProposalValidationError =
+  | "prompt-length"
+  | "option-a-length"
+  | "option-b-length"
+  | "choices-identical";
+
+export function validateProposal({ prompt, a, b }: ProposalInput) {
+  const clean = { prompt: prompt.trim(), a: a.trim(), b: b.trim() };
+  if (clean.prompt.length < 30 || clean.prompt.length > 1200)
+    return "prompt-length" satisfies ProposalValidationError;
+  if (clean.a.length < 10 || clean.a.length > 500)
+    return "option-a-length" satisfies ProposalValidationError;
+  if (clean.b.length < 10 || clean.b.length > 500)
+    return "option-b-length" satisfies ProposalValidationError;
+  if (clean.a === clean.b)
+    return "choices-identical" satisfies ProposalValidationError;
+  return null;
+}
+
+export class CommunityRequestError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code?: string,
+    message = "request-failed",
+  ) {
+    super(message);
+  }
+}
 export async function communityRequest(
   path: string,
   body?: unknown,
@@ -41,14 +74,24 @@ export async function communityRequest(
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     signal: AbortSignal.timeout(12000),
   });
+  const text = await response.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = null;
+  }
   if (!response.ok)
-    throw new Error(
+    throw new CommunityRequestError(
+      response.status,
+      typeof payload?.code === "string" ? payload.code : undefined,
       response.status === 401 || response.status === 403
         ? "access-denied"
-        : "request-failed",
+        : typeof payload?.message === "string"
+          ? payload.message
+          : "request-failed",
     );
-  const text = await response.text();
-  return text ? JSON.parse(text) : null;
+  return payload;
 }
 export function isCommunityQuestion(value: unknown): value is Question {
   if (!value || typeof value !== "object") return false;
