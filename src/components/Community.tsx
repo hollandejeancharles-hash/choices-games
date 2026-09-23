@@ -362,18 +362,24 @@ export function ProposeDilemma({
     return () => data.subscription.unsubscribe();
   }, []);
   return (
-    <section className="community-page page-in">
+    <section className="community-page proposal-page page-in">
       <button className="text-button" onClick={onBack}>
         ← {fr ? "Accueil" : "Home"}
       </button>
-      <h1>
-        {fr ? "À toi de poser le dilemme." : "Your turn to pose a dilemma."}
-      </h1>
-      <p>
-        {fr
-          ? "Une situation, deux choix difficiles. L’équipe relit chaque proposition avant de l’ajouter au jeu. Ne partage pas de données personnelles ni d’histoires permettant d’identifier quelqu’un."
-          : "One situation, two difficult choices. The team reviews every suggestion before adding it to the game. Do not include personal data or stories that identify someone."}
-      </p>
+      <div className="proposal-heading">
+        <span className="eyebrow">{fr ? "LA COMMUNAUTÉ IMAGINE" : "CREATED BY THE COMMUNITY"}</span>
+        <h1>{fr ? "À toi de poser le dilemme." : "Your turn to pose a dilemma."}</h1>
+        <p>
+          {fr
+            ? "Crée une situation qui oblige vraiment à choisir. Deux issues, deux conséquences, aucun échappatoire évident."
+            : "Create a situation that truly forces a choice. Two outcomes, two consequences, no obvious way out."}
+        </p>
+        <div className="proposal-principles" aria-label={fr ? "Conseils de rédaction" : "Writing tips"}>
+          <span><b>01</b>{fr ? "Une tension claire" : "A clear tension"}</span>
+          <span><b>02</b>{fr ? "Deux coûts réels" : "Two real costs"}</span>
+          <span><b>03</b>{fr ? "Aucune bonne réponse" : "No right answer"}</span>
+        </div>
+      </div>
       {!communityEnabled ? (
         <p className="notice">
           {fr
@@ -393,8 +399,9 @@ export function ProposeDilemma({
           </button>
         </div>
       ) : (
+        <div className="proposal-workspace">
         <form
-          className="community-form"
+          className="community-form proposal-editor"
           onSubmit={async (e) => {
             e.preventDefault();
             const data = new FormData(e.currentTarget);
@@ -429,8 +436,10 @@ export function ProposeDilemma({
             }
           }}
         >
-          <label>
-            {fr ? "Langue de la proposition" : "Suggestion language"}
+          <div className="proposal-editor-topline">
+            <span>{fr ? "TON BROUILLON" : "YOUR DRAFT"}</span>
+            <label>
+            <span>{fr ? "Langue" : "Language"}</span>
             <select
               name="locale"
               value={draft.locale}
@@ -441,9 +450,10 @@ export function ProposeDilemma({
               <option value="fr">Français</option>
               <option value="en">English</option>
             </select>
-          </label>
-          <label>
-            {fr ? "La situation" : "The situation"}
+            </label>
+          </div>
+          <label className="proposal-field proposal-situation">
+            <span className="proposal-field-title"><b>1</b>{fr ? "Pose la situation" : "Set the scene"}<small>{draft.prompt.length}/1200</small></span>
             <textarea
               name="prompt"
               required
@@ -454,10 +464,12 @@ export function ProposeDilemma({
               onChange={(event) =>
                 setDraft({ ...draft, prompt: event.target.value })
               }
+              placeholder={fr ? "Ex. Tu peux révéler une vérité qui protège le public, mais elle mettra un proche en danger…" : "E.g. You can reveal a truth that protects the public, but it will put someone close to you in danger…"}
             />
           </label>
-          <label>
-            {fr ? "Choix A et sa conséquence" : "Choice A and its consequence"}
+          <div className="proposal-options">
+          <label className="proposal-field proposal-option proposal-option-a">
+            <span className="proposal-field-title"><b>A</b>{fr ? "Premier choix" : "First choice"}<small>{draft.a.length}/500</small></span>
             <textarea
               name="a"
               required
@@ -468,10 +480,11 @@ export function ProposeDilemma({
               onChange={(event) =>
                 setDraft({ ...draft, a: event.target.value })
               }
+              placeholder={fr ? "L’action et ce qu’elle coûte." : "The action and what it costs."}
             />
           </label>
-          <label>
-            {fr ? "Choix B et sa conséquence" : "Choice B and its consequence"}
+          <label className="proposal-field proposal-option proposal-option-b">
+            <span className="proposal-field-title"><b>B</b>{fr ? "Second choix" : "Second choice"}<small>{draft.b.length}/500</small></span>
             <textarea
               name="b"
               required
@@ -482,14 +495,18 @@ export function ProposeDilemma({
               onChange={(event) =>
                 setDraft({ ...draft, b: event.target.value })
               }
+              placeholder={fr ? "L’alternative et ce qu’elle coûte." : "The alternative and what it costs."}
             />
           </label>
+          <span className="proposal-or" aria-hidden="true">{fr ? "ou" : "or"}</span>
+          </div>
           <div className="form-trap" aria-hidden="true">
             <label>
               Website
               <input name="website" tabIndex={-1} autoComplete="off" />
             </label>
           </div>
+          <div className="proposal-submit-zone">
           <label className="consent">
             <input type="checkbox" required />
             {fr
@@ -497,7 +514,7 @@ export function ProposeDilemma({
               : "I allow my suggestion to be edited, translated and published in Dilemma."}
           </label>
           {error && (
-            <p role="alert">
+            <p className="proposal-error" role="alert">
               {error}
             </p>
           )}
@@ -509,13 +526,38 @@ export function ProposeDilemma({
               : fr
                 ? "Envoyer pour validation"
                 : "Submit for review"}
+            <span aria-hidden="true">↗</span>
           </button>
           <p className="fine-print">
             {fr
               ? "La proposition sera associée à ton compte pour limiter les abus. Elle ne sera publiée qu’après modération."
               : "The suggestion will be linked to your account to prevent abuse. It will only be published after review."}
           </p>
+          </div>
         </form>
+        <aside className="proposal-preview" aria-label={fr ? "Aperçu du dilemme" : "Dilemma preview"}>
+          <div className="proposal-preview-head">
+            <span className="eyebrow">{fr ? "APERÇU EN DIRECT" : "LIVE PREVIEW"}</span>
+            <i aria-hidden="true" />
+          </div>
+          <div className="proposal-preview-card">
+            <span>{fr ? "TA SITUATION" : "YOUR SITUATION"}</span>
+            <h2>{draft.prompt.trim() || (fr ? "Ton dilemme prendra vie ici pendant que tu écris." : "Your dilemma will come alive here as you write.")}</h2>
+            <div>
+              <article className="preview-proposal-a">
+                <b>A</b>
+                <p>{draft.a.trim() || (fr ? "Le premier choix apparaîtra ici." : "The first choice will appear here.")}</p>
+              </article>
+              <article className="preview-proposal-b">
+                <b>B</b>
+                <p>{draft.b.trim() || (fr ? "Le second choix apparaîtra ici." : "The second choice will appear here.")}</p>
+              </article>
+              <span aria-hidden="true">{fr ? "ou" : "or"}</span>
+            </div>
+          </div>
+          <p>{fr ? "L’équipe pourra reformuler et traduire le texte avant publication." : "The team may edit and translate the text before publication."}</p>
+        </aside>
+        </div>
       )}
       {showAuth && (
         <ProposalAuth locale={locale} onClose={() => setShowAuth(false)} />
